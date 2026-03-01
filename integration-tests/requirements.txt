@@ -7,3 +7,8 @@ PyJWT ~= 2.9
 cryptography ~= 45.0
 requests ~= 2.32
 psutil ~= 7.0
+
+# Browser-based E2E tests (Playwright)
+# After pip install, run:  playwright install --with-deps chromium
+pytest-playwright ~= 0.6
+playwright ~= 1.49

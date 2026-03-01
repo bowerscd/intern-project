@@ -19,12 +19,43 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-# Run all integration tests
-pytest -v
+# Run all integration tests (excluding browser tests)
+pytest -v -m "not browser"
 
 # With coverage (reports backend line coverage)
-pytest --cov --cov-report=term-missing
+pytest --cov --cov-report=term-missing -m "not browser"
 ```
+
+### Browser (Playwright) tests
+
+Browser tests use Playwright to drive a real Chromium browser through the UI.
+Browser binaries are **not** committed to the repository — each developer
+installs them locally:
+
+```bash
+# One-time setup: install Playwright + Chromium
+pip install -r requirements.txt
+playwright install --with-deps chromium
+
+# Or use the Makefile shortcut:
+make install-browser
+```
+
+Then run:
+
+```bash
+# Browser tests only
+pytest -v -m browser
+
+# All tests (HTTP + browser)
+pytest -v
+
+# Via Makefile
+make test-browser   # browser tests only
+make test-all       # everything
+```
+
+If Playwright is not installed, browser tests are automatically skipped.
 
 ## Test categories
 
@@ -35,6 +66,8 @@ pytest --cov --cov-report=term-missing
 | `test_security.py` | XSS, CSRF, session hijacking, OIDC replay |
 | `test_contract.py` | API schema & OpenAPI contract validation |
 | `test_resilience.py` | Backend/OIDC unavailability, timeout handling |
+| `test_browser_smoke.py` | Playwright — page rendering, nav, static assets |
+| `test_browser_oidc_flow.py` | Playwright — full OIDC registration through the browser UI |
 
 ## Environment
 

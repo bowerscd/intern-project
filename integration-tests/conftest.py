@@ -32,6 +32,16 @@ import pytest
 from mock_oidc import start_server as start_oidc, stop_server as stop_oidc
 
 # ---------------------------------------------------------------------------
+# Playwright availability check — gracefully degrade when not installed
+# ---------------------------------------------------------------------------
+
+try:
+    from playwright.sync_api import sync_playwright  # noqa: F401
+    _HAS_PLAYWRIGHT = True
+except ImportError:
+    _HAS_PLAYWRIGHT = False
+
+# ---------------------------------------------------------------------------
 # Environment overrides — set by Docker Compose / CI to skip process spawning
 # ---------------------------------------------------------------------------
 
@@ -200,6 +210,26 @@ def frontend_server(backend_server):
         yield _EXTERNAL_FRONTEND_URL, port
         return
 
+    # ── Build the TypeScript sources so static/dist/ is up-to-date ──
+    # Without this, stale compiled JS can cause hard-to-diagnose test
+    # failures (e.g. missing CSRF handling that only exists in the TS
+    # source but not in the compiled output).
+    _tsc = _FRONTEND_DIR / "node_modules" / ".bin" / "tsc"
+    if _tsc.exists():
+        result = subprocess.run(
+            [str(_tsc), "-p", "tsconfig.json"],
+            cwd=str(_FRONTEND_DIR),
+            capture_output=True,
+            timeout=30,
+        )
+        if result.returncode != 0:
+            import warnings
+            warnings.warn(
+                f"TypeScript build had errors (non-fatal):\n"
+                f"{result.stderr.decode()[:500]}",
+                stacklevel=2,
+            )
+
     backend_url, _ = backend_server
     port = _free_port()
 
@@ -278,3 +308,65 @@ def frontend_client(frontend_server) -> Generator[httpx.Client, None, None]:
     base_url, _ = frontend_server
     with httpx.Client(base_url=base_url, follow_redirects=False, timeout=10.0) as c:
         yield c
+
+
+# ---------------------------------------------------------------------------
+# Playwright browser fixtures
+# ---------------------------------------------------------------------------
+
+def pytest_configure(config):
+    """Register the ``browser`` marker so that Playwright tests can be
+    selectively included or excluded (``-m browser`` / ``-m 'not browser'``).
+    """
+    config.addinivalue_line(
+        "markers",
+        "browser: marks tests that require a real browser via Playwright",
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    """Auto-skip ``@pytest.mark.browser`` tests when Playwright is not installed."""
+    if _HAS_PLAYWRIGHT:
+        return
+    skip_pw = pytest.mark.skip(reason="Playwright is not installed — run `pip install playwright && playwright install --with-deps chromium`")
+    for item in items:
+        if "browser" in item.keywords:
+            item.add_marker(skip_pw)
+
+
+@pytest.fixture(scope="session")
+def _playwright_instance():
+    """Start a single Playwright instance for the test session."""
+    if not _HAS_PLAYWRIGHT:
+        pytest.skip("Playwright is not installed")
+    pw = sync_playwright().start()
+    yield pw
+    pw.stop()
+
+
+@pytest.fixture(scope="session")
+def browser(_playwright_instance):
+    """Launch a headless Chromium browser for the test session."""
+    browser = _playwright_instance.chromium.launch(headless=True)
+    yield browser
+    browser.close()
+
+
+@pytest.fixture()
+def browser_context(browser, frontend_server):
+    """Create a fresh, isolated browser context for each test.
+
+    Sets the base URL so ``page.goto("/some-path")`` works.
+    """
+    frontend_url, _ = frontend_server
+    context = browser.new_context(base_url=frontend_url)
+    yield context
+    context.close()
+
+
+@pytest.fixture()
+def page(browser_context):
+    """Create a fresh page within the per-test browser context."""
+    page = browser_context.new_page()
+    yield page
+    page.close()

@@ -25,6 +25,9 @@ jobs:
       - name: Install test dependencies
         run: pip install -r integration-tests/requirements.txt
 
+      - name: Install Playwright browsers
+        run: playwright install --with-deps chromium
+
       - name: Build and start Docker Compose stack
         working-directory: integration-tests
         run: docker compose up --build -d

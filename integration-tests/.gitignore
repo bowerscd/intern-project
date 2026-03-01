@@ -8,3 +8,12 @@ htmlcov/
 dist/
 build/
 .env
+
+# Playwright browser binaries (installed locally via `playwright install`)
+# These are large and should NOT be committed.
+# Each developer runs: playwright install --with-deps chromium
+ms-playwright/
+
+# Playwright test artifacts
+test-results/
+playwright-report/
