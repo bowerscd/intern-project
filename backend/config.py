@@ -49,6 +49,32 @@ def _get(key: str, env_var: str | None = None, default: Any = None) -> Any:
     return default
 
 
+def _get_json(key: str, env_var: str | None = None, default: Any = None) -> Any:
+    """Like :func:`_get` but JSON-decode the environment variable.
+
+    Useful for configuration values that are lists or dicts (e.g.
+    ``CORS_ALLOW_ORIGINS='["https://example.com"]'``).
+
+    :param key: The JSON key to look up in *settings.json*.
+    :param env_var: Environment variable name whose value will be
+        parsed as JSON.
+    :param default: Fallback when neither source provides a value.
+    :returns: The resolved configuration value.
+    """
+    s = _load_settings()
+    val = s.get(key)
+    if val is not None:
+        return val
+    if env_var is not None:
+        env_val = os.environ.get(env_var)
+        if env_val is not None:
+            try:
+                return json.loads(env_val)
+            except (json.JSONDecodeError, TypeError):
+                return env_val
+    return default
+
+
 # ---------------------------------------------------------------------------
 # Public configuration attributes
 # ---------------------------------------------------------------------------
@@ -69,7 +95,7 @@ If *dev_mode* is ``true`` the default in ``settings.json`` is ``"1234"``.
 DATABASE_URI: Optional[str] = _get("database_uri", "DATABASE_URI", None)
 """SQLAlchemy connection URI.  ``None`` → ephemeral in-memory SQLite."""
 
-CORS_ALLOW_ORIGINS: List[str] = _get("cors_allow_origins", None, ["*"] if DEV_MODE else [])
+CORS_ALLOW_ORIGINS: List[str] = _get_json("cors_allow_origins", "CORS_ALLOW_ORIGINS", ["*"] if DEV_MODE else [])
 """Origins permitted by the CORS middleware."""
 
 SESSION_COOKIE_DOMAIN: Optional[str] = _get("session_cookie_domain", "SESSION_COOKIE_DOMAIN", None)
