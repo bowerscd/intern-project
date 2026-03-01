@@ -11,10 +11,21 @@ import pytest
 
 
 # Paths that should be gated
-GATED_PATHS = ["/", "/account", "/mealbot", "/mealbot/individualized", "/happyhour/manage"]
+GATED_PATHS = [
+    "/",
+    "/account",
+    "/mealbot",
+    "/mealbot/individualized",
+    "/happyhour/manage",
+]
 
 # Paths that should NOT be gated
-EXEMPT_PATHS = ["/login", "/auth/callback", "/auth/complete-registration", "/auth/claim-account"]
+EXEMPT_PATHS = [
+    "/login",
+    "/auth/callback",
+    "/auth/complete-registration",
+    "/auth/claim-account",
+]
 
 
 class TestAuthGateRedirect:

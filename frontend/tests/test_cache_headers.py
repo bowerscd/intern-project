@@ -4,8 +4,6 @@ Ensures that authenticated pages are not cached by intermediaries and that
 static assets have appropriate caching directives.
 """
 
-import pytest
-
 
 class TestPageCacheHeaders:
     """HTML page responses should discourage caching of authenticated content."""

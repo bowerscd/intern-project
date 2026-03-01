@@ -10,5 +10,4 @@ scripts/
 .venv/
 .env
 .env.*
-tsconfig.json
 node_modules/

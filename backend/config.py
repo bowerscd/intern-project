@@ -100,9 +100,9 @@ CORS_ALLOW_ORIGINS: List[str] = _get_json(
 )
 """Origins permitted by the CORS middleware."""
 
-SESSION_COOKIE_DOMAIN: Optional[str] = _get(
-    "session_cookie_domain", "SESSION_COOKIE_DOMAIN", None
-) or None
+SESSION_COOKIE_DOMAIN: Optional[str] = (
+    _get("session_cookie_domain", "SESSION_COOKIE_DOMAIN", None) or None
+)
 """Domain attribute for the session cookie.
 
 Set to ``".yourdomain.com"`` in production so the cookie is shared across

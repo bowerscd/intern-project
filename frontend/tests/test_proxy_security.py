@@ -4,7 +4,6 @@ Validates that the proxy does not introduce request-smuggling vectors,
 header injection, or SSRF opportunities.
 """
 
-import pytest
 import responses
 
 

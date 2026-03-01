@@ -3,8 +3,6 @@
 Covers: ProxyFix, health endpoint, error pages, request-ID, X-Forwarded-Proto.
 """
 
-import pytest
-
 
 class TestProxyFix:
     """Verify ProxyFix middleware is wrapping the WSGI app."""
@@ -39,6 +37,7 @@ class TestHealthEndpoint:
     def test_healthz_in_public_paths(self) -> None:
         """'/healthz' should be in PUBLIC_PATHS."""
         import app as app_module
+
         assert "/healthz" in app_module.PUBLIC_PATHS
 
 
@@ -98,7 +97,9 @@ class TestXForwardedProto:
             captured_kwargs.update(kwargs)
             return fake_resp
 
-        monkeypatch.setattr(app_module, "http_requests", MagicMock(request=capture_request))
+        monkeypatch.setattr(
+            app_module, "http_requests", MagicMock(request=capture_request)
+        )
 
         mock_client.get("/api/v2/healthz")
 

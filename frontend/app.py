@@ -34,14 +34,16 @@ else:
 SESSION_COOKIE_NAME = os.environ.get("SESSION_COOKIE_NAME", "localhost.session")
 
 # Paths that do not require an authenticated session cookie.
-PUBLIC_PATHS = frozenset({
-    "/login",
-    "/auth/callback",
-    "/auth/complete-registration",
-    "/auth/claim-account",
-    "/happyhour",
-    "/healthz",
-})
+PUBLIC_PATHS = frozenset(
+    {
+        "/login",
+        "/auth/callback",
+        "/auth/complete-registration",
+        "/auth/claim-account",
+        "/happyhour",
+        "/healthz",
+    }
+)
 
 
 @app.before_request
@@ -87,7 +89,9 @@ def add_request_id_header(response):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     if not DEV_MODE:
-        response.headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains"
+        response.headers["Strict-Transport-Security"] = (
+            "max-age=63072000; includeSubDomains"
+        )
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
         "script-src 'self'; "
@@ -100,6 +104,7 @@ def add_request_id_header(response):
 
 # ── Health endpoint ──────────────────────────────────────────────────
 
+
 @app.route("/healthz")
 def healthcheck():
     """Liveness probe — always returns 200."""
@@ -107,6 +112,7 @@ def healthcheck():
 
 
 # ── Error handlers ─────────────────────────────────────────────────
+
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -192,12 +198,20 @@ def admin():
 
 # ── Reverse proxy: forward /api/* to the FastAPI backend ──────────────
 
-PROXY_HEADERS_SKIP = frozenset([
-    "host", "content-length", "content-encoding", "transfer-encoding", "cookie",
-])
+PROXY_HEADERS_SKIP = frozenset(
+    [
+        "host",
+        "content-length",
+        "content-encoding",
+        "transfer-encoding",
+        "cookie",
+    ]
+)
 
 
-@app.route("/api/<path:path>", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"])
+@app.route(
+    "/api/<path:path>", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+)
 def api_proxy(path):
     """Proxy all /api/ requests to the FastAPI backend, relaying cookies and
     headers so the OIDC session stays on the same origin as the frontend."""
@@ -236,10 +250,19 @@ def api_proxy(path):
     # Use resp.raw.headers (urllib3 HTTPHeaderDict) to preserve duplicate
     # Set-Cookie entries — requests' CaseInsensitiveDict silently merges them.
     excluded = {"content-encoding", "transfer-encoding", "content-length", "connection"}
-    allowed = {"content-type", "set-cookie", "cache-control", "location", "x-request-id"}
+    allowed = {
+        "content-type",
+        "set-cookie",
+        "cache-control",
+        "location",
+        "x-request-id",
+    }
     raw_headers = resp.raw.headers if hasattr(resp.raw, "headers") else resp.headers
-    headers = [(k, v) for k, v in raw_headers.items()
-               if k.lower() not in excluded and k.lower() in allowed]
+    headers = [
+        (k, v)
+        for k, v in raw_headers.items()
+        if k.lower() not in excluded and k.lower() in allowed
+    ]
     return Response(resp.content, status=resp.status_code, headers=headers)
 
 
