@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{{ title }} · Vibe Coded</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+  </head>
+  <body data-page="{{ title }}" data-api-base="{{ api_base | default('') }}" data-use-mock="{{ 'true' if use_mock else 'false' }}" data-dev-mode="{{ 'true' if dev_mode else 'false' }}">
+    <div class="app-layout">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <a href="/" class="brand">Vibe Coded</a>
+        </div>
+        <nav class="sidebar-nav" id="sidebar-nav">
+          <a href="/happyhour">Happy Hour</a>
+          <a href="/mealbot" data-requires="MEALBOT" class="nav-hidden">Mealbot</a>
+          <a href="/mealbot/individualized" data-requires="MEALBOT" class="nav-hidden">My Summary</a>
+          <a href="/happyhour/manage" data-requires="HAPPY_HOUR_TYRANT" class="nav-hidden">Manage HH</a>
+          <a href="/admin" data-requires="ADMIN" class="nav-hidden">Admin</a>
+          <a href="/account" data-requires="auth" class="nav-hidden">Account</a>
+          <a href="/login" data-requires="guest" id="nav-login">Login</a>
+          <a href="#" data-requires="auth" class="nav-hidden" id="nav-logout">Logout</a>
+        </nav>
+      </aside>
+      <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+      <div class="main-wrapper">
+        <header class="mobile-header" id="mobile-header">
+          <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">☰</button>
+          <span class="mobile-title">{{ title }}</span>
+        </header>
+        <main class="page">
+          {% block content %}{% endblock %}
+        </main>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/config.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='dist/main.js') }}"></script>
+  </body>
+</html>

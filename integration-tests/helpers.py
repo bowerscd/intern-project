@@ -1,0 +1,122 @@
+"""Shared helpers for integration tests.
+
+Provides reusable OIDC registration functions so that individual test
+modules don't duplicate the multi-step flow.
+"""
+
+from __future__ import annotations
+
+import httpx
+from urllib.parse import urlparse, parse_qs, urlencode
+
+
+def oidc_register_session(
+    backend_url: str,
+    oidc_issuer: str,
+    *,
+    sub: str,
+    name: str,
+    email: str,
+) -> httpx.Client:
+    """Drive the OIDC registration flow and return a client with a pending session.
+
+    The returned :class:`httpx.Client` has completed the OIDC callback
+    in register mode and has ``pending_registration`` stored in the
+    server-side session.  It has **not** called ``/complete-registration``
+    or ``/claim-account`` yet.
+
+    :param backend_url: Base URL of the backend (e.g. ``http://127.0.0.1:8000``).
+    :param oidc_issuer: Base URL of the mock OIDC provider.
+    :param sub: OIDC ``sub`` claim for the test user.
+    :param name: Display name for the test user.
+    :param email: Email address for the test user.
+    :returns: An httpx client with cookies from the OIDC callback.
+    """
+    client = httpx.Client(
+        base_url=backend_url, follow_redirects=False, timeout=10.0
+    )
+
+    # 1. Initiate registration
+    resp = client.get("/api/v2/auth/register/test")
+    assert resp.status_code in (302, 307)
+    authorize_url = resp.headers["location"]
+
+    # 2. Follow the redirect to the mock OIDC authorize page
+    resp = httpx.get(authorize_url, follow_redirects=False, timeout=10.0)
+    assert resp.status_code == 200
+
+    # 3. Approve the OIDC request (simulate the user clicking Authorize)
+    parsed = urlparse(authorize_url)
+    qs = parse_qs(parsed.query)
+    approve_url = (
+        f"{oidc_issuer}/authorize/approve?"
+        + urlencode({
+            "redirect_uri": qs["redirect_uri"][0],
+            "state": qs["state"][0],
+            "nonce": qs["nonce"][0],
+            "sub": sub,
+            "name": name,
+            "email": email,
+        })
+    )
+    resp = httpx.get(approve_url, follow_redirects=False, timeout=10.0)
+    assert resp.status_code == 302
+
+    # 4. Hit the backend callback
+    callback_url = resp.headers["location"]
+    cb_parsed = urlparse(callback_url)
+    resp = client.get(f"{cb_parsed.path}?{cb_parsed.query}")
+    assert resp.status_code in (302, 307), (
+        f"OIDC callback returned {resp.status_code}: {resp.text[:500]}"
+    )
+
+    return client
+
+
+def complete_registration(client: httpx.Client, username: str) -> dict:
+    """Complete registration on an already-authenticated OIDC session.
+
+    Fetches a CSRF token, calls ``/complete-registration``, asserts
+    success, and returns the response JSON.
+
+    :param client: An httpx client with a ``pending_registration`` session.
+    :param username: The desired username.
+    :returns: The JSON response body from the registration endpoint.
+    """
+    csrf = client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
+    resp = client.post(
+        "/api/v2/auth/complete-registration",
+        json={"username": username},
+        headers={"X-CSRF-Token": csrf},
+    )
+    assert resp.status_code == 201, resp.text[:500]
+    return resp.json()
+
+
+def register_user(
+    backend_url: str,
+    oidc_issuer: str,
+    *,
+    sub: str,
+    name: str,
+    email: str,
+    username: str,
+) -> httpx.Client:
+    """Drive OIDC registration through to a fully authenticated session.
+
+    Combines :func:`oidc_register_session` and :func:`complete_registration`
+    into a single call.  Returns an httpx client with a valid session cookie.
+
+    :param backend_url: Base URL of the backend.
+    :param oidc_issuer: Base URL of the mock OIDC provider.
+    :param sub: OIDC ``sub`` claim for the test user.
+    :param name: Display name for the test user.
+    :param email: Email address for the test user.
+    :param username: The desired username for registration.
+    :returns: An httpx client with a fully authenticated session.
+    """
+    client = oidc_register_session(
+        backend_url, oidc_issuer, sub=sub, name=name, email=email,
+    )
+    complete_registration(client, username)
+    return client

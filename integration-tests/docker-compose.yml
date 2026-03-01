@@ -1,0 +1,94 @@
+# docker-compose.yml — local development / integration test stack
+#
+# Usage:
+#   docker compose up --build        # start all services
+#   docker compose down               # stop and remove containers
+#
+# The mock OIDC provider is included for local development.
+# In production, replace TEST_OIDC_ISSUER with a real provider.
+
+services:
+  oidc:
+    build:
+      context: .
+      dockerfile: Dockerfile.oidc
+    expose:
+      - "9000"
+    networks:
+      - app-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9000/.well-known/openid-configuration')"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  backend:
+    build:
+      context: ../backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DEV=0
+      - SERVER_HOSTNAME=${SERVER_HOSTNAME:-localhost}
+      - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET is required}
+      - DATABASE_URI=${DATABASE_URI:-sqlite:///data/app.db}
+      - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS:-["https://sites.localhost"]}
+      - SESSION_COOKIE_DOMAIN=${SESSION_COOKIE_DOMAIN:-.localhost}
+      - SESSION_SAME_SITE=lax
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      # OIDC — Google (production)
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-unused}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-unused}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI:-https://sites.localhost/api/v2/auth/callback/google}
+      # OIDC — Test provider (mock)
+      - TEST_OIDC_ISSUER=http://oidc:9000
+      - TEST_CLIENT_ID=client_id1
+      - TEST_CLIENT_SECRET=definitely_a_secret
+      - TEST_REDIRECT_URI=http://frontend:5000/api/v2/auth/callback/test
+      # SMTP (optional)
+      - SMTP_URI=${SMTP_URI:-}
+      - MAIL_SENDER=${MAIL_SENDER:-}
+    depends_on:
+      oidc:
+        condition: service_healthy
+    networks:
+      - app-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - backend-data:/data
+
+  frontend:
+    build:
+      context: ../frontend
+    ports:
+      - "5000:5000"
+    environment:
+      - API_BASE=http://backend:8000
+      - USE_MOCK=false
+      - USE_PROXY=true
+      - DEV=0
+      - SESSION_COOKIE_NAME=${SESSION_COOKIE_NAME:-localhost.session}
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - app-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/healthz')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  app-net:
+    driver: bridge
+
+volumes:
+  backend-data:

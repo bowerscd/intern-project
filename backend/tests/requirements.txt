@@ -1,0 +1,9 @@
+pytest                      ~= 8.4
+pytest-cov                  ~= 6.2
+pytest-asyncio              ~= 1.1
+pytest-httpserver           ~= 1.1
+pytest-localserver[smtp]    ~= 0.9
+pytest-mock                 ~= 3.14
+httpx                       ~= 0.28
+hypothesis                  ~= 6.131
+ruff                        ~= 0.11

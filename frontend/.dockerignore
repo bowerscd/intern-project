@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+.pytest_cache/
+tests/
+scripts/
+*.md
+.venv/
+.env
+.env.*
+tsconfig.json
+node_modules/

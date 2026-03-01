@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="grid-2">
+  <section class="card">
+    <h2>Incoming Debts</h2>
+    <div id="incoming-debts"></div>
+  </section>
+  <section class="card">
+    <h2>Outgoing Debts</h2>
+    <div id="outgoing-debts"></div>
+  </section>
+</div>
+<section class="card">
+  <h2>Recent Personal Activity</h2>
+  <div class="scrollable-content" id="recent-ledger-scroll-container">
+    <div id="my-recent-ledger"></div>
+    <div id="recent-ledger-sentinel" class="scroll-sentinel"></div>
+    <div id="recent-ledger-status" class="scroll-status"></div>
+  </div>
+</section>
+{% endblock %}

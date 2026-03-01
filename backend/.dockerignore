@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+.pytest_cache/
+tests/
+dev/
+settings.json
+*.md
+.venv/
+.env
+.env.*
+existing_db_samples/

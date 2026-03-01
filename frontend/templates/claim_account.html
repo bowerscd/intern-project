@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h2>Claim Existing Account</h2>
+  <form id="claim-account-form">
+    <label for="claim-username">Existing Username</label>
+    <input id="claim-username" name="username" placeholder="legacy.user" />
+    <button type="submit">Submit Claim</button>
+  </form>
+  <div id="claim-account-result"></div>
+</section>
+{% endblock %}

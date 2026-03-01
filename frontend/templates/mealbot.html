@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="grid-2">
+  <section class="card">
+    <h2>Summary</h2>
+    <div id="mealbot-summary"></div>
+  </section>
+  <section class="card">
+    <h2>Record Meal</h2>
+    <p style="font-size: 0.9em; color: #aaa;">You can only record meals involving yourself.</p>
+    <form id="mealbot-record-form"></form>
+    <div id="mealbot-record-result"></div>
+  </section>
+</div>
+<section class="card">
+  <h2>Global Ledger</h2>
+  <div class="scrollable-content" id="ledger-scroll-container">
+    <div id="mealbot-ledger"></div>
+    <div id="ledger-sentinel" class="scroll-sentinel"></div>
+    <div id="ledger-status" class="scroll-status"></div>
+  </div>
+</section>
+<section class="card">
+  <h2>My Ledger</h2>
+  <div class="scrollable-content" id="my-ledger-scroll-container">
+    <div id="mealbot-my-ledger"></div>
+    <div id="my-ledger-sentinel" class="scroll-sentinel"></div>
+    <div id="my-ledger-status" class="scroll-status"></div>
+  </div>
+</section>
+{% endblock %}

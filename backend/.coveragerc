@@ -1,0 +1,10 @@
+[run]
+branch = true
+omit =
+    tests/*
+    tests/**/*
+
+[report]
+omit =
+    tests/*
+    tests/**/*

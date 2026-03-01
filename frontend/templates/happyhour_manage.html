@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card prominent-card">
+  <h2>Upcoming Event</h2>
+  <div id="upcoming-event"></div>
+</section>
+<section class="card">
+  <h2>Rotation</h2>
+  <div class="scrollable-content" id="rotation-scroll-container">
+    <div id="rotation-schedule"></div>
+  </div>
+</section>
+<section class="card">
+  <h2>Submit Your Happy Hour Choice</h2>
+  <div id="turn-status"></div>
+  <form id="create-event-form"></form>
+  <div id="happyhour-result"></div>
+</section>
+<section class="card">
+  <h2>Locations</h2>
+  <div class="scrollable-content" id="locations-scroll-container">
+    <div id="locations-list"></div>
+    <div id="locations-sentinel" class="scroll-sentinel"></div>
+    <div id="locations-status" class="scroll-status"></div>
+  </div>
+</section>
+<section class="card">
+  <h2>Events</h2>
+  <div class="scrollable-content" id="events-scroll-container">
+    <div id="events-list"></div>
+    <div id="events-sentinel" class="scroll-sentinel"></div>
+    <div id="events-status" class="scroll-status"></div>
+  </div>
+</section>
+{% endblock %}

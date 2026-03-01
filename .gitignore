@@ -1,0 +1,49 @@
+# ── Secrets & config ──────────────────────────────────────────────────
+.env
+!.env.example
+backend/settings.json
+
+# ── Sample data (contains real PII) ─────────────────────────────────
+backend/existing_db_samples/
+
+# ── Python ───────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+*.egg-info/
+dist/
+build/
+
+# ── Testing ──────────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.hypothesis/
+
+# ── Linting / Formatting ────────────────────────────────────────────
+.ruff_cache/
+
+# ── Databases ────────────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Keys & certs ─────────────────────────────────────────────────────
+*.pem
+*.key
+*.crt
+*.p12
+
+# ── IDE / OS ─────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Logs ─────────────────────────────────────────────────────────────
+*.log
