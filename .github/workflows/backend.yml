@@ -54,6 +54,7 @@ jobs:
       - name: Run tests
         env:
           DEV: "1"
+          SESSION_SECRET: "dev-only-not-for-production"
         run: |
           python -m pytest tests/ -v --import-mode=importlib --cache-clear \
             --cov=. --cov-report=term-missing
@@ -74,6 +75,8 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Verify Alembic migrations
+        env:
+          DEV: "1"
         run: python -m alembic check 2>/dev/null || python -m alembic heads
 
       - name: Docker build (dry run)
