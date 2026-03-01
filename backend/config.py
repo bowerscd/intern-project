@@ -102,12 +102,15 @@ CORS_ALLOW_ORIGINS: List[str] = _get_json(
 
 SESSION_COOKIE_DOMAIN: Optional[str] = _get(
     "session_cookie_domain", "SESSION_COOKIE_DOMAIN", None
-)
+) or None
 """Domain attribute for the session cookie.
 
 Set to ``".yourdomain.com"`` in production so the cookie is shared across
 subdomains (``api.``, ``mealbot.``, ``happyhour.``, etc.).
 ``None`` (default) confines the cookie to the exact serving origin.
+An empty string is normalised to ``None`` so that an unset environment
+variable (``SESSION_COOKIE_DOMAIN=``) does not produce a broken
+``domain=`` attribute in the ``Set-Cookie`` header.
 """
 
 SESSION_SAME_SITE: str = _get("session_same_site", "SESSION_SAME_SITE", "lax")
