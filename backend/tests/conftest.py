@@ -1,4 +1,5 @@
 """Shared pytest fixtures — database, HTTP clients, SMTP, and auth helpers."""
+
 from typing import Any, Tuple
 
 import pytest
@@ -79,6 +80,7 @@ async def smtp(smtpserver: SMTPServer) -> SMTPServer:
 
     # Reset cached mail config
     import mail
+
     mail.__smtp_host_url = None
     mail.__sender_email = None
 
@@ -133,28 +135,27 @@ async def authenticated_client(database: Database) -> AsyncIterator[TestClient]:
 
         signer = TimestampSigner(secret_key=str(secret))
 
-        _signed_value = signer.sign(b64encode(dumps(value).encode("utf-8"))).decode('utf-8')
+        _signed_value = signer.sign(b64encode(dumps(value).encode("utf-8"))).decode(
+            "utf-8"
+        )
         kwargs = {
-            'version': 0,
-            'name': SESSION_COOKIE_NAME,
-            'value': _signed_value,
-            'port': None,
-            'port_specified': False,
-            'domain': '',
-            'domain_specified': False,
-            'domain_initial_dot': False,
-            'path': "/",
-            'path_specified': True,
-            'secure': False,
-            'expires': (datetime.now(UTC) + timedelta(seconds=60 * 60)).timestamp(),
-            'discard': True,
-            'comment': None,
-            'comment_url': None,
-            'rest': {
-                'HttpOnly': True,
-                'SameSite': 'lax'
-            },
-            'rfc2109': False,
+            "version": 0,
+            "name": SESSION_COOKIE_NAME,
+            "value": _signed_value,
+            "port": None,
+            "port_specified": False,
+            "domain": "",
+            "domain_specified": False,
+            "domain_initial_dot": False,
+            "path": "/",
+            "path_specified": True,
+            "secure": False,
+            "expires": (datetime.now(UTC) + timedelta(seconds=60 * 60)).timestamp(),
+            "discard": True,
+            "comment": None,
+            "comment_url": None,
+            "rest": {"HttpOnly": True, "SameSite": "lax"},
+            "rfc2109": False,
         }
 
         return Cookie(**kwargs)  # type: ignore
@@ -268,7 +269,9 @@ async def mealbot_only_client(database: Database) -> AsyncIterator[TestClient]:
     Use this fixture to verify that MEALBOT-only users cannot access
     HAPPY_HOUR endpoints and vice-versa.
     """
-    for c in _authenticated_client_with_claims(database, AccountClaims.MEALBOT, "mealbot_user"):
+    for c in _authenticated_client_with_claims(
+        database, AccountClaims.MEALBOT, "mealbot_user"
+    ):
         yield c
 
 
@@ -279,7 +282,9 @@ async def happyhour_only_client(database: Database) -> AsyncIterator[TestClient]
     Use this fixture to verify that HAPPY_HOUR-only users cannot access
     MEALBOT endpoints.
     """
-    for c in _authenticated_client_with_claims(database, AccountClaims.HAPPY_HOUR, "hh_user"):
+    for c in _authenticated_client_with_claims(
+        database, AccountClaims.HAPPY_HOUR, "hh_user"
+    ):
         yield c
 
 

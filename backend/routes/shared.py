@@ -152,10 +152,10 @@ class RequireLogin:
         self.__required_claim = required_claim
 
     def __call__(
-            self,
-            request: Request,
-            db: Database,
-            _: Any = Depends(APIKeyCookie(name=SESSION_COOKIE_NAME)),
+        self,
+        request: Request,
+        db: Database,
+        _: Any = Depends(APIKeyCookie(name=SESSION_COOKIE_NAME)),
     ) -> Generator[Account, None, None]:
         """Validate the session cookie and yield the authenticated account.
 
@@ -185,7 +185,7 @@ class RequireLogin:
             if act.claims & self.__required_claim != self.__required_claim:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail="insufficient permissions"
+                    detail="insufficient permissions",
                 )
 
             yield act

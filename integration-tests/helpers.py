@@ -10,6 +10,27 @@ import httpx
 from urllib.parse import urlparse, parse_qs, urlencode
 
 
+def rewrite_oidc_url(url: str, oidc_issuer: str) -> str:
+    """Rewrite a Docker-internal OIDC URL to be reachable from the test host.
+
+    In Docker mode the backend's OIDC issuer (e.g. ``http://oidc:9000``) is
+    unreachable from the test runner on the host.  This helper rewrites the
+    authority portion so the URL points to the published port that the test
+    runner *can* reach (e.g. ``http://localhost:9000``).
+
+    In local mode the URL is already reachable, so it is returned unchanged.
+    """
+    parsed = urlparse(url)
+    issuer_parsed = urlparse(oidc_issuer)
+    if parsed.netloc != issuer_parsed.netloc:
+        return url.replace(
+            f"{parsed.scheme}://{parsed.netloc}",
+            oidc_issuer,
+            1,
+        )
+    return url
+
+
 def oidc_register_session(
     backend_url: str,
     oidc_issuer: str,
@@ -42,6 +63,9 @@ def oidc_register_session(
     authorize_url = resp.headers["location"]
 
     # 2. Follow the redirect to the mock OIDC authorize page
+    #    The backend may redirect to a Docker-internal URL (e.g. http://oidc:9000)
+    #    that is unreachable from the test host; rewrite if needed.
+    authorize_url = rewrite_oidc_url(authorize_url, oidc_issuer)
     resp = httpx.get(authorize_url, follow_redirects=False, timeout=10.0)
     assert resp.status_code == 200
 

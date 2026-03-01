@@ -1,4 +1,5 @@
 """Tests for full AuthenticationHandler flow with local OIDC server."""
+
 import json
 import pytest
 from datetime import datetime, UTC, timedelta
@@ -22,6 +23,7 @@ from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 
 class ConcreteAuthHandler(AuthenticationHandler):
     """Concrete implementation for testing."""
+
     pass
 
 
@@ -53,7 +55,9 @@ def _key_to_jwk(private_key: RSAPrivateKey) -> dict:
     return jwk_dict
 
 
-def _sign_jwt(private_key: RSAPrivateKey, payload: dict, kid: str = "test-key-1") -> str:
+def _sign_jwt(
+    private_key: RSAPrivateKey, payload: dict, kid: str = "test-key-1"
+) -> str:
     """Sign a JWT with the given private key.
 
     :param private_key: RSA private key for JWT signing.
@@ -104,7 +108,9 @@ def local_httpserver() -> Generator[HTTPServer, None, None]:
 
 
 @pytest.fixture
-def oidc_server(local_httpserver: HTTPServer, rsa_keypair: RSAPrivateKey) -> tuple[HTTPServer, dict[str, object]]:
+def oidc_server(
+    local_httpserver: HTTPServer, rsa_keypair: RSAPrivateKey
+) -> tuple[HTTPServer, dict[str, object]]:
     """Set up a local OIDC server with discovery, JWKS, and token endpoints.
 
     :param local_httpserver: Local HTTP test server.
@@ -164,7 +170,12 @@ class TestVerifyTokenExchange:
     """Tests for the full token verification flow."""
 
     @pytest.mark.asyncio
-    async def test_verify_valid_id_token(self, handler: ConcreteAuthHandler, oidc_server: tuple[HTTPServer, dict[str, object]], rsa_keypair: RSAPrivateKey) -> None:
+    async def test_verify_valid_id_token(
+        self,
+        handler: ConcreteAuthHandler,
+        oidc_server: tuple[HTTPServer, dict[str, object]],
+        rsa_keypair: RSAPrivateKey,
+    ) -> None:
         """Verify a properly signed JWT with valid claims.
 
         :param handler: Authentication handler under test.
@@ -205,7 +216,12 @@ class TestVerifyTokenExchange:
         assert result["email"] == "test@example.com"
 
     @pytest.mark.asyncio
-    async def test_verify_token_without_at_hash(self, handler: ConcreteAuthHandler, oidc_server: tuple[HTTPServer, dict[str, object]], rsa_keypair: RSAPrivateKey) -> None:
+    async def test_verify_token_without_at_hash(
+        self,
+        handler: ConcreteAuthHandler,
+        oidc_server: tuple[HTTPServer, dict[str, object]],
+        rsa_keypair: RSAPrivateKey,
+    ) -> None:
         """Token without at_hash should still be valid.
 
         :param handler: Authentication handler under test.
@@ -235,7 +251,12 @@ class TestVerifyTokenExchange:
         assert result["sub"] == "user456"
 
     @pytest.mark.asyncio
-    async def test_verify_token_at_hash_mismatch(self, handler: ConcreteAuthHandler, oidc_server: tuple[HTTPServer, dict[str, object]], rsa_keypair: RSAPrivateKey) -> None:
+    async def test_verify_token_at_hash_mismatch(
+        self,
+        handler: ConcreteAuthHandler,
+        oidc_server: tuple[HTTPServer, dict[str, object]],
+        rsa_keypair: RSAPrivateKey,
+    ) -> None:
         """Token with wrong at_hash should raise.
 
         :param handler: Authentication handler under test.
@@ -261,6 +282,7 @@ class TestVerifyTokenExchange:
 
         id_token = _sign_jwt(rsa_keypair, payload)
         from fastapi import HTTPException
+
         with pytest.raises(HTTPException):
             await handler._AuthenticationHandler__verify_token_exchange(
                 discovery, id_token, "test_access_token"
@@ -271,7 +293,12 @@ class TestExchangeCode:
     """Tests for the authorization code exchange flow."""
 
     @pytest.mark.asyncio
-    async def test_exchange_code_success(self, handler: ConcreteAuthHandler, oidc_server: tuple[HTTPServer, dict[str, object]], rsa_keypair: RSAPrivateKey) -> None:
+    async def test_exchange_code_success(
+        self,
+        handler: ConcreteAuthHandler,
+        oidc_server: tuple[HTTPServer, dict[str, object]],
+        rsa_keypair: RSAPrivateKey,
+    ) -> None:
         """Successful code exchange returns verified id_token payload.
 
         :param handler: Authentication handler under test.
@@ -308,16 +335,26 @@ class TestExchangeCode:
             "token_type": "Bearer",
         }
 
-        httpserver.expect_request("/token", method="POST").respond_with_json(token_response)
+        httpserver.expect_request("/token", method="POST").respond_with_json(
+            token_response
+        )
 
-        result_payload, result_at, result_exp = await handler._AuthenticationHandler__exchange_code("auth_code_123")
+        (
+            result_payload,
+            result_at,
+            result_exp,
+        ) = await handler._AuthenticationHandler__exchange_code("auth_code_123")
         assert result_payload["sub"] == "exchanged_user"
         assert result_payload["email"] == "exchanged@example.com"
         assert result_at == access_token
         assert result_exp == 3600
 
     @pytest.mark.asyncio
-    async def test_exchange_code_http_error(self, handler: ConcreteAuthHandler, oidc_server: tuple[HTTPServer, dict[str, object]]) -> None:
+    async def test_exchange_code_http_error(
+        self,
+        handler: ConcreteAuthHandler,
+        oidc_server: tuple[HTTPServer, dict[str, object]],
+    ) -> None:
         """Non-200 response from token endpoint should raise.
 
         :param handler: Authentication handler under test.
@@ -339,7 +376,12 @@ class TestFullAuthenticateFlow:
     """Test the full authenticate() method with a local OIDC server."""
 
     @pytest.mark.asyncio
-    async def test_authenticate_success(self, handler: ConcreteAuthHandler, oidc_server: tuple[HTTPServer, dict[str, object]], rsa_keypair: RSAPrivateKey) -> None:
+    async def test_authenticate_success(
+        self,
+        handler: ConcreteAuthHandler,
+        oidc_server: tuple[HTTPServer, dict[str, object]],
+        rsa_keypair: RSAPrivateKey,
+    ) -> None:
         """Full successful authentication flow.
 
         :param handler: Authentication handler under test.
@@ -377,14 +419,20 @@ class TestFullAuthenticateFlow:
             "expires_in": 3600,
         }
 
-        httpserver.expect_request("/token", method="POST").respond_with_json(token_response)
+        httpserver.expect_request("/token", method="POST").respond_with_json(
+            token_response
+        )
 
         # Build state matching the format from _generate_redirect_params
-        state_value = quote(urlencode({
-            "sec": "fakesecurityhash",
-            "redirect": str(handler._config_mgr.redirect_url),
-            "start": "/dashboard",
-        }))
+        state_value = quote(
+            urlencode(
+                {
+                    "sec": "fakesecurityhash",
+                    "redirect": str(handler._config_mgr.redirect_url),
+                    "start": "/dashboard",
+                }
+            )
+        )
 
         cookies = {
             "auth_nonce": nonce,
@@ -403,7 +451,12 @@ class TestFullAuthenticateFlow:
         assert identity["exp"] == 3600
 
     @pytest.mark.asyncio
-    async def test_authenticate_nonce_mismatch(self, handler: ConcreteAuthHandler, oidc_server: tuple[HTTPServer, dict[str, object]], rsa_keypair: RSAPrivateKey) -> None:
+    async def test_authenticate_nonce_mismatch(
+        self,
+        handler: ConcreteAuthHandler,
+        oidc_server: tuple[HTTPServer, dict[str, object]],
+        rsa_keypair: RSAPrivateKey,
+    ) -> None:
         """Nonce mismatch between cookie and id_token should raise.
 
         :param handler: Authentication handler under test.
@@ -438,7 +491,9 @@ class TestFullAuthenticateFlow:
             "expires_in": 3600,
         }
 
-        httpserver.expect_request("/token", method="POST").respond_with_json(token_response)
+        httpserver.expect_request("/token", method="POST").respond_with_json(
+            token_response
+        )
 
         state = "matching_state"
         cookies = {
@@ -451,6 +506,7 @@ class TestFullAuthenticateFlow:
         }
 
         from fastapi import HTTPException
+
         with pytest.raises(HTTPException):
             await handler.authenticate(cookies, query_params)
 
@@ -459,7 +515,9 @@ class TestAuthConfig:
     """Additional tests for AuthConfig to cover config caching and errors."""
 
     @pytest.mark.asyncio
-    async def test_config_caches_result(self, oidc_server: tuple[HTTPServer, dict[str, object]]) -> None:
+    async def test_config_caches_result(
+        self, oidc_server: tuple[HTTPServer, dict[str, object]]
+    ) -> None:
         """Config should be cached and not re-fetched within TTL.
 
         :param oidc_server: Local OIDC server and discovery document.
@@ -481,7 +539,9 @@ class TestAuthConfig:
         assert result1["issuer"] == base_url
 
     @pytest.mark.asyncio
-    async def test_config_error_on_bad_status(self, local_httpserver: HTTPServer) -> None:
+    async def test_config_error_on_bad_status(
+        self, local_httpserver: HTTPServer
+    ) -> None:
         """Non-200 from well-known endpoint should raise.
 
         :param local_httpserver: Local HTTP test server.
@@ -505,7 +565,11 @@ class TestLoginFlow:
     """Additional login flow tests."""
 
     @pytest.mark.asyncio
-    async def test_login_redirect_contains_nonce(self, handler: ConcreteAuthHandler, oidc_server: tuple[HTTPServer, dict[str, object]]) -> None:
+    async def test_login_redirect_contains_nonce(
+        self,
+        handler: ConcreteAuthHandler,
+        oidc_server: tuple[HTTPServer, dict[str, object]],
+    ) -> None:
         """Login redirect should include nonce in query params.
 
         :param handler: Authentication handler under test.
@@ -518,7 +582,11 @@ class TestLoginFlow:
         assert "nonce=" in location
 
     @pytest.mark.asyncio
-    async def test_login_redirect_contains_redirect_uri(self, handler: ConcreteAuthHandler, oidc_server: tuple[HTTPServer, dict[str, object]]) -> None:
+    async def test_login_redirect_contains_redirect_uri(
+        self,
+        handler: ConcreteAuthHandler,
+        oidc_server: tuple[HTTPServer, dict[str, object]],
+    ) -> None:
         """Login redirect should include the configured redirect URI.
 
         :param handler: Authentication handler under test.
@@ -531,7 +599,11 @@ class TestLoginFlow:
         assert "redirect_uri=" in location
 
     @pytest.mark.asyncio
-    async def test_generate_redirect_params(self, handler: ConcreteAuthHandler, oidc_server: tuple[HTTPServer, dict[str, object]]) -> None:
+    async def test_generate_redirect_params(
+        self,
+        handler: ConcreteAuthHandler,
+        oidc_server: tuple[HTTPServer, dict[str, object]],
+    ) -> None:
         """Verify _generate_redirect_params returns all required OIDC params.
 
         :param handler: Authentication handler under test.
@@ -539,7 +611,9 @@ class TestLoginFlow:
         :param oidc_server: Local OIDC server and discovery document.
         :type oidc_server: tuple
         """
-        params = await handler._generate_redirect_params("/start", {"openid", "profile"})
+        params = await handler._generate_redirect_params(
+            "/start", {"openid", "profile"}
+        )
         assert "response_type" in params
         assert params["response_type"] == "code"
         assert "client_id" in params

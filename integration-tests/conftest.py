@@ -106,7 +106,15 @@ def _db_path(tmp_path_factory):
 
 @pytest.fixture(scope="session")
 def oidc_server():
-    """Start the mock OIDC provider and yield its (issuer_url, port)."""
+    """Start the mock OIDC provider and yield its (issuer_url, port).
+
+    In external (Docker) mode the OIDC container is already running and
+    its port 9000 is published to the host, so we skip starting a local
+    instance and return the host-reachable URL instead.
+    """
+    if _EXTERNAL_BACKEND_URL:
+        yield "http://localhost:9000", 9000
+        return
     server, issuer_url, port = start_oidc(port=0)
     yield issuer_url, port
     stop_oidc(server)
@@ -248,10 +256,11 @@ def backend_db_path(_db_path, backend_server) -> str:
 
     Depends on *backend_server* to ensure the subprocess (and its DB)
     has been initialised before any test tries to open the file.
-    Returns ``None`` when running against external servers.
+    Skips the test when running against external servers (Docker)
+    because the SQLite file lives inside the container.
     """
     if _EXTERNAL_BACKEND_URL:
-        return None  # type: ignore[return-value]
+        pytest.skip("Direct DB access unavailable with external backend (Docker)")
     return _db_path
 
 

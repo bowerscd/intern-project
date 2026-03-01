@@ -11,7 +11,13 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
-from config import DEV_MODE, SESSION_SECRET, CORS_ALLOW_ORIGINS, SESSION_COOKIE_DOMAIN, SESSION_SAME_SITE
+from config import (
+    DEV_MODE,
+    SESSION_SECRET,
+    CORS_ALLOW_ORIGINS,
+    SESSION_COOKIE_DOMAIN,
+    SESSION_SAME_SITE,
+)
 from server import hostname
 from logging_config import setup_logging
 from ratelimit import limiter
@@ -42,7 +48,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         start_scheduler()
     except Exception:
         if DEV_MODE:
-            logger.warning("Scheduler failed to start (may be expected in test environments)", exc_info=True)
+            logger.warning(
+                "Scheduler failed to start (may be expected in test environments)",
+                exc_info=True,
+            )
         else:
             logger.critical("Scheduler failed to start in production", exc_info=True)
             raise
@@ -63,8 +72,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(
     title=f"Mealbot API — api.{hostname()}",
     description="FastAPI backend for Mealbot meal tracking and Happy Hour coordination. "
-                "v0/v1 endpoints are permanently disabled and always return 410 Gone. "
-                "v2 endpoints require Google OIDC authentication.",
+    "v0/v1 endpoints are permanently disabled and always return 410 Gone. "
+    "v2 endpoints require Google OIDC authentication.",
     version="2.0.0",
     debug=DEV_MODE,
     lifespan=lifespan,
@@ -79,6 +88,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # ── Global exception handler ──────────────────────────────────────────
 
+
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Return a sanitised 500 response for unhandled exceptions.
@@ -89,6 +99,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
     content: dict = {"detail": "Internal server error"}
     if DEV_MODE:
         import traceback
+
         content["traceback"] = traceback.format_exception(exc)
     return JSONResponse(status_code=500, content=content)
 
@@ -110,7 +121,13 @@ app.add_middleware(
     allow_origins=CORS_ALLOW_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "Cookie", "X-Request-ID", "X-CSRF-Token"],
+    allow_headers=[
+        "Content-Type",
+        "Authorization",
+        "Cookie",
+        "X-Request-ID",
+        "X-CSRF-Token",
+    ],
 )
 
 app.add_middleware(GZipMiddleware, minimum_size=500)
@@ -120,7 +137,12 @@ if DEV_MODE:
     app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=["*"])
 else:
     import os as _os
-    _trusted = [h.strip() for h in _os.environ.get("TRUSTED_PROXY_HOSTS", "127.0.0.1").split(",") if h.strip()]
+
+    _trusted = [
+        h.strip()
+        for h in _os.environ.get("TRUSTED_PROXY_HOSTS", "127.0.0.1").split(",")
+        if h.strip()
+    ]
     app.add_middleware(ProxyHeadersMiddleware, trusted_hosts=_trusted)
 
 # ── Routers ───────────────────────────────────────────────────────────

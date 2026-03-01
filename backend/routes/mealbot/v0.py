@@ -6,11 +6,16 @@ Legacy v0 API endpoints — backwards compatible with special-tribble.
     ``410 Gone``.  The code is retained for historical reference only.
     Use the v2 API instead.
 """
+
 from typing import Any
 
 from fastapi import APIRouter, Request, Response, HTTPException, status
 from routes.tags import ApiTags
-from routes.shared import Database, reject_if_legacy_disabled, mark_legacy_routes_deprecated
+from routes.shared import (
+    Database,
+    reject_if_legacy_disabled,
+    mark_legacy_routes_deprecated,
+)
 
 
 MealbotV0 = APIRouter(
@@ -59,12 +64,14 @@ async def get_data(db: Database) -> dict[str, Any]:
 
     reciepts = []
     for r in receipts:
-        reciepts.append({
-            "Payer": r.PayerId,
-            "Payee": r.RecipientId,
-            "NumMeals": r.Credits,
-            "DateTime": r.Time.isoformat() if r.Time else "",
-        })
+        reciepts.append(
+            {
+                "Payer": r.PayerId,
+                "Payee": r.RecipientId,
+                "NumMeals": r.Credits,
+                "DateTime": r.Time.isoformat() if r.Time else "",
+            }
+        )
 
     return {"Users": users, "Reciepts": reciepts}
 
@@ -102,7 +109,10 @@ async def edit_meal(Payer: str, Recipient: str, Payment: int, db: Database) -> R
             actual_credits = abs(Payment)
 
         if actual_payer == actual_recipient:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Payer and recipient cannot be the same person")
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Payer and recipient cannot be the same person",
+            )
 
         try:
             create_receipt(db, actual_payer, actual_recipient, actual_credits)
@@ -134,8 +144,11 @@ async def whoami(UserID: int, db: Database) -> Response:
         account = get_account_by_id(db, UserID)
 
         if account is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            )
 
         return Response(content=account.username, media_type="text/plain")
+
 
 mark_legacy_routes_deprecated(MealbotV0)

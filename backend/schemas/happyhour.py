@@ -1,6 +1,7 @@
 """
 Pydantic schemas for Happy Hour API request/response models.
 """
+
 from datetime import datetime, UTC
 from typing import Any, Optional
 
@@ -14,8 +15,12 @@ class LocationCreate(BaseModel):
     """
 
     name: str = Field(..., description="Name of the venue", max_length=200)
-    url: Optional[str] = Field(None, description="Website URL", pattern=r"^https?://", max_length=2048)
-    address_raw: str = Field(..., description="Full address as a single string", max_length=500)
+    url: Optional[str] = Field(
+        None, description="Website URL", pattern=r"^https?://", max_length=2048
+    )
+    address_raw: str = Field(
+        ..., description="Full address as a single string", max_length=500
+    )
     number: int = Field(..., description="Street number")
     street_name: str = Field(..., description="Street name", max_length=200)
     city: str = Field(..., description="City", max_length=100)
@@ -32,15 +37,23 @@ class LocationUpdate(BaseModel):
     """
 
     name: Optional[str] = Field(None, description="Name of the venue", max_length=200)
-    url: Optional[str] = Field(None, description="Website URL", pattern=r"^https?://", max_length=2048)
-    address_raw: Optional[str] = Field(None, description="Full address as a single string", max_length=500)
+    url: Optional[str] = Field(
+        None, description="Website URL", pattern=r"^https?://", max_length=2048
+    )
+    address_raw: Optional[str] = Field(
+        None, description="Full address as a single string", max_length=500
+    )
     number: Optional[int] = Field(None, description="Street number")
     street_name: Optional[str] = Field(None, description="Street name", max_length=200)
     city: Optional[str] = Field(None, description="City", max_length=100)
     state: Optional[str] = Field(None, description="State", max_length=50)
     zip_code: Optional[str] = Field(None, description="ZIP code", max_length=20)
-    latitude: Optional[float] = Field(None, description="Latitude coordinate", ge=-90, le=90)
-    longitude: Optional[float] = Field(None, description="Longitude coordinate", ge=-180, le=180)
+    latitude: Optional[float] = Field(
+        None, description="Latitude coordinate", ge=-90, le=90
+    )
+    longitude: Optional[float] = Field(
+        None, description="Longitude coordinate", ge=-180, le=180
+    )
     closed: Optional[bool] = Field(None, description="Whether the location is closed")
     illegal: Optional[bool] = Field(None, description="Whether the location is illegal")
 
@@ -63,7 +76,7 @@ class LocationResponse(BaseModel):
     longitude: float
 
     @staticmethod
-    def from_model(loc: Any) -> 'LocationResponse':
+    def from_model(loc: Any) -> "LocationResponse":
         """Build a :class:`LocationResponse` from a database location entity.
 
         :param loc: A :class:`Location` ORM instance.
@@ -91,7 +104,9 @@ class EventCreate(BaseModel):
     """Request schema for scheduling a new happy hour event."""
 
     location_id: int = Field(..., description="ID of the location for the event")
-    description: Optional[str] = Field(None, description="Optional description of the event", max_length=1000)
+    description: Optional[str] = Field(
+        None, description="Optional description of the event", max_length=1000
+    )
     when: datetime = Field(..., description="Date/time of the event")
 
     @field_validator("when")
@@ -125,8 +140,12 @@ class RotationMemberResponse(BaseModel):
 
     position: int = Field(..., description="Position in the rotation (0-based)")
     username: str = Field(..., description="Username of the rotation member")
-    status: str = Field(..., description="Assignment status (scheduled/pending/chosen/missed)")
-    deadline: Optional[datetime] = Field(None, description="Deadline for picking, if activated")
+    status: str = Field(
+        ..., description="Assignment status (scheduled/pending/chosen/missed)"
+    )
+    deadline: Optional[datetime] = Field(
+        None, description="Deadline for picking, if activated"
+    )
 
 
 class RotationScheduleResponse(BaseModel):

@@ -8,10 +8,7 @@ These tests instead validate sequential request independence — ensuring
 that one request's state doesn't leak into the next.
 """
 
-import pytest
 from starlette.testclient import TestClient
-
-from db import Database
 
 
 class TestSequentialRequestIsolation:
@@ -31,16 +28,20 @@ class TestSequentialRequestIsolation:
         assert resp1.status_code == resp2.status_code == 200
         assert resp1.json() == resp2.json()
 
-    def test_different_endpoints_independent(self, authenticated_client: TestClient) -> None:
+    def test_different_endpoints_independent(
+        self, authenticated_client: TestClient
+    ) -> None:
         """Calling different endpoints doesn't interfere with each other."""
         p = authenticated_client.get("/api/v2/account/profile")
         e = authenticated_client.get("/api/v2/happyhour/events")
-        l = authenticated_client.get("/api/v2/happyhour/locations")
+        loc = authenticated_client.get("/api/v2/happyhour/locations")
         assert p.status_code == 200
         assert e.status_code == 200
-        assert l.status_code == 200
+        assert loc.status_code == 200
 
-    def test_error_does_not_poison_next_request(self, authenticated_client: TestClient) -> None:
+    def test_error_does_not_poison_next_request(
+        self, authenticated_client: TestClient
+    ) -> None:
         """A failed request should not affect the next successful one."""
         # Trigger a 422 with bad data
         authenticated_client.post(

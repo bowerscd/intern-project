@@ -1,5 +1,5 @@
 """Tests for Event model methods: repr, text(), email(), and description handling."""
-import pytest
+
 from datetime import datetime, UTC, timedelta
 
 from models.enums import AccountClaims
@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 class TestEventRepr:
     """Verify :meth:`Event.__repr__` output."""
+
     def test_event_repr(self, db_session: Session) -> None:
         """Verify the repr string includes the event's location name.
 
@@ -20,13 +21,19 @@ class TestEventRepr:
         :type db_session: Session
         """
         loc = _make_location(db_session, name="Repr Bar")
-        act = create_account("repruser", "repr@test.com", ExternalAuthProvider.test, "rpu1",
-                             claims=AccountClaims.HAPPY_HOUR)
+        act = create_account(
+            "repruser",
+            "repr@test.com",
+            ExternalAuthProvider.test,
+            "rpu1",
+            claims=AccountClaims.HAPPY_HOUR,
+        )
         db_session.add(act)
         db_session.commit()
 
         event = create_event(
-            db_session, loc.id,
+            db_session,
+            loc.id,
             datetime.now(UTC) + timedelta(days=2),
             tyrant_id=act.id,
             description="Repr test",
@@ -37,6 +44,7 @@ class TestEventRepr:
 
 class TestEventText:
     """Verify event plain-text rendering."""
+
     def test_text_includes_location_name(self, db_session: Session) -> None:
         """Verify the text body contains the location name.
 
@@ -44,13 +52,19 @@ class TestEventText:
         :type db_session: Session
         """
         loc = _make_location(db_session, name="Text Bar")
-        act = create_account("textuser", "text@test.com", ExternalAuthProvider.test, "tu1",
-                             claims=AccountClaims.HAPPY_HOUR)
+        act = create_account(
+            "textuser",
+            "text@test.com",
+            ExternalAuthProvider.test,
+            "tu1",
+            claims=AccountClaims.HAPPY_HOUR,
+        )
         db_session.add(act)
         db_session.commit()
 
         event = create_event(
-            db_session, loc.id,
+            db_session,
+            loc.id,
             datetime.now(UTC) + timedelta(days=2),
             tyrant_id=act.id,
         )
@@ -65,13 +79,19 @@ class TestEventText:
         :type db_session: Session
         """
         loc = _make_location(db_session, name="URL Bar", URL="https://urlbar.com")
-        act = create_account("urltextuser", "urltext@test.com", ExternalAuthProvider.test, "utu1",
-                             claims=AccountClaims.HAPPY_HOUR)
+        act = create_account(
+            "urltextuser",
+            "urltext@test.com",
+            ExternalAuthProvider.test,
+            "utu1",
+            claims=AccountClaims.HAPPY_HOUR,
+        )
         db_session.add(act)
         db_session.commit()
 
         event = create_event(
-            db_session, loc.id,
+            db_session,
+            loc.id,
             datetime.now(UTC) + timedelta(days=2),
             tyrant_id=act.id,
         )
@@ -86,13 +106,19 @@ class TestEventText:
         :type db_session: Session
         """
         loc = _make_location(db_session, name="NoURL Bar", URL=None)
-        act = create_account("nourltextuser", "nourltext@test.com", ExternalAuthProvider.test, "nutu1",
-                             claims=AccountClaims.HAPPY_HOUR)
+        act = create_account(
+            "nourltextuser",
+            "nourltext@test.com",
+            ExternalAuthProvider.test,
+            "nutu1",
+            claims=AccountClaims.HAPPY_HOUR,
+        )
         db_session.add(act)
         db_session.commit()
 
         event = create_event(
-            db_session, loc.id,
+            db_session,
+            loc.id,
             datetime.now(UTC) + timedelta(days=2),
             tyrant_id=act.id,
         )
@@ -104,6 +130,7 @@ class TestEventText:
 
 class TestEventEmail:
     """Verify event MIME-email rendering."""
+
     def test_email_has_subject(self, db_session: Session) -> None:
         """Verify the email includes a subject header.
 
@@ -111,13 +138,19 @@ class TestEventEmail:
         :type db_session: Session
         """
         loc = _make_location(db_session, name="Email Bar")
-        act = create_account("emailevtuser", "emailevt@test.com", ExternalAuthProvider.test, "eeu1",
-                             claims=AccountClaims.HAPPY_HOUR)
+        act = create_account(
+            "emailevtuser",
+            "emailevt@test.com",
+            ExternalAuthProvider.test,
+            "eeu1",
+            claims=AccountClaims.HAPPY_HOUR,
+        )
         db_session.add(act)
         db_session.commit()
 
         event = create_event(
-            db_session, loc.id,
+            db_session,
+            loc.id,
             datetime.now(UTC) + timedelta(days=2),
             tyrant_id=act.id,
         )
@@ -132,13 +165,19 @@ class TestEventEmail:
         :type db_session: Session
         """
         loc = _make_location(db_session, name="NoURL Email Bar", URL=None)
-        act = create_account("nourlemailuser", "nourlemail@test.com", ExternalAuthProvider.test, "nueu1",
-                             claims=AccountClaims.HAPPY_HOUR)
+        act = create_account(
+            "nourlemailuser",
+            "nourlemail@test.com",
+            ExternalAuthProvider.test,
+            "nueu1",
+            claims=AccountClaims.HAPPY_HOUR,
+        )
         db_session.add(act)
         db_session.commit()
 
         event = create_event(
-            db_session, loc.id,
+            db_session,
+            loc.id,
             datetime.now(UTC) + timedelta(days=2),
             tyrant_id=act.id,
         )
@@ -147,7 +186,7 @@ class TestEventEmail:
         assert "Happy Hour" in msg["Subject"]
         for part in msg.walk():
             ct = part.get_content_type()
-            if ct == 'text/html':
+            if ct == "text/html":
                 html = part.get_payload(decode=True).decode()
                 assert 'href="None"' not in html
                 assert "NoURL Email Bar" in html
@@ -172,8 +211,11 @@ class TestEventDescriptionBypassesHtmlTemplate:
         db_session.commit()
 
         event = create_event(
-            db_session, loc.id, when=datetime.now(UTC),
-            tyrant_id=a.id, description="Auto-selected: Template Bar",
+            db_session,
+            loc.id,
+            when=datetime.now(UTC),
+            tyrant_id=a.id,
+            description="Auto-selected: Template Bar",
         )
 
         email_msg = event.email()
@@ -199,8 +241,11 @@ class TestEventDescriptionBypassesHtmlTemplate:
         db_session.commit()
 
         event = create_event(
-            db_session, loc.id, when=datetime.now(UTC),
-            tyrant_id=a.id, description=None,
+            db_session,
+            loc.id,
+            when=datetime.now(UTC),
+            tyrant_id=a.id,
+            description=None,
         )
 
         email_msg = event.email()
@@ -221,13 +266,15 @@ def _extract_html_from_email(msg: Message) -> str | None:
     :rtype: str | None
     """
     for part in msg.walk():
-        if part.get_content_type() == 'text/html':
+        if part.get_content_type() == "text/html":
             data = part.get_payload(decode=True)
             return data.decode() if data else None
     return None
 
 
-def _make_location(s: Session, name: str = "Event Test Bar", **overrides: Any) -> Location:
+def _make_location(
+    s: Session, name: str = "Event Test Bar", **overrides: Any
+) -> Location:
     """Create a test happy-hour location.
 
     :param s: Active database session.

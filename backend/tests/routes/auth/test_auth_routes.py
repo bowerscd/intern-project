@@ -1,4 +1,5 @@
 """Tests for auth route endpoints (login and callback)."""
+
 import json
 from hashlib import sha256
 from base64 import urlsafe_b64encode
@@ -18,9 +19,9 @@ from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 
 def _make_rsa_keypair() -> RSAPrivateKey:
     """Generate an RSA private key for JWT signing.
-    
-        :returns: An RSA private key.
-        :rtype: rsa.RSAPrivateKey
+
+    :returns: An RSA private key.
+    :rtype: rsa.RSAPrivateKey
     """
     return rsa.generate_private_key(
         public_exponent=65537, key_size=2048, backend=default_backend()
@@ -36,6 +37,7 @@ def _key_to_jwk(private_key: RSAPrivateKey) -> dict:
     :rtype: dict
     """
     from jwt.algorithms import RSAAlgorithm
+
     jwk_dict = json.loads(RSAAlgorithm.to_jwk(private_key.public_key()))
     jwk_dict["kid"] = "test-key-1"
     jwk_dict["use"] = "sig"
@@ -53,7 +55,9 @@ def _sign_jwt(private_key: RSAPrivateKey, payload: dict) -> str:
     :returns: Encoded JWT string.
     :rtype: str
     """
-    return jwt_encode(payload, private_key, algorithm="RS256", headers={"kid": "test-key-1"})
+    return jwt_encode(
+        payload, private_key, algorithm="RS256", headers={"kid": "test-key-1"}
+    )
 
 
 def _compute_at_hash(access_token: str) -> str:
@@ -84,11 +88,15 @@ class TestLoginRoute:
         from starlette.responses import RedirectResponse
         from http import HTTPStatus
 
-        mock_response = RedirectResponse("https://accounts.localhost/auth", HTTPStatus.FOUND)
+        mock_response = RedirectResponse(
+            "https://accounts.localhost/auth", HTTPStatus.FOUND
+        )
 
         original = AuthMgrs.get("test")
         if original:
-            with patch.object(original, 'login', new_callable=AsyncMock, return_value=mock_response):
+            with patch.object(
+                original, "login", new_callable=AsyncMock, return_value=mock_response
+            ):
                 response = client.get(
                     "/api/v2/auth/login/test",
                     follow_redirects=False,
@@ -111,7 +119,9 @@ class TestLoginRoute:
 class TestCallbackRoute:
     """Test GET /api/v2/auth/callback/{provider}."""
 
-    def test_callback_creates_pending_registration(self, client: TestClient, database: Database) -> None:
+    def test_callback_creates_pending_registration(
+        self, client: TestClient, database: Database
+    ) -> None:
         """Successful callback with mode=register should store pending_registration in session.
 
         :param client: Unauthenticated HTTP test client.
@@ -138,11 +148,15 @@ class TestCallbackRoute:
         original = AuthMgrs.get("test")
         if original:
             with patch.object(
-                original, 'authenticate',
+                original,
+                "authenticate",
                 new_callable=AsyncMock,
                 return_value=(mock_redirect, mock_identity),
             ):
-                client.cookies = {"auth_state": "test_state", "auth_nonce": "test_nonce"}
+                client.cookies = {
+                    "auth_state": "test_state",
+                    "auth_nonce": "test_nonce",
+                }
                 response = client.get(
                     "/api/v2/auth/callback/test",
                     params={"code": "auth_code_123", "state": "test_state"},
@@ -151,7 +165,9 @@ class TestCallbackRoute:
                 # Should redirect without creating an account
                 assert response.status_code == 302
 
-    def test_callback_rejects_unknown_on_login(self, client: TestClient, database: Database) -> None:
+    def test_callback_rejects_unknown_on_login(
+        self, client: TestClient, database: Database
+    ) -> None:
         """Callback with mode=login (default) should reject unknown users with 403.
 
         :param client: Unauthenticated HTTP test client.
@@ -178,11 +194,15 @@ class TestCallbackRoute:
         original = AuthMgrs.get("test")
         if original:
             with patch.object(
-                original, 'authenticate',
+                original,
+                "authenticate",
                 new_callable=AsyncMock,
                 return_value=(mock_redirect, mock_identity),
             ):
-                client.cookies = {"auth_state": "test_state", "auth_nonce": "test_nonce"}
+                client.cookies = {
+                    "auth_state": "test_state",
+                    "auth_nonce": "test_nonce",
+                }
                 response = client.get(
                     "/api/v2/auth/callback/test",
                     params={"code": "auth_code_123", "state": "test_state"},
@@ -190,7 +210,9 @@ class TestCallbackRoute:
                 )
                 assert response.status_code == 403
 
-    def test_callback_existing_account(self, client: TestClient, database: Database) -> None:
+    def test_callback_existing_account(
+        self, client: TestClient, database: Database
+    ) -> None:
         """Callback for existing user should find account, not create new.
 
         :param client: Unauthenticated HTTP test client.
@@ -206,8 +228,10 @@ class TestCallbackRoute:
         # Pre-create the account
         with database.session() as s:
             act = create_account(
-                "existing", "existing@example.com",
-                ExternalAuthProvider.test, "existing_ext_id",
+                "existing",
+                "existing@example.com",
+                ExternalAuthProvider.test,
+                "existing_ext_id",
             )
             s.add(act)
             s.commit()
@@ -227,7 +251,8 @@ class TestCallbackRoute:
         original = AuthMgrs.get("test")
         if original:
             with patch.object(
-                original, 'authenticate',
+                original,
+                "authenticate",
                 new_callable=AsyncMock,
                 return_value=(mock_redirect, mock_identity),
             ):
@@ -266,7 +291,9 @@ class TestCallbackRoute:
         )
         assert response.status_code == 422
 
-    def test_callback_register_existing_account_returns_409(self, client: TestClient, database: Database) -> None:
+    def test_callback_register_existing_account_returns_409(
+        self, client: TestClient, database: Database
+    ) -> None:
         """Registration callback for already-existing user should return 409.
 
         :param client: Unauthenticated HTTP test client.
@@ -282,8 +309,10 @@ class TestCallbackRoute:
         # Pre-create the account
         with database.session() as s:
             act = create_account(
-                "dupeuser", "dupe@example.com",
-                ExternalAuthProvider.test, "dupe_ext_id",
+                "dupeuser",
+                "dupe@example.com",
+                ExternalAuthProvider.test,
+                "dupe_ext_id",
             )
             s.add(act)
             s.commit()
@@ -303,7 +332,8 @@ class TestCallbackRoute:
         original = AuthMgrs.get("test")
         if original:
             with patch.object(
-                original, 'authenticate',
+                original,
+                "authenticate",
                 new_callable=AsyncMock,
                 return_value=(mock_redirect, mock_identity),
             ):
@@ -329,11 +359,15 @@ class TestRegisterRoute:
         from starlette.responses import RedirectResponse
         from http import HTTPStatus
 
-        mock_response = RedirectResponse("https://accounts.localhost/auth", HTTPStatus.FOUND)
+        mock_response = RedirectResponse(
+            "https://accounts.localhost/auth", HTTPStatus.FOUND
+        )
 
         original = AuthMgrs.get("test")
         if original:
-            with patch.object(original, 'login', new_callable=AsyncMock, return_value=mock_response) as mock_login:
+            with patch.object(
+                original, "login", new_callable=AsyncMock, return_value=mock_response
+            ) as mock_login:
                 response = client.get(
                     "/api/v2/auth/register/test",
                     follow_redirects=False,
@@ -342,7 +376,9 @@ class TestRegisterRoute:
                 # Verify mode="register" was passed
                 mock_login.assert_called_once()
                 call_kwargs = mock_login.call_args
-                assert call_kwargs[1].get("mode") == "register" or (len(call_kwargs[0]) >= 3 and call_kwargs[0][2] == "register")
+                assert call_kwargs[1].get("mode") == "register" or (
+                    len(call_kwargs[0]) >= 3 and call_kwargs[0][2] == "register"
+                )
 
     def test_register_invalid_provider(self, client: TestClient) -> None:
         """Invalid provider should return 422.
@@ -380,17 +416,29 @@ class TestCompleteRegistration:
         signed = signer.sign(b64encode(dumps(payload).encode("utf-8"))).decode("utf-8")
 
         cookie = Cookie(
-            version=0, name=SESSION_COOKIE_NAME, value=signed,
-            port=None, port_specified=False,
-            domain="", domain_specified=False, domain_initial_dot=False,
-            path="/", path_specified=True, secure=False,
+            version=0,
+            name=SESSION_COOKIE_NAME,
+            value=signed,
+            port=None,
+            port_specified=False,
+            domain="",
+            domain_specified=False,
+            domain_initial_dot=False,
+            path="/",
+            path_specified=True,
+            secure=False,
             expires=(datetime.now(UTC) + timedelta(seconds=3600)).timestamp(),
-            discard=True, comment=None, comment_url=None,
-            rest={"HttpOnly": True, "SameSite": "lax"}, rfc2109=False,
+            discard=True,
+            comment=None,
+            comment_url=None,
+            rest={"HttpOnly": True, "SameSite": "lax"},
+            rfc2109=False,
         )
         client.cookies.jar.set_cookie(cookie)
 
-    def test_complete_registration_success(self, client: TestClient, database: Database) -> None:
+    def test_complete_registration_success(
+        self, client: TestClient, database: Database
+    ) -> None:
         """A user with a pending registration can pick a username and create an account.
 
         :param client: Unauthenticated HTTP test client.
@@ -398,20 +446,27 @@ class TestCompleteRegistration:
         :param database: Started database instance.
         :type database: Database
         """
-        self._set_pending_session(client, {
-            "provider": "test",
-            "sub": "new_sub_1",
-            "name": "Test User",
-            "email": "test@example.com",
-        })
+        self._set_pending_session(
+            client,
+            {
+                "provider": "test",
+                "sub": "new_sub_1",
+                "name": "Test User",
+                "email": "test@example.com",
+            },
+        )
 
-        r = client.post("/api/v2/auth/complete-registration", json={"username": "myuser"})
+        r = client.post(
+            "/api/v2/auth/complete-registration", json={"username": "myuser"}
+        )
         assert r.status_code == 201
         data = r.json()
         assert data["username"] == "myuser"
         assert "id" in data
 
-    def test_complete_registration_duplicate_username(self, client: TestClient, database: Database) -> None:
+    def test_complete_registration_duplicate_username(
+        self, client: TestClient, database: Database
+    ) -> None:
         """Picking a username that already exists should return 409.
 
         :param client: Unauthenticated HTTP test client.
@@ -422,21 +477,30 @@ class TestCompleteRegistration:
         from db.functions import create_account
 
         with database.session() as s:
-            act = create_account("taken", None, ExternalAuthProvider.test, "existing_sub")
+            act = create_account(
+                "taken", None, ExternalAuthProvider.test, "existing_sub"
+            )
             s.add(act)
             s.commit()
 
-        self._set_pending_session(client, {
-            "provider": "test",
-            "sub": "new_sub_2",
-            "name": "Another User",
-            "email": None,
-        })
+        self._set_pending_session(
+            client,
+            {
+                "provider": "test",
+                "sub": "new_sub_2",
+                "name": "Another User",
+                "email": None,
+            },
+        )
 
-        r = client.post("/api/v2/auth/complete-registration", json={"username": "taken"})
+        r = client.post(
+            "/api/v2/auth/complete-registration", json={"username": "taken"}
+        )
         assert r.status_code == 409
 
-    def test_complete_registration_no_pending(self, client: TestClient, database: Database) -> None:
+    def test_complete_registration_no_pending(
+        self, client: TestClient, database: Database
+    ) -> None:
         """Without a pending registration session, should return 401.
 
         :param client: Unauthenticated HTTP test client.
@@ -444,10 +508,14 @@ class TestCompleteRegistration:
         :param database: Started database instance.
         :type database: Database
         """
-        r = client.post("/api/v2/auth/complete-registration", json={"username": "someone"})
+        r = client.post(
+            "/api/v2/auth/complete-registration", json={"username": "someone"}
+        )
         assert r.status_code == 401
 
-    def test_complete_registration_invalid_username(self, client: TestClient, database: Database) -> None:
+    def test_complete_registration_invalid_username(
+        self, client: TestClient, database: Database
+    ) -> None:
         """An invalid username should be rejected by the schema validator.
 
         :param client: Unauthenticated HTTP test client.
@@ -455,20 +523,27 @@ class TestCompleteRegistration:
         :param database: Started database instance.
         :type database: Database
         """
-        self._set_pending_session(client, {
-            "provider": "test",
-            "sub": "new_sub_3",
-            "name": "Bad Name",
-            "email": None,
-        })
+        self._set_pending_session(
+            client,
+            {
+                "provider": "test",
+                "sub": "new_sub_3",
+                "name": "Bad Name",
+                "email": None,
+            },
+        )
 
         r = client.post("/api/v2/auth/complete-registration", json={"username": ""})
         assert r.status_code == 422
 
-        r = client.post("/api/v2/auth/complete-registration", json={"username": "a" * 37})
+        r = client.post(
+            "/api/v2/auth/complete-registration", json={"username": "a" * 37}
+        )
         assert r.status_code == 422
 
-        r = client.post("/api/v2/auth/complete-registration", json={"username": "has spaces"})
+        r = client.post(
+            "/api/v2/auth/complete-registration", json={"username": "has spaces"}
+        )
         assert r.status_code == 422
 
 
@@ -480,7 +555,9 @@ class TestClaimAccount:
         """Inject a ``pending_registration`` value into the client session."""
         TestCompleteRegistration._set_pending_session(client, pending)
 
-    def test_claim_account_success(self, client: TestClient, database: Database) -> None:
+    def test_claim_account_success(
+        self, client: TestClient, database: Database
+    ) -> None:
         """A user can submit a claim for an existing legacy account.
 
         :param client: Unauthenticated HTTP test client.
@@ -491,16 +568,21 @@ class TestClaimAccount:
         from db.functions import create_account
 
         with database.session() as s:
-            act = create_account("legacyuser", None, ExternalAuthProvider.test, "legacy_ext")
+            act = create_account(
+                "legacyuser", None, ExternalAuthProvider.test, "legacy_ext"
+            )
             s.add(act)
             s.commit()
 
-        self._set_pending_session(client, {
-            "provider": "test",
-            "sub": "claimer_sub_1",
-            "name": "Claimer",
-            "email": "claimer@example.com",
-        })
+        self._set_pending_session(
+            client,
+            {
+                "provider": "test",
+                "sub": "claimer_sub_1",
+                "name": "Claimer",
+                "email": "claimer@example.com",
+            },
+        )
 
         r = client.post("/api/v2/auth/claim-account", json={"username": "legacyuser"})
         assert r.status_code == 202
@@ -508,7 +590,9 @@ class TestClaimAccount:
         assert data["status"] == "pending"
         assert "claim_id" in data
 
-    def test_claim_nonexistent_account(self, client: TestClient, database: Database) -> None:
+    def test_claim_nonexistent_account(
+        self, client: TestClient, database: Database
+    ) -> None:
         """Claiming a non-existent username should return 404.
 
         :param client: Unauthenticated HTTP test client.
@@ -516,12 +600,15 @@ class TestClaimAccount:
         :param database: Started database instance.
         :type database: Database
         """
-        self._set_pending_session(client, {
-            "provider": "test",
-            "sub": "claimer_sub_2",
-            "name": "Nobody",
-            "email": None,
-        })
+        self._set_pending_session(
+            client,
+            {
+                "provider": "test",
+                "sub": "claimer_sub_2",
+                "name": "Nobody",
+                "email": None,
+            },
+        )
 
         r = client.post("/api/v2/auth/claim-account", json={"username": "doesnotexist"})
         assert r.status_code == 404
@@ -537,7 +624,9 @@ class TestClaimAccount:
         r = client.post("/api/v2/auth/claim-account", json={"username": "someone"})
         assert r.status_code == 401
 
-    def test_duplicate_claim_rejected(self, client: TestClient, database: Database) -> None:
+    def test_duplicate_claim_rejected(
+        self, client: TestClient, database: Database
+    ) -> None:
         """Submitting a duplicate pending claim should return 409.
 
         :param client: Unauthenticated HTTP test client.
@@ -548,7 +637,9 @@ class TestClaimAccount:
         from db.functions import create_account
 
         with database.session() as s:
-            act = create_account("dupetarget", None, ExternalAuthProvider.test, "dupe_target_ext")
+            act = create_account(
+                "dupetarget", None, ExternalAuthProvider.test, "dupe_target_ext"
+            )
             s.add(act)
             s.commit()
 

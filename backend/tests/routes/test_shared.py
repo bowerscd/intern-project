@@ -1,4 +1,5 @@
 """Tests for RequireLogin middleware: yield behavior, status codes, dependencies."""
+
 from starlette.testclient import TestClient
 
 
@@ -8,7 +9,9 @@ class TestRequireLoginYield:
     This tests that the generator pattern works correctly.
     """
 
-    def test_authenticated_profile_endpoint_works(self, authenticated_client: TestClient) -> None:
+    def test_authenticated_profile_endpoint_works(
+        self, authenticated_client: TestClient
+    ) -> None:
         """
         If the generator dependency causes DetachedInstanceError,
         this request would fail.
@@ -29,7 +32,9 @@ class TestStatusCodeSemantics:
     - Has session but wrong claims -> 403 (Forbidden)
     """
 
-    def test_unauthenticated_returns_401_from_apikeycookie(self, client: TestClient) -> None:
+    def test_unauthenticated_returns_401_from_apikeycookie(
+        self, client: TestClient
+    ) -> None:
         """A request with no session cookie gets 401 from APIKeyCookie.
 
         :param client: Unauthenticated HTTP test client.

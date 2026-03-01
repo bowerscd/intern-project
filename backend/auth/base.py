@@ -10,10 +10,8 @@ from .config import AuthConfig
 
 
 def _make_auth_cookie(
-        response: RedirectResponse,
-        key: str,
-        val: str,
-        duration_in_seconds: int = 60 * 5) -> None:
+    response: RedirectResponse, key: str, val: str, duration_in_seconds: int = 60 * 5
+) -> None:
     """Create a secure cookie with correct RFC attributes on a redirect response.
 
     :param response: The redirect response to attach the cookie to.
@@ -23,12 +21,15 @@ def _make_auth_cookie(
     """
     from config import DEV_MODE
 
-    response.set_cookie(key, val,
-                        max_age=duration_in_seconds,
-                        path="/",
-                        secure=not DEV_MODE,
-                        httponly=True,
-                        samesite='lax')
+    response.set_cookie(
+        key,
+        val,
+        max_age=duration_in_seconds,
+        path="/",
+        secure=not DEV_MODE,
+        httponly=True,
+        samesite="lax",
+    )
 
 
 class AuthenticationHandler:
@@ -51,7 +52,9 @@ class AuthenticationHandler:
         self._state_cookie_key = "auth_state"
         self._nonce_cookie_key = "auth_nonce"
 
-    async def __verify_token_exchange(self, config: Dict[str, str], id_token: str, access_token: str) -> Dict[str, str]:
+    async def __verify_token_exchange(
+        self, config: Dict[str, str], id_token: str, access_token: str
+    ) -> Dict[str, str]:
         """Verify an ID token obtained from an authorisation-code exchange.
 
         Validates the token's signature, audience, expiry, and ``at_hash``
@@ -74,16 +77,27 @@ class AuthenticationHandler:
             "verify_aud": True,
             "verify_exp": True,
             "verify_iat": True,
-            "verify_nbf": True
+            "verify_nbf": True,
         }
 
         jwk_client = PyJWKClient(config["jwks_uri"])
 
         key = jwk_client.get_signing_key_from_jwt(id_token)
         # Only allow well-known signing algorithms
-        _ALLOWED_SIGNING_ALGOS = {"RS256", "RS384", "RS512", "ES256", "ES384", "ES512", "PS256", "PS384", "PS512"}
+        _ALLOWED_SIGNING_ALGOS = {
+            "RS256",
+            "RS384",
+            "RS512",
+            "ES256",
+            "ES384",
+            "ES512",
+            "PS256",
+            "PS384",
+            "PS512",
+        }
         sign_algos = [
-            a for a in config.get("id_token_signing_alg_values_supported", [])
+            a
+            for a in config.get("id_token_signing_alg_values_supported", [])
             if a in _ALLOWED_SIGNING_ALGOS
         ]
         if not sign_algos:
@@ -93,13 +107,14 @@ class AuthenticationHandler:
             )
 
         data: Any = decode_complete(
-                    id_token,
-                    key,
-                    sign_algos,
-                    audience=self._config_mgr.client_id,
-                    issuer=config["issuer"],
-                    options=VERIFY_OPTIONS,
-                    leeway=timedelta(seconds=5))
+            id_token,
+            key,
+            sign_algos,
+            audience=self._config_mgr.client_id,
+            issuer=config["issuer"],
+            options=VERIFY_OPTIONS,
+            leeway=timedelta(seconds=5),
+        )
 
         payload: Dict[str, str] = data["payload"]
         header: Dict[str, str] = data["header"]
@@ -141,7 +156,7 @@ class AuthenticationHandler:
             "client_id": self._config_mgr.client_id,
             "client_secret": self._config_mgr.secret,
             "redirect_uri": f"{self._config_mgr.redirect_url}",
-            "grant_type": "authorization_code"
+            "grant_type": "authorization_code",
         }
 
         async with ClientSession(timeout=ClientTimeout(total=10)) as s:
@@ -155,14 +170,14 @@ class AuthenticationHandler:
         access_token = response["access_token"]
         expiry = response["expires_in"]
 
-        id_token_payload = await self.__verify_token_exchange(config, id_token, access_token)
+        id_token_payload = await self.__verify_token_exchange(
+            config, id_token, access_token
+        )
 
         return id_token_payload, access_token, expiry
 
     async def authenticate(
-            self,
-            cookies: Dict[str, str],
-            query_params: Dict[str, str]
+        self, cookies: Dict[str, str], query_params: Dict[str, str]
     ) -> Tuple[RedirectResponse, Dict[str, Dict[str, str] | str | int]]:
         """Complete an OIDC callback, returning the redirect and token payload.
 
@@ -202,6 +217,7 @@ class AuthenticationHandler:
             )
 
         import hmac
+
         if not hmac.compare_digest(r_state, c_state):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -220,7 +236,8 @@ class AuthenticationHandler:
         id_token, access_token, expiry = await self.__exchange_code(exchange_code)
 
         import hmac
-        id_token_nonce = id_token.get('nonce')
+
+        id_token_nonce = id_token.get("nonce")
         if id_token_nonce is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -246,9 +263,14 @@ class AuthenticationHandler:
         response.delete_cookie(self._nonce_cookie_key)
         response.delete_cookie(self._state_cookie_key)
 
-        return (response, {"id": id_token, "at": access_token, "exp": expiry, "mode": mode})
+        return (
+            response,
+            {"id": id_token, "at": access_token, "exp": expiry, "mode": mode},
+        )
 
-    async def login(self, start: str, scopes: Set[str] = set(), mode: str = "login") -> RedirectResponse:
+    async def login(
+        self, start: str, scopes: Set[str] = set(), mode: str = "login"
+    ) -> RedirectResponse:
         """Start a login or registration workflow for the user.
 
         :param start: The URL to redirect to after authentication succeeds.
@@ -259,7 +281,9 @@ class AuthenticationHandler:
         """
         return await self._redirect(start, scopes, mode)
 
-    async def _generate_redirect_params(self, start: str, scopes: Set[str] = set(), mode: str = "login") -> Dict[str, str]:
+    async def _generate_redirect_params(
+        self, start: str, scopes: Set[str] = set(), mode: str = "login"
+    ) -> Dict[str, str]:
         """Generate query parameters for an OIDC/OAuth2 authorisation request.
 
         Produces cryptographic state and nonce values to protect against
@@ -276,12 +300,18 @@ class AuthenticationHandler:
         from hashlib import sha384
         from urllib.parse import urlencode, quote
 
-        state = quote(urlencode({
-            "sec": sha384(token_bytes(AuthenticationHandler.__RANDOM_BITS)).hexdigest(),
-            "redirect": f"{self._config_mgr.redirect_url}",
-            "start": start,
-            "mode": mode,
-        }))
+        state = quote(
+            urlencode(
+                {
+                    "sec": sha384(
+                        token_bytes(AuthenticationHandler.__RANDOM_BITS)
+                    ).hexdigest(),
+                    "redirect": f"{self._config_mgr.redirect_url}",
+                    "start": start,
+                    "mode": mode,
+                }
+            )
+        )
 
         nonce = sha384(token_bytes(AuthenticationHandler.__RANDOM_BITS)).hexdigest()
 
@@ -291,10 +321,12 @@ class AuthenticationHandler:
             "scope": " ".join(scopes),
             "redirect_uri": f"{self._config_mgr.redirect_url}",
             "state": state,
-            "nonce": nonce
+            "nonce": nonce,
         }
 
-    async def _redirect(self, start: str, scopes: Set[str] = set(), mode: str = "login") -> RedirectResponse:
+    async def _redirect(
+        self, start: str, scopes: Set[str] = set(), mode: str = "login"
+    ) -> RedirectResponse:
         """Build and return the OIDC redirect response.
 
         Sets the anti-CSRF ``state`` and ``nonce`` cookies on the response.
@@ -316,7 +348,7 @@ class AuthenticationHandler:
         target = host.replace_query_params(**params)
         response = RedirectResponse(target, HTTPStatus.FOUND)
 
-        _make_auth_cookie(response, self._nonce_cookie_key, params['nonce'])
-        _make_auth_cookie(response, self._state_cookie_key, params['state'])
+        _make_auth_cookie(response, self._nonce_cookie_key, params["nonce"])
+        _make_auth_cookie(response, self._state_cookie_key, params["state"])
 
         return response

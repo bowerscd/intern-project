@@ -1,4 +1,5 @@
 """Tests for AuthCache."""
+
 import pytest
 import asyncio
 
@@ -7,6 +8,7 @@ from auth.cache import AuthCache
 
 class ConcreteCache(AuthCache):
     """Concrete implementation for testing."""
+
     pass
 
 

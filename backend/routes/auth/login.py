@@ -46,7 +46,7 @@ def _validate_redirect(redirect: str) -> str:
     "/login/{provider}",
     summary="Start OIDC login flow",
     description="Redirects the user to the OIDC provider's authorization endpoint. "
-                "Only 'google' provider is supported for production use.",
+    "Only 'google' provider is supported for production use.",
 )
 @limiter.limit("10/minute")
 async def login(
@@ -68,5 +68,5 @@ async def login(
     """
     _validate_redirect(redirect)
     auth = AuthMgrs[provider.name]
-    scopes_list = set(scopes.split(' '))
+    scopes_list = set(scopes.split(" "))
     return await auth.login(redirect, scopes_list)

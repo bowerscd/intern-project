@@ -27,18 +27,20 @@ class Event(Model):
     """
 
     __tablename__ = "HappyHourEvents"
-    __table_args__ = (
-        UniqueConstraint("week_of", name="uq_events_week_of"),
-    )
+    __table_args__ = (UniqueConstraint("week_of", name="uq_events_week_of"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     Description: Mapped[Optional[str]] = mapped_column(String)
-    When: Mapped[datetime] = mapped_column(insert_default=lambda: datetime.now(UTC), index=True)
+    When: Mapped[datetime] = mapped_column(
+        insert_default=lambda: datetime.now(UTC), index=True
+    )
     week_of: Mapped[str] = mapped_column(String(8))
     LocationID: Mapped[int] = mapped_column(ForeignKey("HappyHourLocations.id"))
-    Location: Mapped['Location'] = relationship("Location")
-    TyrantID: Mapped[Optional[int]] = mapped_column(ForeignKey("accounts.id"), nullable=True)
-    Tyrant: Mapped[Optional[Account]] = relationship('Account')
+    Location: Mapped["Location"] = relationship("Location")
+    TyrantID: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("accounts.id"), nullable=True
+    )
+    Tyrant: Mapped[Optional[Account]] = relationship("Account")
     AutoSelected: Mapped[bool] = mapped_column(default=False)
 
     def __repr__(self) -> str:
@@ -84,7 +86,11 @@ Happy Hour Bot
             venue = f'<a href="{html_escape(self.Location.URL)}">{html_escape(self.Location.Name)}</a>'
         else:
             venue = html_escape(self.Location.Name)
-        chooser = html_escape(self.Tyrant.username) if self.Tyrant else 'Auto-selected by system'
+        chooser = (
+            html_escape(self.Tyrant.username)
+            if self.Tyrant
+            else "Auto-selected by system"
+        )
         return f"""
 <!doctype html>
 <html>
@@ -128,22 +134,22 @@ Happy Hour Bot
         end = dt(event_date.year, event_date.month, event_date.day, FIVE_PM, tzinfo=TZ)
 
         e = ICalEvent()
-        e.add('SUMMARY', 'Happy Hour')
-        e.add('DTSTART', st)
-        e.add('DTEND', end)
-        e.add('DTSTAMP', dt.now(UTC))
-        e.add('DESCRIPTION', f'{self.__summary_text}')
-        e.add('LOCATION', self.Location.AddressRaw)
+        e.add("SUMMARY", "Happy Hour")
+        e.add("DTSTART", st)
+        e.add("DTEND", end)
+        e.add("DTSTAMP", dt.now(UTC))
+        e.add("DESCRIPTION", f"{self.__summary_text}")
+        e.add("LOCATION", self.Location.AddressRaw)
         e.add("UID", f"{self.id}@{hostname()}")
         uri = vUri.from_ical(f"{api_server()}/api/v2/happyhour/events/{self.id}")
         e.add("URI", uri)
 
         ic = Calendar()
         ic.add_component(e)
-        ic.add('METHOD', 'REQUEST')
-        ic.add('VERSION', "2.0")
-        ic.add('PRODID', "-//Happy Hour Bot//EN")
-        ic.add("CALSCALE", 'GREGORIAN')
+        ic.add("METHOD", "REQUEST")
+        ic.add("VERSION", "2.0")
+        ic.add("PRODID", "-//Happy Hour Bot//EN")
+        ic.add("CALSCALE", "GREGORIAN")
         ic.add_missing_timezones()
 
         return ic
@@ -160,7 +166,7 @@ Happy Hour Bot
 Address:
 {self.Location.AddressRaw}{url_line}
 """
-        return MIMEText(msg, 'plain', 'utf-8')
+        return MIMEText(msg, "plain", "utf-8")
 
     def email(self) -> MIMEMultipart:
         """Build a full multipart email message with iCalendar attachment.
@@ -172,14 +178,18 @@ Address:
         :rtype: MIMEMultipart
         """
         date = self.When.date().strftime("%d-%m-%y")
-        calendar = MIMEText(self.__ical.to_ical().decode(), 'calendar', 'utf-8')
-        calendar.set_param('method', 'REQUEST', requote=False)
-        calendar.set_param('name', 'happyhour.ics')
-        calendar.add_header('Content-Disposition', 'attachment', filename='happyhour.ics')
-        plain_text = MIMEText(self.__summary_text, 'plain', 'utf-8')
-        html_alt = MIMEText(self.__summary_html, 'html', 'utf-8')
-        msg_content = MIMEMultipart('alternative', _subparts=(plain_text, html_alt, calendar))
-        msg = MIMEMultipart('mixed')
+        calendar = MIMEText(self.__ical.to_ical().decode(), "calendar", "utf-8")
+        calendar.set_param("method", "REQUEST", requote=False)
+        calendar.set_param("name", "happyhour.ics")
+        calendar.add_header(
+            "Content-Disposition", "attachment", filename="happyhour.ics"
+        )
+        plain_text = MIMEText(self.__summary_text, "plain", "utf-8")
+        html_alt = MIMEText(self.__summary_html, "html", "utf-8")
+        msg_content = MIMEMultipart(
+            "alternative", _subparts=(plain_text, html_alt, calendar)
+        )
+        msg = MIMEMultipart("mixed")
         msg.attach(msg_content)
-        msg['Subject'] = f"Happy Hour {date}"
+        msg["Subject"] = f"Happy Hour {date}"
         return msg

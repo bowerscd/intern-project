@@ -1,6 +1,7 @@
 """
 Account profile endpoints — authenticated.
 """
+
 from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, status
@@ -39,7 +40,7 @@ async def get_profile(
     summary="Update user profile",
     dependencies=[Depends(validate_csrf_token)],
     description="Update the authenticated user's phone number and carrier for SMS notifications. "
-                "Requires BASIC claim.",
+    "Requires BASIC claim.",
     response_model=ProfileResponse,
 )
 async def update_profile(

@@ -1,7 +1,7 @@
 """Tests for SqlValueEnum and classproperty in models.internal."""
+
 import pytest
 import time
-from enum import IntFlag
 
 from models.internal import SqlValueEnum, classproperty
 from models.enums import PhoneProvider, AccountClaims
@@ -55,8 +55,10 @@ class TestSqlValueEnum:
 
 class TestClassproperty:
     """Verify the :class:`~models.internal.classproperty` descriptor."""
+
     def test_classproperty_basic(self) -> None:
         """Verify :class:`classproperty` can be accessed on the class itself."""
+
         class Foo:
             """Dummy class for ``classproperty`` testing."""
 
@@ -153,7 +155,9 @@ class TestFrozenTimestampDefaults:
         )
 
 
-def _make_location(s: Session, name: str = "Internal Bar", **overrides: Any) -> Location:
+def _make_location(
+    s: Session, name: str = "Internal Bar", **overrides: Any
+) -> Location:
     """Create a test happy-hour location.
 
     :param s: Active database session.

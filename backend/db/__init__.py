@@ -1,6 +1,5 @@
 """Database connection management and session factory."""
 
-
 from typing import Any
 
 from contextlib import AbstractContextManager
@@ -89,6 +88,7 @@ def _stamp_if_unversioned(engine: Any) -> None:
         alembic_command.stamp(cfg, "head")
     except Exception:
         import logging
+
         logging.getLogger(__name__).debug("Alembic stamp skipped", exc_info=True)
 
 
@@ -99,14 +99,11 @@ class Database(AbstractContextManager[Any]):
     start/stop semantics and a context-manager interface.
     """
 
-    _instance: 'Database'
+    _instance: "Database"
 
     def __new__(
-            cls,
-            uri: str | None = None,
-            filename: str | None = None,
-            **kwargs: Any
-            ) -> 'Database':
+        cls, uri: str | None = None, filename: str | None = None, **kwargs: Any
+    ) -> "Database":
         """Ensure only one :class:`Database` instance exists (singleton).
 
         :param uri: SQLAlchemy connection URI, or ``None`` for in-memory.
@@ -117,16 +114,14 @@ class Database(AbstractContextManager[Any]):
         :rtype: Database
         """
 
-        if not hasattr(cls, '_instance'):
+        if not hasattr(cls, "_instance"):
             cls._instance = super(Database, cls).__new__(cls)
 
         return cls._instance
 
     def __init__(
-        self,
-        uri: str | None = None,
-        filename: str | None = None,
-        **kwargs: Any) -> None:
+        self, uri: str | None = None, filename: str | None = None, **kwargs: Any
+    ) -> None:
         """Initialise connection parameters (runs only on first creation).
 
         When *uri* is ``None``, the value from :pydata:`config.DATABASE_URI`
@@ -137,7 +132,7 @@ class Database(AbstractContextManager[Any]):
         :param kwargs: Extra ``connect_args`` forwarded to
             :func:`create_engine`.
         """
-        if hasattr(self, '_started'):
+        if hasattr(self, "_started"):
             return
 
         from random import randint
@@ -163,9 +158,7 @@ class Database(AbstractContextManager[Any]):
         if kwargs:
             self._cnx_args = kwargs
         elif self._cnx_uri.startswith("sqlite"):
-            self._cnx_args = {
-                "check_same_thread": False
-            }
+            self._cnx_args = {"check_same_thread": False}
         else:
             self._cnx_args = {}
 
@@ -198,10 +191,8 @@ class Database(AbstractContextManager[Any]):
             }
 
         self._engine = create_engine(
-                    self._cnx_uri,
-                    echo=False,
-                    connect_args=self._cnx_args,
-                    **pool_kwargs)
+            self._cnx_uri, echo=False, connect_args=self._cnx_args, **pool_kwargs
+        )
 
         self._sessionmaker = sessionmaker(self._engine)
 
@@ -223,6 +214,7 @@ class Database(AbstractContextManager[Any]):
         :raises Exception: If the engine was never initialised.
         """
         from sqlalchemy.orm.session import close_all_sessions
+
         if self._engine is None:
             raise Exception("something has gone terribly, terribly, wrong")
 
@@ -254,7 +246,7 @@ class Database(AbstractContextManager[Any]):
             s = self._sessionmaker()
         return s
 
-    def __enter__(self) -> 'Database':
+    def __enter__(self) -> "Database":
         """Start the database and return this instance.
 
         :returns: The database manager.

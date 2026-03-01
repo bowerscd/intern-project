@@ -27,7 +27,9 @@ class TyrantRotation(Model):
     Account: Mapped[Account] = relationship("Account")
     cycle: Mapped[int] = mapped_column(Integer, default=1)
     position: Mapped[int] = mapped_column(Integer, default=0)
-    assigned_at: Mapped[datetime] = mapped_column(insert_default=lambda: datetime.now(UTC))
+    assigned_at: Mapped[datetime] = mapped_column(
+        insert_default=lambda: datetime.now(UTC)
+    )
     deadline_at: Mapped[Optional[datetime]] = mapped_column(nullable=True, default=None)
     status: Mapped[TyrantAssignmentStatus] = mapped_column(
         SqlValueEnum(TyrantAssignmentStatus),

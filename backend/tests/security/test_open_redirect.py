@@ -51,8 +51,11 @@ class TestValidateRedirectFunction:
 
     def test_allowlisted_origin_passes(self, monkeypatch: pytest.MonkeyPatch) -> None:
         import sys
+
         login_module = sys.modules["routes.auth.login"]
-        monkeypatch.setattr(login_module, "AUTH_REDIRECT_ORIGINS", ["https://frontend.example.com"])
+        monkeypatch.setattr(
+            login_module, "AUTH_REDIRECT_ORIGINS", ["https://frontend.example.com"]
+        )
         result = _validate_redirect("https://frontend.example.com/account")
         assert result == "https://frontend.example.com/account"
 
@@ -73,17 +76,19 @@ class TestOpenRedirectHTTP:
     """HTTP-level tests: evil redirects that are caught before the OIDC fetch."""
 
     @pytest.mark.parametrize("redirect", EVIL_REDIRECTS_REJECTED_SYNC)
-    def test_evil_redirect_rejected_login(self, client: TestClient, redirect: str) -> None:
+    def test_evil_redirect_rejected_login(
+        self, client: TestClient, redirect: str
+    ) -> None:
         resp = client.get(
             f"/api/v2/auth/login/test?redirect={redirect}",
             follow_redirects=False,
         )
-        assert resp.status_code == 400, (
-            f"Login accepted dangerous redirect: {redirect}"
-        )
+        assert resp.status_code == 400, f"Login accepted dangerous redirect: {redirect}"
 
     @pytest.mark.parametrize("redirect", EVIL_REDIRECTS_REJECTED_SYNC)
-    def test_evil_redirect_rejected_register(self, client: TestClient, redirect: str) -> None:
+    def test_evil_redirect_rejected_register(
+        self, client: TestClient, redirect: str
+    ) -> None:
         resp = client.get(
             f"/api/v2/auth/register/test?redirect={redirect}",
             follow_redirects=False,

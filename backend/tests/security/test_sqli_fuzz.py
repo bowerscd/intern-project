@@ -66,7 +66,9 @@ class TestSQLInjectionInRequestBody:
     """SQL injection in JSON request bodies should be sanitized by the ORM."""
 
     @pytest.mark.parametrize("payload", SQL_PAYLOADS)
-    def test_mealbot_record(self, authenticated_client: TestClient, payload: str) -> None:
+    def test_mealbot_record(
+        self, authenticated_client: TestClient, payload: str
+    ) -> None:
         resp = authenticated_client.post(
             "/api/v2/mealbot/record",
             json={"payer": payload, "recipient": "bob", "credits": 1},
@@ -86,8 +88,12 @@ class TestHypothesisFuzz:
     """Fuzz string fields with random unicode to catch unexpected crashes."""
 
     @given(username=st.text(min_size=1, max_size=200))
-    @settings(max_examples=50, suppress_health_check=[HealthCheck.function_scoped_fixture])
-    def test_complete_registration_fuzz(self, client: TestClient, username: str) -> None:
+    @settings(
+        max_examples=50, suppress_health_check=[HealthCheck.function_scoped_fixture]
+    )
+    def test_complete_registration_fuzz(
+        self, client: TestClient, username: str
+    ) -> None:
         resp = client.post(
             "/api/v2/auth/complete-registration",
             json={"username": username},

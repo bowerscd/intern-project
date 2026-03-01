@@ -37,12 +37,22 @@ def _provider_str(raw: Any) -> str:
     return str(raw)
 
 
-def _claim_response(claim: AccountClaimRequest, target_username: str) -> ClaimRequestResponse:
+def _claim_response(
+    claim: AccountClaimRequest, target_username: str
+) -> ClaimRequestResponse:
     """Build a :class:`ClaimRequestResponse` from a claim ORM object."""
     resolved = None
     if claim.resolved_at is not None:
-        resolved = claim.resolved_at.isoformat() if hasattr(claim.resolved_at, "isoformat") else str(claim.resolved_at)
-    created = claim.created_at.isoformat() if hasattr(claim.created_at, "isoformat") else str(claim.created_at)
+        resolved = (
+            claim.resolved_at.isoformat()
+            if hasattr(claim.resolved_at, "isoformat")
+            else str(claim.resolved_at)
+        )
+    created = (
+        claim.created_at.isoformat()
+        if hasattr(claim.created_at, "isoformat")
+        else str(claim.created_at)
+    )
 
     return ClaimRequestResponse(
         id=claim.id,
@@ -80,7 +90,9 @@ async def list_claim_requests(
     with db:
         query = select(AccountClaimRequest)
         if not include_resolved:
-            query = query.where(AccountClaimRequest.status == AccountClaimStatus.PENDING)
+            query = query.where(
+                AccountClaimRequest.status == AccountClaimStatus.PENDING
+            )
         query = query.order_by(AccountClaimRequest.created_at.desc())
         claims = list(db.scalars(query).all())
 
@@ -89,7 +101,9 @@ async def list_claim_requests(
             target = db.scalars(
                 select(Account).where(Account.id == c.target_account_id)
             ).first()
-            results.append(_claim_response(c, target.username if target else "<deleted>"))
+            results.append(
+                _claim_response(c, target.username if target else "<deleted>")
+            )
         return results
 
 
@@ -98,8 +112,8 @@ async def list_claim_requests(
     summary="Approve or deny an account claim",
     dependencies=[Depends(validate_csrf_token)],
     description="Approve or deny a pending account claim request. On approval, "
-                "the target account's external identity is updated to match the "
-                "claimant. Requires ADMIN claim.",
+    "the target account's external identity is updated to match the "
+    "claimant. Requires ADMIN claim.",
     response_model=ClaimRequestResponse,
 )
 async def review_claim_request(
@@ -161,7 +175,9 @@ async def review_claim_request(
                     detail="Target account no longer exists.",
                 )
 
-            target.account_provider = ExternalAuthProvider[claim.requester_provider.name]  # type: ignore[union-attr]
+            target.account_provider = ExternalAuthProvider[
+                claim.requester_provider.name
+            ]  # type: ignore[union-attr]
             target.external_unique_id = claim.requester_external_id
 
             # Grant BASIC claim if the account doesn't have it
@@ -181,4 +197,6 @@ async def review_claim_request(
             select(Account).where(Account.id == claim.target_account_id)
         ).first()
 
-        return _claim_response(claim, target_act.username if target_act else "<deleted>")
+        return _claim_response(
+            claim, target_act.username if target_act else "<deleted>"
+        )

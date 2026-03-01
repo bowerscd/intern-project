@@ -1,4 +1,5 @@
 """Tests for v2 happy hour endpoints."""
+
 from datetime import datetime, UTC, timedelta
 from unittest.mock import patch, MagicMock
 
@@ -54,6 +55,7 @@ class TestHappyHourUnauthenticated:
 
 class TestLocations:
     """Verify authenticated happy-hour location endpoints."""
+
     def test_list_locations_empty(self, authenticated_client: TestClient) -> None:
         """Verify an empty list is returned when no locations exist.
 
@@ -122,6 +124,7 @@ class TestLocations:
 
 class TestEvents:
     """Verify authenticated happy-hour event endpoints."""
+
     def test_list_events_empty(self, authenticated_client: TestClient) -> None:
         """Verify an empty list is returned when no events exist.
 
@@ -147,30 +150,40 @@ class TestEvents:
         loc_id = r.json()["id"]
 
         event_time = (datetime.now(UTC) + timedelta(days=3)).isoformat()
-        r = authenticated_client.post("/api/v2/happyhour/events", json={
-            "location_id": loc_id,
-            "description": "Weekly HH",
-            "when": event_time,
-        })
+        r = authenticated_client.post(
+            "/api/v2/happyhour/events",
+            json={
+                "location_id": loc_id,
+                "description": "Weekly HH",
+                "when": event_time,
+            },
+        )
         assert r.status_code == 201
         data = r.json()
         assert data["location_name"] == "Test Tavern"
         assert data["auto_selected"] is False
 
-    def test_create_event_nonexistent_location(self, authenticated_client: TestClient) -> None:
+    def test_create_event_nonexistent_location(
+        self, authenticated_client: TestClient
+    ) -> None:
         """Verify 400 when the location does not exist.
 
         :param authenticated_client: Pre-authenticated HTTP test client with all claims.
         :type authenticated_client: TestClient
         """
         event_time = (datetime.now(UTC) + timedelta(days=3)).isoformat()
-        r = authenticated_client.post("/api/v2/happyhour/events", json={
-            "location_id": 99999,
-            "when": event_time,
-        })
+        r = authenticated_client.post(
+            "/api/v2/happyhour/events",
+            json={
+                "location_id": 99999,
+                "when": event_time,
+            },
+        )
         assert r.status_code == 404
 
-    def test_create_event_closed_location(self, authenticated_client: TestClient) -> None:
+    def test_create_event_closed_location(
+        self, authenticated_client: TestClient
+    ) -> None:
         # Create and close location
         """Verify 400 when the location is closed.
 
@@ -185,10 +198,13 @@ class TestEvents:
         )
 
         event_time = (datetime.now(UTC) + timedelta(days=3)).isoformat()
-        r = authenticated_client.post("/api/v2/happyhour/events", json={
-            "location_id": loc_id,
-            "when": event_time,
-        })
+        r = authenticated_client.post(
+            "/api/v2/happyhour/events",
+            json={
+                "location_id": loc_id,
+                "when": event_time,
+            },
+        )
         assert r.status_code == 400
 
     def test_get_event_by_id(self, authenticated_client: TestClient) -> None:
@@ -201,10 +217,13 @@ class TestEvents:
         loc_id = r.json()["id"]
 
         event_time = (datetime.now(UTC) + timedelta(days=3)).isoformat()
-        r = authenticated_client.post("/api/v2/happyhour/events", json={
-            "location_id": loc_id,
-            "when": event_time,
-        })
+        r = authenticated_client.post(
+            "/api/v2/happyhour/events",
+            json={
+                "location_id": loc_id,
+                "when": event_time,
+            },
+        )
         event_id = r.json()["id"]
 
         r = authenticated_client.get(f"/api/v2/happyhour/events/{event_id}")
@@ -221,10 +240,13 @@ class TestEvents:
         loc_id = r.json()["id"]
 
         event_time = (datetime.now(UTC) + timedelta(days=7)).isoformat()
-        authenticated_client.post("/api/v2/happyhour/events", json={
-            "location_id": loc_id,
-            "when": event_time,
-        })
+        authenticated_client.post(
+            "/api/v2/happyhour/events",
+            json={
+                "location_id": loc_id,
+                "when": event_time,
+            },
+        )
 
         r = authenticated_client.get("/api/v2/happyhour/events/upcoming")
         assert r.status_code == 200
@@ -248,7 +270,9 @@ class TestTurnEnforcement:
     _PENDING_PATCH = "db.functions.get_current_pending_assignment"
     _CHOSEN_PATCH = "db.functions.mark_assignment_chosen"
 
-    def test_any_user_can_create_when_no_pending(self, authenticated_client: TestClient) -> None:
+    def test_any_user_can_create_when_no_pending(
+        self, authenticated_client: TestClient
+    ) -> None:
         """Without a pending assignment, any HAPPY_HOUR user can create.
 
         :param authenticated_client: Pre-authenticated HTTP test client with all claims.
@@ -258,13 +282,18 @@ class TestTurnEnforcement:
         event_time = (datetime.now(UTC) + timedelta(days=3)).isoformat()
 
         with patch(self._PENDING_PATCH, return_value=None):
-            r = authenticated_client.post("/api/v2/happyhour/events", json={
-                "location_id": loc_id,
-                "when": event_time,
-            })
+            r = authenticated_client.post(
+                "/api/v2/happyhour/events",
+                json={
+                    "location_id": loc_id,
+                    "when": event_time,
+                },
+            )
         assert r.status_code == 201
 
-    def test_assigned_tyrant_can_create(self, authenticated_client: TestClient, db_session: Session) -> None:
+    def test_assigned_tyrant_can_create(
+        self, authenticated_client: TestClient, db_session: Session
+    ) -> None:
         """The assigned tyrant (whose account matches the session) can create.
 
         :param authenticated_client: Pre-authenticated HTTP test client with all claims.
@@ -277,6 +306,7 @@ class TestTurnEnforcement:
 
         # The authenticated_client's account id is the one we need
         from db.functions import get_all_accounts
+
         accounts = get_all_accounts(db_session)
         test_act = [a for a in accounts if a.username == "test"][0]
 
@@ -284,15 +314,22 @@ class TestTurnEnforcement:
         mock_assignment.account_id = test_act.id
         mock_assignment.id = 999
 
-        with patch(
-            self._PENDING_PATCH, return_value=mock_assignment,
-        ), patch(
-            self._CHOSEN_PATCH,
-        ) as mock_chosen:
-            r = authenticated_client.post("/api/v2/happyhour/events", json={
-                "location_id": loc_id,
-                "when": event_time,
-            })
+        with (
+            patch(
+                self._PENDING_PATCH,
+                return_value=mock_assignment,
+            ),
+            patch(
+                self._CHOSEN_PATCH,
+            ) as mock_chosen,
+        ):
+            r = authenticated_client.post(
+                "/api/v2/happyhour/events",
+                json={
+                    "location_id": loc_id,
+                    "when": event_time,
+                },
+            )
         assert r.status_code == 201
         mock_chosen.assert_called_once()
 
@@ -309,14 +346,19 @@ class TestTurnEnforcement:
         mock_assignment.account_id = 999999  # Some other account
 
         with patch(self._PENDING_PATCH, return_value=mock_assignment):
-            r = authenticated_client.post("/api/v2/happyhour/events", json={
-                "location_id": loc_id,
-                "when": event_time,
-            })
+            r = authenticated_client.post(
+                "/api/v2/happyhour/events",
+                json={
+                    "location_id": loc_id,
+                    "when": event_time,
+                },
+            )
         assert r.status_code == 403
         assert "not your turn" in r.json()["detail"]
 
-    def test_non_admin_gets_403_during_rotation(self, authenticated_client: TestClient, db_session: Session) -> None:
+    def test_non_admin_gets_403_during_rotation(
+        self, authenticated_client: TestClient, db_session: Session
+    ) -> None:
         """A user without HAPPY_HOUR_TYRANT gets 403 during a rotation window.
 
         :param authenticated_client: Pre-authenticated HTTP test client with all claims.
@@ -329,6 +371,7 @@ class TestTurnEnforcement:
 
         # Temporarily remove HAPPY_HOUR_TYRANT from the test account
         from db.functions import get_all_accounts
+
         accounts = get_all_accounts(db_session)
         test_act = [a for a in accounts if a.username == "test"][0]
         original_claims = test_act.claims
@@ -340,17 +383,22 @@ class TestTurnEnforcement:
 
         try:
             with patch(self._PENDING_PATCH, return_value=mock_assignment):
-                r = authenticated_client.post("/api/v2/happyhour/events", json={
-                    "location_id": loc_id,
-                    "when": event_time,
-                })
+                r = authenticated_client.post(
+                    "/api/v2/happyhour/events",
+                    json={
+                        "location_id": loc_id,
+                        "when": event_time,
+                    },
+                )
             assert r.status_code == 403
             assert "HAPPY_HOUR_TYRANT" in r.json()["detail"]
         finally:
             test_act.claims = original_claims
             db_session.commit()
 
-    def test_upcoming_includes_current_tyrant(self, authenticated_client: TestClient, db_session: Session) -> None:
+    def test_upcoming_includes_current_tyrant(
+        self, authenticated_client: TestClient, db_session: Session
+    ) -> None:
         """The /events/upcoming endpoint includes current tyrant info.
 
         :param authenticated_client: Pre-authenticated HTTP test client with all claims.
@@ -359,6 +407,7 @@ class TestTurnEnforcement:
         :type db_session: Session
         """
         from db.functions import get_all_accounts
+
         accounts = get_all_accounts(db_session)
         test_act = [a for a in accounts if a.username == "test"][0]
 

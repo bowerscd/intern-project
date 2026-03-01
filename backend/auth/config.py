@@ -16,10 +16,10 @@ class AuthConfig:
     """
 
     def __init__(
-            self,
-            site_root: str,
-            var_prefix: str,
-            update_interval: timedelta = _FIFTEEN_MINUTES
+        self,
+        site_root: str,
+        var_prefix: str,
+        update_interval: timedelta = _FIFTEEN_MINUTES,
     ) -> None:
         """Initialise the configuration manager.
 
@@ -63,7 +63,6 @@ class AuthConfig:
         from datetime import datetime, UTC
 
         async with self.__config_lock:
-
             if datetime.now(UTC).timestamp() < self.__next_update:
                 return self.__config
 
@@ -72,7 +71,9 @@ class AuthConfig:
                 if result.status != HTTPStatus.OK:
                     raise Exception(f"wellknown config returned: {result.status}")
 
-                self.__next_update = (datetime.now(UTC) + self.__update_interval).timestamp()
+                self.__next_update = (
+                    datetime.now(UTC) + self.__update_interval
+                ).timestamp()
                 self.__config = await result.json()
 
                 return self.__config

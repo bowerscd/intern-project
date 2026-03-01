@@ -1,4 +1,5 @@
 """Tests for email header handling: deepcopy prevents mutation."""
+
 import pytest
 from email.mime.text import MIMEText
 from pytest_localserver.smtp import Server as SMTPServer
@@ -14,7 +15,6 @@ class TestEmailHeaderCorruption:
         :param smtp: In-process SMTP server.
         :type smtp: SMTPServer
         """
-        from email.mime.text import MIMEText
         from mail.outgoing import send_email
 
         msg = MIMEText("Test body")
@@ -37,9 +37,7 @@ class TestEmailHeaderCorruption:
 
         to_final = msg.get_all("To") or []
         from_final = msg.get_all("From") or []
-        assert len(to_final) == 0, (
-            "Original message still untouched after second send"
-        )
+        assert len(to_final) == 0, "Original message still untouched after second send"
         assert len(from_final) == 0, (
             "Original message still untouched after second send"
         )

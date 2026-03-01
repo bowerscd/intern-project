@@ -22,27 +22,36 @@ class TestWrongContentType:
     """Sending non-JSON Content-Type to JSON endpoints should fail gracefully."""
 
     @pytest.mark.parametrize("method, path", JSON_ENDPOINTS)
-    def test_form_data_rejected(self, authenticated_client: TestClient, method: str, path: str) -> None:
+    def test_form_data_rejected(
+        self, authenticated_client: TestClient, method: str, path: str
+    ) -> None:
         resp = authenticated_client.request(
-            method, path,
+            method,
+            path,
             content=b"key=value&other=thing",
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
         assert resp.status_code in (400, 415, 422)
 
     @pytest.mark.parametrize("method, path", JSON_ENDPOINTS)
-    def test_xml_content_type(self, authenticated_client: TestClient, method: str, path: str) -> None:
+    def test_xml_content_type(
+        self, authenticated_client: TestClient, method: str, path: str
+    ) -> None:
         resp = authenticated_client.request(
-            method, path,
+            method,
+            path,
             content=b"<root><key>value</key></root>",
             headers={"Content-Type": "application/xml"},
         )
         assert resp.status_code in (400, 415, 422)
 
     @pytest.mark.parametrize("method, path", JSON_ENDPOINTS)
-    def test_no_content_type(self, authenticated_client: TestClient, method: str, path: str) -> None:
+    def test_no_content_type(
+        self, authenticated_client: TestClient, method: str, path: str
+    ) -> None:
         resp = authenticated_client.request(
-            method, path,
+            method,
+            path,
             content=b'{"username": "test"}',
         )
         # Should either succeed (FastAPI is lenient) or return 4xx

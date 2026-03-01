@@ -32,7 +32,9 @@ class TestUnauthenticatedAccess:
     """All protected endpoints must reject unauthenticated requests."""
 
     @pytest.mark.parametrize("method, path", PROTECTED_ENDPOINTS)
-    def test_no_cookie_returns_401_or_403(self, client: TestClient, method: str, path: str) -> None:
+    def test_no_cookie_returns_401_or_403(
+        self, client: TestClient, method: str, path: str
+    ) -> None:
         resp = client.request(method, path)
         assert resp.status_code in (401, 403), (
             f"{method} {path} returned {resp.status_code} without auth"

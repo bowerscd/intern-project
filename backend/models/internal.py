@@ -42,12 +42,7 @@ class SqlValueEnum(TypeDecorator[Enum]):
     impl = Integer
     cache_ok = True
 
-    def __init__(
-            self,
-            enumtype: Type[Enum],
-            *args: Any,
-            **kwargs: Any
-            ) -> None:
+    def __init__(self, enumtype: Type[Enum], *args: Any, **kwargs: Any) -> None:
         """Initialise the type decorator for a specific enum type.
 
         Automatically selects :class:`String` as the underlying column
@@ -87,7 +82,9 @@ class SqlValueEnum(TypeDecorator[Enum]):
 
         return value.value
 
-    def process_result_value(self, value: Optional[Any], dialect: Any) -> Optional[Enum]:
+    def process_result_value(
+        self, value: Optional[Any], dialect: Any
+    ) -> Optional[Enum]:
         """Convert a database value back to the corresponding Python enum member.
 
         :param value: The raw database value.

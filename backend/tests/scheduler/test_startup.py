@@ -1,6 +1,5 @@
 """Tests for scheduler startup: SCHEDULER_ENABLED guard and basic lifecycle."""
 
-import pytest
 from unittest.mock import patch, MagicMock
 
 
@@ -15,6 +14,7 @@ class TestSchedulerEnabledGuard:
 
             with patch("config.SCHEDULER_ENABLED", True):
                 from scheduler import start_scheduler
+
                 start_scheduler()
 
             mock_sched.start.assert_called_once()
@@ -27,6 +27,7 @@ class TestSchedulerEnabledGuard:
 
             with patch("config.SCHEDULER_ENABLED", False):
                 from scheduler import start_scheduler
+
                 start_scheduler()
 
             mock_sched.start.assert_not_called()
@@ -58,6 +59,7 @@ class TestSchedulerMisfireGrace:
 
             with patch("config.SCHEDULER_ENABLED", True):
                 from scheduler import start_scheduler
+
                 start_scheduler()
 
             # Check that add_job was called with misfire_grace_time

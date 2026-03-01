@@ -1,4 +1,5 @@
 """Tests for the scheduler module — tyrant rotation and auto-select."""
+
 import pytest
 import logging
 from datetime import datetime, UTC, timedelta
@@ -50,7 +51,13 @@ def _make_location(s: Session, name: str = "Sched Bar", **overrides: Any) -> Loc
     return loc
 
 
-def _make_user(s: Session, name: str, claims: AccountClaims = AccountClaims.HAPPY_HOUR, phone: str | None = None, phone_provider: PhoneProvider = PhoneProvider.NONE) -> Account:
+def _make_user(
+    s: Session,
+    name: str,
+    claims: AccountClaims = AccountClaims.HAPPY_HOUR,
+    phone: str | None = None,
+    phone_provider: PhoneProvider = PhoneProvider.NONE,
+) -> Account:
     """Create a test user account with the given claims.
 
     :param s: Active database session.
@@ -67,8 +74,13 @@ def _make_user(s: Session, name: str, claims: AccountClaims = AccountClaims.HAPP
     :rtype: Account
     """
     act = create_account(
-        name, f"{name}@test.com", ExternalAuthProvider.test, name,
-        claims=claims, phone=phone, phone_provider=phone_provider,
+        name,
+        f"{name}@test.com",
+        ExternalAuthProvider.test,
+        name,
+        claims=claims,
+        phone=phone,
+        phone_provider=phone_provider,
     )
     s.add(act)
     s.commit()
@@ -77,9 +89,11 @@ def _make_user(s: Session, name: str, claims: AccountClaims = AccountClaims.HAPP
 
 class TestGetScheduler:
     """Verify :func:`~scheduler.get_scheduler` singleton behaviour."""
+
     def test_get_scheduler_returns_singleton(self) -> None:
         """Verify consecutive calls return the same scheduler instance."""
         import scheduler
+
         scheduler.scheduler = None
         s1 = scheduler.get_scheduler()
         s2 = scheduler.get_scheduler()
@@ -90,6 +104,7 @@ class TestGetScheduler:
         """Verify the scheduler is an :class:`AsyncIOScheduler`."""
         import scheduler
         from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
         scheduler.scheduler = None
         s = scheduler.get_scheduler()
         assert isinstance(s, AsyncIOScheduler)
@@ -100,7 +115,9 @@ class TestAssignTyrant:
     """Verify :func:`~scheduler.assign_tyrant` cycle-based rotation logic."""
 
     @pytest.mark.asyncio
-    async def test_creates_full_cycle_on_first_run(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_creates_full_cycle_on_first_run(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """Should create a full rotation cycle with all admins on first run.
 
         :param db_session: SQLAlchemy database session.
@@ -110,19 +127,26 @@ class TestAssignTyrant:
         :param caplog: Captured log records.
         :type caplog: pytest.LogCaptureFixture
         """
-        admin1 = _make_user(db_session, "admin_a", claims=AccountClaims.HAPPY_HOUR_TYRANT)
-        admin2 = _make_user(db_session, "admin_b", claims=AccountClaims.HAPPY_HOUR_TYRANT)
+        admin1 = _make_user(
+            db_session, "admin_a", claims=AccountClaims.HAPPY_HOUR_TYRANT
+        )
+        admin2 = _make_user(
+            db_session, "admin_b", claims=AccountClaims.HAPPY_HOUR_TYRANT
+        )
 
         # Mock shuffle to get deterministic order: [admin_a, admin_b]
         def no_shuffle(lst: list) -> None:
             lst.sort(key=lambda a: a.id)
 
-        with patch('db.Database', return_value=database), \
-             patch('mail.outgoing.notify_tyrant_assigned'), \
-             patch('mail.outgoing.notify_tyrant_on_deck'), \
-             patch('random.shuffle', side_effect=no_shuffle):
+        with (
+            patch("db.Database", return_value=database),
+            patch("mail.outgoing.notify_tyrant_assigned"),
+            patch("mail.outgoing.notify_tyrant_on_deck"),
+            patch("random.shuffle", side_effect=no_shuffle),
+        ):
             with caplog.at_level(logging.INFO):
                 from scheduler import assign_tyrant
+
                 await assign_tyrant()
 
             assert "Created new rotation cycle" in caplog.text
@@ -143,7 +167,9 @@ class TestAssignTyrant:
         assert assignments[1].status == TyrantAssignmentStatus.SCHEDULED
 
     @pytest.mark.asyncio
-    async def test_activates_next_scheduled_in_cycle(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_activates_next_scheduled_in_cycle(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """Should activate the next SCHEDULED assignment in the current cycle.
 
         :param db_session: SQLAlchemy database session.
@@ -158,21 +184,30 @@ class TestAssignTyrant:
 
         # Simulate: admin1 already done (CHOSEN), admin2 still SCHEDULED
         create_tyrant_assignment(
-            db_session, admin1.id, cycle=1, position=0,
+            db_session,
+            admin1.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC) - timedelta(days=7),
             deadline_at=datetime.now(UTC) - timedelta(days=2),
             status=TyrantAssignmentStatus.CHOSEN,
         )
         create_tyrant_assignment(
-            db_session, admin2.id, cycle=1, position=1,
+            db_session,
+            admin2.id,
+            cycle=1,
+            position=1,
             assigned_at=datetime.now(UTC) - timedelta(days=7),
         )
         db_session.commit()
 
-        with patch('db.Database', return_value=database), \
-             patch('mail.outgoing.notify_tyrant_assigned'), \
-             patch('mail.outgoing.notify_tyrant_on_deck'):
+        with (
+            patch("db.Database", return_value=database),
+            patch("mail.outgoing.notify_tyrant_assigned"),
+            patch("mail.outgoing.notify_tyrant_on_deck"),
+        ):
             from scheduler import assign_tyrant
+
             await assign_tyrant()
 
         pending = get_current_pending_assignment(db_session)
@@ -180,7 +215,9 @@ class TestAssignTyrant:
         assert pending.account_id == admin2.id
 
     @pytest.mark.asyncio
-    async def test_starts_new_cycle_when_all_assigned(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_starts_new_cycle_when_all_assigned(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """Should start a new cycle when all admins have been assigned.
 
         :param db_session: SQLAlchemy database session.
@@ -195,13 +232,19 @@ class TestAssignTyrant:
 
         # Both assigned in cycle 1 (all CHOSEN, none SCHEDULED)
         create_tyrant_assignment(
-            db_session, admin1.id, cycle=1, position=0,
+            db_session,
+            admin1.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC) - timedelta(days=14),
             deadline_at=datetime.now(UTC) - timedelta(days=9),
             status=TyrantAssignmentStatus.CHOSEN,
         )
         create_tyrant_assignment(
-            db_session, admin2.id, cycle=1, position=1,
+            db_session,
+            admin2.id,
+            cycle=1,
+            position=1,
             assigned_at=datetime.now(UTC) - timedelta(days=7),
             deadline_at=datetime.now(UTC) - timedelta(days=2),
             status=TyrantAssignmentStatus.CHOSEN,
@@ -211,12 +254,15 @@ class TestAssignTyrant:
         def no_shuffle(lst: list) -> None:
             lst.sort(key=lambda a: a.id)
 
-        with patch('db.Database', return_value=database), \
-             patch('mail.outgoing.notify_tyrant_assigned'), \
-             patch('mail.outgoing.notify_tyrant_on_deck'), \
-             patch('random.shuffle', side_effect=no_shuffle):
+        with (
+            patch("db.Database", return_value=database),
+            patch("mail.outgoing.notify_tyrant_assigned"),
+            patch("mail.outgoing.notify_tyrant_on_deck"),
+            patch("random.shuffle", side_effect=no_shuffle),
+        ):
             with caplog.at_level(logging.INFO):
                 from scheduler import assign_tyrant
+
                 await assign_tyrant()
 
             assert "cycle 2" in caplog.text
@@ -227,7 +273,9 @@ class TestAssignTyrant:
         assert pending.account_id == admin1.id
 
     @pytest.mark.asyncio
-    async def test_single_admin_always_assigned(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_single_admin_always_assigned(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """With only 1 admin, they get assigned every week (rotation completes each time).
 
         :param db_session: SQLAlchemy database session.
@@ -237,11 +285,16 @@ class TestAssignTyrant:
         :param caplog: Captured log records.
         :type caplog: pytest.LogCaptureFixture
         """
-        admin = _make_user(db_session, "solo_admin", claims=AccountClaims.HAPPY_HOUR_TYRANT)
+        admin = _make_user(
+            db_session, "solo_admin", claims=AccountClaims.HAPPY_HOUR_TYRANT
+        )
 
         # Simulate solo admin already assigned in cycle 1 (no SCHEDULED remain)
         create_tyrant_assignment(
-            db_session, admin.id, cycle=1, position=0,
+            db_session,
+            admin.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC) - timedelta(days=7),
             deadline_at=datetime.now(UTC) - timedelta(days=2),
             status=TyrantAssignmentStatus.CHOSEN,
@@ -251,11 +304,14 @@ class TestAssignTyrant:
         def no_shuffle(lst: list) -> None:
             pass  # single-element list — no change
 
-        with patch('db.Database', return_value=database), \
-             patch('mail.outgoing.notify_tyrant_assigned'), \
-             patch('mail.outgoing.notify_tyrant_on_deck'), \
-             patch('random.shuffle', side_effect=no_shuffle):
+        with (
+            patch("db.Database", return_value=database),
+            patch("mail.outgoing.notify_tyrant_assigned"),
+            patch("mail.outgoing.notify_tyrant_on_deck"),
+            patch("random.shuffle", side_effect=no_shuffle),
+        ):
             from scheduler import assign_tyrant
+
             await assign_tyrant()
 
         pending = get_current_pending_assignment(db_session)
@@ -264,7 +320,9 @@ class TestAssignTyrant:
         assert pending.cycle == 2
 
     @pytest.mark.asyncio
-    async def test_no_admins_logs_warning(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_no_admins_logs_warning(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """If no HAPPY_HOUR_TYRANT users, logs a warning and skips.
 
         :param db_session: SQLAlchemy database session.
@@ -274,15 +332,18 @@ class TestAssignTyrant:
         :param caplog: Captured log records.
         :type caplog: pytest.LogCaptureFixture
         """
-        with patch('db.Database', return_value=database):
+        with patch("db.Database", return_value=database):
             with caplog.at_level(logging.WARNING):
                 from scheduler import assign_tyrant
+
                 await assign_tyrant()
 
             assert "No HAPPY_HOUR_TYRANT users found" in caplog.text
 
     @pytest.mark.asyncio
-    async def test_notifies_assigned_tyrant(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_notifies_assigned_tyrant(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """Should call notify_tyrant_assigned for the selected admin.
 
         :param db_session: SQLAlchemy database session.
@@ -297,17 +358,22 @@ class TestAssignTyrant:
         def no_shuffle(lst: list) -> None:
             pass
 
-        with patch('db.Database', return_value=database), \
-             patch('mail.outgoing.notify_tyrant_assigned') as mock_notify, \
-             patch('mail.outgoing.notify_tyrant_on_deck'), \
-             patch('random.shuffle', side_effect=no_shuffle):
+        with (
+            patch("db.Database", return_value=database),
+            patch("mail.outgoing.notify_tyrant_assigned") as mock_notify,
+            patch("mail.outgoing.notify_tyrant_on_deck"),
+            patch("random.shuffle", side_effect=no_shuffle),
+        ):
             from scheduler import assign_tyrant
+
             await assign_tyrant()
 
             mock_notify.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_notifies_on_deck_person(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_notifies_on_deck_person(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """Should call notify_tyrant_on_deck for the next person in rotation.
 
         :param db_session: SQLAlchemy database session.
@@ -323,17 +389,22 @@ class TestAssignTyrant:
         def no_shuffle(lst: list) -> None:
             lst.sort(key=lambda a: a.id)
 
-        with patch('db.Database', return_value=database), \
-             patch('mail.outgoing.notify_tyrant_assigned'), \
-             patch('mail.outgoing.notify_tyrant_on_deck') as mock_on_deck, \
-             patch('random.shuffle', side_effect=no_shuffle):
+        with (
+            patch("db.Database", return_value=database),
+            patch("mail.outgoing.notify_tyrant_assigned"),
+            patch("mail.outgoing.notify_tyrant_on_deck") as mock_on_deck,
+            patch("random.shuffle", side_effect=no_shuffle),
+        ):
             from scheduler import assign_tyrant
+
             await assign_tyrant()
 
             mock_on_deck.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_no_on_deck_for_last_in_rotation(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_no_on_deck_for_last_in_rotation(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """Should not call on_deck when activating the last person in the cycle.
 
         :param db_session: SQLAlchemy database session.
@@ -343,32 +414,47 @@ class TestAssignTyrant:
         :param caplog: Captured log records.
         :type caplog: pytest.LogCaptureFixture
         """
-        admin1 = _make_user(db_session, "last_a", claims=AccountClaims.HAPPY_HOUR_TYRANT)
-        admin2 = _make_user(db_session, "last_b", claims=AccountClaims.HAPPY_HOUR_TYRANT)
+        admin1 = _make_user(
+            db_session, "last_a", claims=AccountClaims.HAPPY_HOUR_TYRANT
+        )
+        admin2 = _make_user(
+            db_session, "last_b", claims=AccountClaims.HAPPY_HOUR_TYRANT
+        )
 
         # admin1 done, admin2 is the last SCHEDULED
         create_tyrant_assignment(
-            db_session, admin1.id, cycle=1, position=0,
+            db_session,
+            admin1.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC) - timedelta(days=7),
             deadline_at=datetime.now(UTC) - timedelta(days=2),
             status=TyrantAssignmentStatus.CHOSEN,
         )
         create_tyrant_assignment(
-            db_session, admin2.id, cycle=1, position=1,
+            db_session,
+            admin2.id,
+            cycle=1,
+            position=1,
             assigned_at=datetime.now(UTC) - timedelta(days=7),
         )
         db_session.commit()
 
-        with patch('db.Database', return_value=database), \
-             patch('mail.outgoing.notify_tyrant_assigned'), \
-             patch('mail.outgoing.notify_tyrant_on_deck') as mock_on_deck:
+        with (
+            patch("db.Database", return_value=database),
+            patch("mail.outgoing.notify_tyrant_assigned"),
+            patch("mail.outgoing.notify_tyrant_on_deck") as mock_on_deck,
+        ):
             from scheduler import assign_tyrant
+
             await assign_tyrant()
 
             mock_on_deck.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_notification_error_does_not_crash(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_notification_error_does_not_crash(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """If notification fails, error is logged but assignment still happens.
 
         :param db_session: SQLAlchemy database session.
@@ -383,12 +469,18 @@ class TestAssignTyrant:
         def no_shuffle(lst: list) -> None:
             pass
 
-        with patch('db.Database', return_value=database), \
-             patch('mail.outgoing.notify_tyrant_assigned', side_effect=Exception("SMTP down")), \
-             patch('mail.outgoing.notify_tyrant_on_deck'), \
-             patch('random.shuffle', side_effect=no_shuffle):
+        with (
+            patch("db.Database", return_value=database),
+            patch(
+                "mail.outgoing.notify_tyrant_assigned",
+                side_effect=Exception("SMTP down"),
+            ),
+            patch("mail.outgoing.notify_tyrant_on_deck"),
+            patch("random.shuffle", side_effect=no_shuffle),
+        ):
             with caplog.at_level(logging.ERROR):
                 from scheduler import assign_tyrant
+
                 await assign_tyrant()
 
             assert "Failed to notify tyrant" in caplog.text
@@ -402,7 +494,9 @@ class TestAutoSelectHappyHour:
     """Verify :func:`~scheduler.auto_select_happy_hour` fallback logic."""
 
     @pytest.mark.asyncio
-    async def test_skips_when_event_exists_this_week(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_skips_when_event_exists_this_week(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """If an event already exists this week, auto_select should skip.
 
         :param db_session: SQLAlchemy database session.
@@ -413,19 +507,24 @@ class TestAutoSelectHappyHour:
         :type caplog: pytest.LogCaptureFixture
         """
         loc = _make_location(db_session, name="Already Picked")
-        tyrant = _make_user(db_session, "tyrant_skip", claims=AccountClaims.HAPPY_HOUR_TYRANT)
+        tyrant = _make_user(
+            db_session, "tyrant_skip", claims=AccountClaims.HAPPY_HOUR_TYRANT
+        )
         create_event(db_session, loc.id, datetime.now(UTC), tyrant_id=tyrant.id)
         db_session.commit()
 
-        with patch('db.Database', return_value=database):
+        with patch("db.Database", return_value=database):
             with caplog.at_level(logging.INFO):
                 from scheduler import auto_select_happy_hour
+
                 await auto_select_happy_hour()
 
             assert "already decided" in caplog.text
 
     @pytest.mark.asyncio
-    async def test_marks_pending_assignment_chosen_when_event_exists(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_marks_pending_assignment_chosen_when_event_exists(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """If an event exists and there's a pending assignment, mark it chosen.
 
         :param db_session: SQLAlchemy database session.
@@ -436,26 +535,34 @@ class TestAutoSelectHappyHour:
         :type caplog: pytest.LogCaptureFixture
         """
         loc = _make_location(db_session, name="Chosen Bar")
-        admin = _make_user(db_session, "chosen_admin", claims=AccountClaims.HAPPY_HOUR_TYRANT)
+        admin = _make_user(
+            db_session, "chosen_admin", claims=AccountClaims.HAPPY_HOUR_TYRANT
+        )
         create_event(db_session, loc.id, datetime.now(UTC), tyrant_id=admin.id)
 
         assignment = create_tyrant_assignment(
-            db_session, admin.id, cycle=1, position=0,
+            db_session,
+            admin.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC) - timedelta(days=3),
             deadline_at=datetime.now(UTC) + timedelta(hours=1),
             status=TyrantAssignmentStatus.PENDING,
         )
         db_session.commit()
 
-        with patch('db.Database', return_value=database):
+        with patch("db.Database", return_value=database):
             from scheduler import auto_select_happy_hour
+
             await auto_select_happy_hour()
 
         db_session.refresh(assignment)
         assert assignment.status == TyrantAssignmentStatus.CHOSEN
 
     @pytest.mark.asyncio
-    async def test_skips_when_no_previous_locations(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_skips_when_no_previous_locations(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """If there are no previous locations, should warn and skip.
 
         :param db_session: SQLAlchemy database session.
@@ -465,15 +572,18 @@ class TestAutoSelectHappyHour:
         :param caplog: Captured log records.
         :type caplog: pytest.LogCaptureFixture
         """
-        with patch('db.Database', return_value=database):
+        with patch("db.Database", return_value=database):
             with caplog.at_level(logging.WARNING):
                 from scheduler import auto_select_happy_hour
+
                 await auto_select_happy_hour()
 
             assert "No previous locations" in caplog.text
 
     @pytest.mark.asyncio
-    async def test_auto_selects_with_null_tyrant(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_auto_selects_with_null_tyrant(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """Auto-selected events should have TyrantID=None.
 
         :param db_session: SQLAlchemy database session.
@@ -484,15 +594,25 @@ class TestAutoSelectHappyHour:
         :type caplog: pytest.LogCaptureFixture
         """
         loc = _make_location(db_session, name="Auto Select Bar")
-        admin = _make_user(db_session, "auto_admin", claims=AccountClaims.HAPPY_HOUR_TYRANT)
+        admin = _make_user(
+            db_session, "auto_admin", claims=AccountClaims.HAPPY_HOUR_TYRANT
+        )
         # Create a past event so the location is in the "previous" pool
-        create_event(db_session, loc.id, datetime.now(UTC) - timedelta(days=14), tyrant_id=admin.id)
+        create_event(
+            db_session,
+            loc.id,
+            datetime.now(UTC) - timedelta(days=14),
+            tyrant_id=admin.id,
+        )
         db_session.commit()
 
-        with patch('mail.outgoing.notify_happy_hour_users') as mock_notify, \
-             patch('db.Database', return_value=database):
+        with (
+            patch("mail.outgoing.notify_happy_hour_users") as mock_notify,
+            patch("db.Database", return_value=database),
+        ):
             with caplog.at_level(logging.INFO):
                 from scheduler import auto_select_happy_hour
+
                 await auto_select_happy_hour()
 
             assert "Auto-selected happy hour" in caplog.text
@@ -504,7 +624,9 @@ class TestAutoSelectHappyHour:
             mock_notify.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_marks_pending_assignment_missed(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_marks_pending_assignment_missed(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """If no event exists and there's a pending assignment, mark it missed.
 
         :param db_session: SQLAlchemy database session.
@@ -515,21 +637,34 @@ class TestAutoSelectHappyHour:
         :type caplog: pytest.LogCaptureFixture
         """
         loc = _make_location(db_session, name="Miss Bar")
-        admin = _make_user(db_session, "miss_admin", claims=AccountClaims.HAPPY_HOUR_TYRANT)
-        create_event(db_session, loc.id, datetime.now(UTC) - timedelta(days=14), tyrant_id=admin.id)
+        admin = _make_user(
+            db_session, "miss_admin", claims=AccountClaims.HAPPY_HOUR_TYRANT
+        )
+        create_event(
+            db_session,
+            loc.id,
+            datetime.now(UTC) - timedelta(days=14),
+            tyrant_id=admin.id,
+        )
 
         assignment = create_tyrant_assignment(
-            db_session, admin.id, cycle=1, position=0,
+            db_session,
+            admin.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC) - timedelta(days=5),
             deadline_at=datetime.now(UTC) - timedelta(hours=1),
             status=TyrantAssignmentStatus.PENDING,
         )
         db_session.commit()
 
-        with patch('mail.outgoing.notify_happy_hour_users'), \
-             patch('db.Database', return_value=database):
+        with (
+            patch("mail.outgoing.notify_happy_hour_users"),
+            patch("db.Database", return_value=database),
+        ):
             with caplog.at_level(logging.WARNING):
                 from scheduler import auto_select_happy_hour
+
                 await auto_select_happy_hour()
 
             assert "missed their deadline" in caplog.text
@@ -538,7 +673,9 @@ class TestAutoSelectHappyHour:
         assert assignment.status == TyrantAssignmentStatus.MISSED
 
     @pytest.mark.asyncio
-    async def test_removes_admin_after_3_consecutive_misses(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_removes_admin_after_3_consecutive_misses(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """After 3 consecutive misses, HAPPY_HOUR_TYRANT claim is removed.
 
         :param db_session: SQLAlchemy database session.
@@ -549,13 +686,25 @@ class TestAutoSelectHappyHour:
         :type caplog: pytest.LogCaptureFixture
         """
         loc = _make_location(db_session, name="Strike3 Bar")
-        admin = _make_user(db_session, "strike3", claims=AccountClaims.HAPPY_HOUR_TYRANT | AccountClaims.HAPPY_HOUR)
-        create_event(db_session, loc.id, datetime.now(UTC) - timedelta(days=14), tyrant_id=admin.id)
+        admin = _make_user(
+            db_session,
+            "strike3",
+            claims=AccountClaims.HAPPY_HOUR_TYRANT | AccountClaims.HAPPY_HOUR,
+        )
+        create_event(
+            db_session,
+            loc.id,
+            datetime.now(UTC) - timedelta(days=14),
+            tyrant_id=admin.id,
+        )
 
         # Record 2 prior misses
         for i in range(2):
             a = create_tyrant_assignment(
-                db_session, admin.id, cycle=1, position=i,
+                db_session,
+                admin.id,
+                cycle=1,
+                position=i,
                 assigned_at=datetime.now(UTC) - timedelta(days=21 - i * 7),
                 deadline_at=datetime.now(UTC) - timedelta(days=16 - i * 7),
                 status=TyrantAssignmentStatus.PENDING,
@@ -565,17 +714,23 @@ class TestAutoSelectHappyHour:
 
         # Create a 3rd pending assignment (this will be the 3rd miss)
         _assignment = create_tyrant_assignment(
-            db_session, admin.id, cycle=1, position=2,
+            db_session,
+            admin.id,
+            cycle=1,
+            position=2,
             assigned_at=datetime.now(UTC) - timedelta(days=5),
             deadline_at=datetime.now(UTC) - timedelta(hours=1),
             status=TyrantAssignmentStatus.PENDING,
         )
         db_session.commit()
 
-        with patch('mail.outgoing.notify_happy_hour_users'), \
-             patch('db.Database', return_value=database):
+        with (
+            patch("mail.outgoing.notify_happy_hour_users"),
+            patch("db.Database", return_value=database),
+        ):
             with caplog.at_level(logging.WARNING):
                 from scheduler import auto_select_happy_hour
+
                 await auto_select_happy_hour()
 
             assert "Removed HAPPY_HOUR_TYRANT" in caplog.text
@@ -586,7 +741,9 @@ class TestAutoSelectHappyHour:
         assert admin.claims & AccountClaims.HAPPY_HOUR
 
     @pytest.mark.asyncio
-    async def test_no_removal_at_2_consecutive_misses(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_no_removal_at_2_consecutive_misses(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """At 2 consecutive misses, admin is NOT removed.
 
         :param db_session: SQLAlchemy database session.
@@ -597,12 +754,24 @@ class TestAutoSelectHappyHour:
         :type caplog: pytest.LogCaptureFixture
         """
         loc = _make_location(db_session, name="Strike2 Bar")
-        admin = _make_user(db_session, "strike2", claims=AccountClaims.HAPPY_HOUR_TYRANT | AccountClaims.HAPPY_HOUR)
-        create_event(db_session, loc.id, datetime.now(UTC) - timedelta(days=14), tyrant_id=admin.id)
+        admin = _make_user(
+            db_session,
+            "strike2",
+            claims=AccountClaims.HAPPY_HOUR_TYRANT | AccountClaims.HAPPY_HOUR,
+        )
+        create_event(
+            db_session,
+            loc.id,
+            datetime.now(UTC) - timedelta(days=14),
+            tyrant_id=admin.id,
+        )
 
         # Record 1 prior miss
         a = create_tyrant_assignment(
-            db_session, admin.id, cycle=1, position=0,
+            db_session,
+            admin.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC) - timedelta(days=14),
             deadline_at=datetime.now(UTC) - timedelta(days=9),
             status=TyrantAssignmentStatus.PENDING,
@@ -612,17 +781,23 @@ class TestAutoSelectHappyHour:
 
         # 2nd pending assignment
         _assignment = create_tyrant_assignment(
-            db_session, admin.id, cycle=1, position=1,
+            db_session,
+            admin.id,
+            cycle=1,
+            position=1,
             assigned_at=datetime.now(UTC) - timedelta(days=5),
             deadline_at=datetime.now(UTC) - timedelta(hours=1),
             status=TyrantAssignmentStatus.PENDING,
         )
         db_session.commit()
 
-        with patch('mail.outgoing.notify_happy_hour_users'), \
-             patch('db.Database', return_value=database):
+        with (
+            patch("mail.outgoing.notify_happy_hour_users"),
+            patch("db.Database", return_value=database),
+        ):
             with caplog.at_level(logging.WARNING):
                 from scheduler import auto_select_happy_hour
+
                 await auto_select_happy_hour()
 
         db_session.refresh(admin)
@@ -630,7 +805,9 @@ class TestAutoSelectHappyHour:
         assert admin.claims & AccountClaims.HAPPY_HOUR_TYRANT
 
     @pytest.mark.asyncio
-    async def test_consecutive_misses_reset_by_chosen(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_consecutive_misses_reset_by_chosen(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """A CHOSEN assignment resets the consecutive miss streak.
 
         :param db_session: SQLAlchemy database session.
@@ -641,17 +818,31 @@ class TestAutoSelectHappyHour:
         :type caplog: pytest.LogCaptureFixture
         """
         loc = _make_location(db_session, name="Reset Bar")
-        admin = _make_user(db_session, "reset_admin", claims=AccountClaims.HAPPY_HOUR_TYRANT | AccountClaims.HAPPY_HOUR)
-        create_event(db_session, loc.id, datetime.now(UTC) - timedelta(days=14), tyrant_id=admin.id)
+        admin = _make_user(
+            db_session,
+            "reset_admin",
+            claims=AccountClaims.HAPPY_HOUR_TYRANT | AccountClaims.HAPPY_HOUR,
+        )
+        create_event(
+            db_session,
+            loc.id,
+            datetime.now(UTC) - timedelta(days=14),
+            tyrant_id=admin.id,
+        )
 
         # 2 misses then 1 chosen then 1 pending => only 1 consecutive miss from the end
-        for i, st in enumerate([
-            TyrantAssignmentStatus.MISSED,
-            TyrantAssignmentStatus.MISSED,
-            TyrantAssignmentStatus.CHOSEN,
-        ]):
+        for i, st in enumerate(
+            [
+                TyrantAssignmentStatus.MISSED,
+                TyrantAssignmentStatus.MISSED,
+                TyrantAssignmentStatus.CHOSEN,
+            ]
+        ):
             a = create_tyrant_assignment(
-                db_session, admin.id, cycle=1, position=i,
+                db_session,
+                admin.id,
+                cycle=1,
+                position=i,
                 assigned_at=datetime.now(UTC) - timedelta(days=28 - i * 7),
                 deadline_at=datetime.now(UTC) - timedelta(days=23 - i * 7),
                 status=TyrantAssignmentStatus.PENDING,
@@ -661,16 +852,22 @@ class TestAutoSelectHappyHour:
 
         # Current pending
         _assignment = create_tyrant_assignment(
-            db_session, admin.id, cycle=1, position=3,
+            db_session,
+            admin.id,
+            cycle=1,
+            position=3,
             assigned_at=datetime.now(UTC) - timedelta(days=5),
             deadline_at=datetime.now(UTC) - timedelta(hours=1),
             status=TyrantAssignmentStatus.PENDING,
         )
         db_session.commit()
 
-        with patch('mail.outgoing.notify_happy_hour_users'), \
-             patch('db.Database', return_value=database):
+        with (
+            patch("mail.outgoing.notify_happy_hour_users"),
+            patch("db.Database", return_value=database),
+        ):
             from scheduler import auto_select_happy_hour
+
             await auto_select_happy_hour()
 
         db_session.refresh(admin)
@@ -678,7 +875,9 @@ class TestAutoSelectHappyHour:
         assert admin.claims & AccountClaims.HAPPY_HOUR_TYRANT
 
     @pytest.mark.asyncio
-    async def test_notification_error_caught(self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture) -> None:
+    async def test_notification_error_caught(
+        self, db_session: Session, database: Database, caplog: pytest.LogCaptureFixture
+    ) -> None:
         """If notification sending fails, error is logged but doesn't crash.
 
         :param db_session: SQLAlchemy database session.
@@ -689,14 +888,27 @@ class TestAutoSelectHappyHour:
         :type caplog: pytest.LogCaptureFixture
         """
         loc = _make_location(db_session, name="Notify Fail Bar")
-        admin = _make_user(db_session, "notifyfail", claims=AccountClaims.HAPPY_HOUR_TYRANT)
-        create_event(db_session, loc.id, datetime.now(UTC) - timedelta(days=14), tyrant_id=admin.id)
+        admin = _make_user(
+            db_session, "notifyfail", claims=AccountClaims.HAPPY_HOUR_TYRANT
+        )
+        create_event(
+            db_session,
+            loc.id,
+            datetime.now(UTC) - timedelta(days=14),
+            tyrant_id=admin.id,
+        )
         db_session.commit()
 
-        with patch('mail.outgoing.notify_happy_hour_users', side_effect=Exception("SMTP down")), \
-             patch('db.Database', return_value=database):
+        with (
+            patch(
+                "mail.outgoing.notify_happy_hour_users",
+                side_effect=Exception("SMTP down"),
+            ),
+            patch("db.Database", return_value=database),
+        ):
             with caplog.at_level(logging.ERROR):
                 from scheduler import auto_select_happy_hour
+
                 await auto_select_happy_hour()
 
             assert "Failed to send auto-select notifications" in caplog.text
@@ -713,9 +925,10 @@ class TestAutoSelectHappyHour:
         mock_db.__exit__ = MagicMock(return_value=False)
         mock_db.session = MagicMock(return_value=mock_db)
 
-        with patch('db.Database', return_value=mock_db):
+        with patch("db.Database", return_value=mock_db):
             with caplog.at_level(logging.ERROR):
                 from scheduler import auto_select_happy_hour
+
                 await auto_select_happy_hour()
 
             assert "Error during happy hour auto-select" in caplog.text

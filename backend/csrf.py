@@ -13,7 +13,7 @@ Usage::
 
 import secrets
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import HTTPException, Request, status
 
 CSRF_SESSION_KEY = "csrf_token"
 CSRF_HEADER = "X-CSRF-Token"

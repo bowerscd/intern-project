@@ -1,9 +1,7 @@
 """Tests for Alembic migration infrastructure."""
-import os
-import tempfile
+
 from pathlib import Path
 
-import pytest
 from sqlalchemy import create_engine, inspect as sa_inspect, text
 
 from alembic.config import Config as AlembicConfig
@@ -120,7 +118,9 @@ class TestStampIfUnversioned:
 
         # Verify the stamp is at head
         with engine.connect() as conn:
-            rows = conn.execute(text("SELECT version_num FROM alembic_version")).fetchall()
+            rows = conn.execute(
+                text("SELECT version_num FROM alembic_version")
+            ).fetchall()
             assert len(rows) == 1
             assert rows[0][0] is not None
 
@@ -161,7 +161,9 @@ class TestStampIfUnversioned:
         _stamp_if_unversioned(engine)  # second call — should be a no-op
 
         with engine.connect() as conn:
-            rows = conn.execute(text("SELECT version_num FROM alembic_version")).fetchall()
+            rows = conn.execute(
+                text("SELECT version_num FROM alembic_version")
+            ).fetchall()
             assert len(rows) == 1
 
         engine.dispose()

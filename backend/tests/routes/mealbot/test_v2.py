@@ -1,4 +1,5 @@
 """Tests for v2 authenticated mealbot endpoints."""
+
 from starlette.testclient import TestClient
 
 from db import Database
@@ -60,9 +61,10 @@ class TestV2Unauthenticated:
         :param client: Unauthenticated HTTP test client.
         :type client: TestClient
         """
-        r = client.post("/api/v2/mealbot/record", json={
-            "payer": "a", "recipient": "b", "credits": 1
-        })
+        r = client.post(
+            "/api/v2/mealbot/record",
+            json={"payer": "a", "recipient": "b", "credits": 1},
+        )
         assert r.status_code == 401
 
     def test_user_endpoint_removed(self, client: TestClient) -> None:
@@ -77,6 +79,7 @@ class TestV2Unauthenticated:
 
 class TestV2Authenticated:
     """Verify authenticated v2 mealbot endpoints."""
+
     def test_ledger_empty(self, authenticated_client: TestClient) -> None:
         """Verify an empty ledger for a fresh database.
 
@@ -89,7 +92,9 @@ class TestV2Authenticated:
         assert data["items"] == []
         assert data["total"] == 0
 
-    def test_create_user_and_record(self, authenticated_client: TestClient, database: Database) -> None:
+    def test_create_user_and_record(
+        self, authenticated_client: TestClient, database: Database
+    ) -> None:
         """Verify user creation (via DB) and meal recording via v2.
 
         :param authenticated_client: Pre-authenticated HTTP test client with all claims.
@@ -101,11 +106,14 @@ class TestV2Authenticated:
         _add_user(database, "bobbi")
 
         # Auth user is "test" — must be payer or recipient per participant restriction
-        r = authenticated_client.post("/api/v2/mealbot/record", json={
-            "payer": "test",
-            "recipient": "alice",
-            "credits": 5,
-        })
+        r = authenticated_client.post(
+            "/api/v2/mealbot/record",
+            json={
+                "payer": "test",
+                "recipient": "alice",
+                "credits": 5,
+            },
+        )
         assert r.status_code == 200
 
         # Verify in ledger
@@ -115,7 +123,9 @@ class TestV2Authenticated:
         assert len(records) == 1
         assert records[0]["credits"] == 5
 
-    def test_summary(self, authenticated_client: TestClient, database: Database) -> None:
+    def test_summary(
+        self, authenticated_client: TestClient, database: Database
+    ) -> None:
         """Verify the v2 summary endpoint returns correct totals.
 
         :param authenticated_client: Pre-authenticated HTTP test client with all claims.
@@ -125,9 +135,14 @@ class TestV2Authenticated:
         """
         _add_user(database, "alice")
         _add_user(database, "bobbi")
-        authenticated_client.post("/api/v2/mealbot/record", json={
-            "payer": "test", "recipient": "alice", "credits": 3,
-        })
+        authenticated_client.post(
+            "/api/v2/mealbot/record",
+            json={
+                "payer": "test",
+                "recipient": "alice",
+                "credits": 3,
+            },
+        )
 
         r = authenticated_client.get("/api/v2/mealbot/summary")
         assert r.status_code == 200

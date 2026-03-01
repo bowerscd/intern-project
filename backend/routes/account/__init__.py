@@ -5,6 +5,4 @@ from .claims import *  # noqa: F403 — registers endpoints on Accounts router
 from .profile import *  # noqa: F403 — registers endpoints on Accounts router
 from .router import Accounts
 
-__all__ = [
-    "Accounts"
-]
+__all__ = ["Accounts"]

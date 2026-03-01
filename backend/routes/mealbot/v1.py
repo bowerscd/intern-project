@@ -6,13 +6,18 @@ Legacy v1 API endpoints — backwards compatible with special-tribble.
     ``410 Gone``.  The code is retained for historical reference only.
     Use the v2 API instead.
 """
+
 from datetime import datetime
 from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException, status, Query
 
 from routes.tags import ApiTags
-from routes.shared import Database, reject_if_legacy_disabled, mark_legacy_routes_deprecated
+from routes.shared import (
+    Database,
+    reject_if_legacy_disabled,
+    mark_legacy_routes_deprecated,
+)
 
 from schemas.mealbot import (
     AccountModificationRequest,
@@ -81,7 +86,9 @@ async def create_user(body: AccountModificationRequest, db: Database) -> dict[st
 async def get_summary(
     db: Database,
     user: Optional[str] = Query(None, description="Filter by username"),
-    start: Optional[datetime] = Query(None, description="Start of time range (ISO 8601)"),
+    start: Optional[datetime] = Query(
+        None, description="Start of time range (ISO 8601)"
+    ),
     end: Optional[datetime] = Query(None, description="End of time range (ISO 8601)"),
 ) -> dict[str, Any]:
     """Return a credit summary, optionally filtered by user and time range.
@@ -110,8 +117,12 @@ async def get_records(
     db: Database,
     user1: Optional[str] = Query(None, description="First user to filter by"),
     user2: Optional[str] = Query(None, description="Second user (requires user1)"),
-    limit: Optional[int] = Query(None, description="Maximum number of records to return", gt=0),
-    start: Optional[datetime] = Query(None, description="Start of time range (ISO 8601)"),
+    limit: Optional[int] = Query(
+        None, description="Maximum number of records to return", gt=0
+    ),
+    start: Optional[datetime] = Query(
+        None, description="Start of time range (ISO 8601)"
+    ),
     end: Optional[datetime] = Query(None, description="End of time range (ISO 8601)"),
 ) -> list[RecordResponse]:
     """Return meal records, with optional filtering by users, limit, and time.
@@ -157,12 +168,16 @@ async def get_records(
 
             if user1 is not None and user2 is not None:
                 if has_timebound:
-                    receipts = get_timebound_records_between_users(db, user1, user2, start, end, limit)
+                    receipts = get_timebound_records_between_users(
+                        db, user1, user2, start, end, limit
+                    )
                 else:
                     receipts = get_records_between_users(db, user1, user2, limit)
             elif user1 is not None:
                 if has_timebound:
-                    receipts = get_timebound_records_for_user(db, user1, start, end, limit)
+                    receipts = get_timebound_records_for_user(
+                        db, user1, start, end, limit
+                    )
                 else:
                     receipts = get_records_for_user(db, user1, limit)
             else:
@@ -218,5 +233,6 @@ async def create_record(body: CreateRecordRequest, db: Database) -> dict[str, st
             )
 
     return {"status": "ok"}
+
 
 mark_legacy_routes_deprecated(MealbotV1)

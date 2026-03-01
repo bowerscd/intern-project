@@ -5,6 +5,7 @@ Tests for route validation issues:
 - Dead code account_id_map in v0 get_data
 - EventCreate rejects past dates
 """
+
 from datetime import datetime, UTC
 
 import pytest

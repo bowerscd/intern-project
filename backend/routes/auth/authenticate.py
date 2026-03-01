@@ -15,10 +15,9 @@ from models import (
 
 from routes.shared import Database, AUTH_SESSION_KEY
 from ratelimit import limiter
+from .router import Authentication, AuthMgrs
 
 PENDING_REGISTRATION_KEY = "pending_registration"
-
-from .router import Authentication, AuthMgrs
 
 
 class AuthenticateCookies(BaseModel):
@@ -39,8 +38,8 @@ class AuthenticationQuery(BaseModel):
     "/callback/{provider}",
     summary="OIDC callback",
     description="Handles the OIDC provider callback. Exchanges the authorization code "
-                "for tokens, verifies the id_token, and routes to login or registration "
-                "based on the mode encoded in the OAuth state parameter.",
+    "for tokens, verifies the id_token, and routes to login or registration "
+    "based on the mode encoded in the OAuth state parameter.",
 )
 @limiter.limit("20/minute")
 async def authenticate(
@@ -75,16 +74,18 @@ async def authenticate(
         provider (register).
     """
     auth = AuthMgrs[provider.name]
-    redirect, identity = await auth.authenticate(cookies.model_dump(), query.model_dump())
+    redirect, identity = await auth.authenticate(
+        cookies.model_dump(), query.model_dump()
+    )
 
-    if not isinstance(identity.get('id'), dict):
+    if not isinstance(identity.get("id"), dict):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="authentication failed",
         )
 
-    uuid = identity['id']['sub']
-    mode = identity.get('mode', 'login')
+    uuid = identity["id"]["sub"]
+    mode = identity.get("mode", "login")
 
     act: Row[Tuple[Account]] | None | Account | Tuple[Account]
 

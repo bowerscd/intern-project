@@ -1,6 +1,5 @@
 """Tests for the /healthz backend endpoint."""
 
-import pytest
 from starlette.testclient import TestClient
 
 

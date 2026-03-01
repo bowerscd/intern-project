@@ -41,6 +41,7 @@ async def healthcheck() -> JSONResponse:
     scheduler_ok = False
     try:
         from scheduler import get_scheduler
+
         sched = get_scheduler()
         scheduler_ok = sched.running
     except Exception:

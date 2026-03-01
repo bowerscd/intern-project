@@ -9,7 +9,9 @@ class TestClaimsEscalation:
     self-assign HAPPY_HOUR_TYRANT, MEALBOT, etc.
     """
 
-    def test_can_self_assign_happy_hour_tyrant(self, authenticated_client: TestClient) -> None:
+    def test_can_self_assign_happy_hour_tyrant(
+        self, authenticated_client: TestClient
+    ) -> None:
         """An authenticated user can give themselves HAPPY_HOUR_TYRANT.
 
         :param authenticated_client: Pre-authenticated HTTP test client with all claims.
@@ -44,6 +46,7 @@ class TestBasicClaimProtected:
     def test_basic_in_blocked_claims(self) -> None:
         """Verify ``BASIC`` is present in the blocked-claims list."""
         from routes.account.claims import BLOCKED_CLAIMS
+
         assert "BASIC" in BLOCKED_CLAIMS, (
             "FIXED: BASIC is now in BLOCKED_CLAIMS, preventing self-lockout"
         )
@@ -58,6 +61,4 @@ class TestBasicClaimProtected:
             "/api/v2/account/claims",
             json={"add": [], "remove": ["BASIC"]},
         )
-        assert resp.status_code == 400, (
-            "FIXED: Removing BASIC is now blocked"
-        )
+        assert resp.status_code == 400, "FIXED: Removing BASIC is now blocked"

@@ -1,4 +1,5 @@
 """Tests for Database session lifecycle, singleton behavior, and session cleanup."""
+
 from random import randint
 from threading import Lock
 
@@ -16,7 +17,6 @@ class TestDatabaseSingleton:
         db1 = Database()
         db2 = Database("sqlite:///different.db")
         assert db1 is db2, "Singleton returns same instance regardless of URI"
-
 
 
 class TestDatabaseStopDoesNotResetSessionmaker:
@@ -41,4 +41,3 @@ class TestDatabaseStopDoesNotResetSessionmaker:
         assert db._sessionmaker is None, (
             "_sessionmaker should be reset to None after stop()"
         )
-

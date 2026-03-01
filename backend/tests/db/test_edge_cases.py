@@ -1,4 +1,5 @@
 """Additional db/functions tests for edge cases and missing coverage."""
+
 import pytest
 from datetime import datetime, UTC, timedelta
 
@@ -114,7 +115,9 @@ class TestTimeboundRecordsBetweenUsers:
 
         now = datetime.now(UTC)
         records = get_timebound_records_between_users(
-            db_session, "tbu1", "tbu2",
+            db_session,
+            "tbu1",
+            "tbu2",
             start=now - timedelta(minutes=5),
             end=now + timedelta(minutes=5),
         )
@@ -132,7 +135,9 @@ class TestTimeboundRecordsBetweenUsers:
 
         far_past = datetime(2000, 1, 1, tzinfo=UTC)
         records = get_timebound_records_between_users(
-            db_session, "tbo1", "tbo2",
+            db_session,
+            "tbo1",
+            "tbo2",
             start=far_past,
             end=far_past + timedelta(hours=1),
         )
@@ -148,8 +153,11 @@ class TestTimeboundRecordsBetweenUsers:
         now = datetime.now(UTC)
         with pytest.raises(ValueError, match="does not exist"):
             get_timebound_records_between_users(
-                db_session, "ghost", "tbr1",
-                start=now, end=now + timedelta(hours=1),
+                db_session,
+                "ghost",
+                "tbr1",
+                start=now,
+                end=now + timedelta(hours=1),
             )
 
     def test_nonexistent_user2(self, db_session: Session) -> None:
@@ -162,8 +170,11 @@ class TestTimeboundRecordsBetweenUsers:
         now = datetime.now(UTC)
         with pytest.raises(ValueError, match="does not exist"):
             get_timebound_records_between_users(
-                db_session, "tbr2", "ghost",
-                start=now, end=now + timedelta(hours=1),
+                db_session,
+                "tbr2",
+                "ghost",
+                start=now,
+                end=now + timedelta(hours=1),
             )
 
     def test_with_limit(self, db_session: Session) -> None:
@@ -178,7 +189,9 @@ class TestTimeboundRecordsBetweenUsers:
 
         now = datetime.now(UTC)
         records = get_timebound_records_between_users(
-            db_session, "tbl1", "tbl2",
+            db_session,
+            "tbl1",
+            "tbl2",
             start=now - timedelta(minutes=5),
             end=now + timedelta(minutes=5),
             limit=3,
@@ -188,6 +201,7 @@ class TestTimeboundRecordsBetweenUsers:
 
 class TestRecordsForUserWithLimit:
     """Verify ``get_records_for_user`` honours the *limit* parameter."""
+
     def test_with_limit(self, db_session: Session) -> None:
         """Verify per-user records are capped by *limit*.
 
@@ -204,6 +218,7 @@ class TestRecordsForUserWithLimit:
 
 class TestTimeboundRecordsWithLimit:
     """Verify ``get_timebound_records`` honours the *limit* parameter."""
+
     def test_timebound_records_with_limit(self, db_session: Session) -> None:
         """Verify timebound records are capped by *limit*.
 
@@ -226,6 +241,7 @@ class TestTimeboundRecordsWithLimit:
 
 class TestTimeboundRecordsForUserWithLimit:
     """Verify ``get_timebound_records_for_user`` honours the *limit* parameter."""
+
     def test_with_limit(self, db_session: Session) -> None:
         """Verify timebound per-user records are capped by *limit*.
 
@@ -238,7 +254,8 @@ class TestTimeboundRecordsForUserWithLimit:
 
         now = datetime.now(UTC)
         records = get_timebound_records_for_user(
-            db_session, "trula",
+            db_session,
+            "trula",
             start=now - timedelta(minutes=5),
             end=now + timedelta(minutes=5),
             limit=2,
@@ -248,6 +265,7 @@ class TestTimeboundRecordsForUserWithLimit:
 
 class TestTimeboundSummaryEdgeCases:
     """Verify ``get_summary_for_user`` time-bound edge cases."""
+
     def test_nonexistent_user(self, db_session: Session) -> None:
         """Verify a :class:`ValueError` for an unknown user.
 
@@ -257,7 +275,8 @@ class TestTimeboundSummaryEdgeCases:
         now = datetime.now(UTC)
         with pytest.raises(ValueError, match="does not exist"):
             get_summary_for_user(
-                db_session, "nobody",
+                db_session,
+                "nobody",
                 start=now - timedelta(hours=1),
                 end=now + timedelta(hours=1),
             )
@@ -265,6 +284,7 @@ class TestTimeboundSummaryEdgeCases:
 
 class TestEventsThisWeek:
     """Verify ``get_events_this_week`` window boundaries."""
+
     def test_events_after_wednesday_noon(self, db_session: Session) -> None:
         """Verify an event created now appears in this week's results.
 
@@ -272,14 +292,20 @@ class TestEventsThisWeek:
         :type db_session: Session
         """
         loc = _make_location(db_session, name="Wed Bar")
-        act = create_account("weduser", "weduser@test.com", ExternalAuthProvider.test, "wu1",
-                             claims=AccountClaims.HAPPY_HOUR)
+        act = create_account(
+            "weduser",
+            "weduser@test.com",
+            ExternalAuthProvider.test,
+            "wu1",
+            claims=AccountClaims.HAPPY_HOUR,
+        )
         db_session.add(act)
         db_session.commit()
 
         # Create an event at the current time (within this week's window)
         _current_event = create_event(
-            db_session, loc.id,
+            db_session,
+            loc.id,
             datetime.now(UTC),
             tyrant_id=act.id,
         )
@@ -304,14 +330,20 @@ class TestEventsThisWeek:
         :type db_session: Session
         """
         loc = _make_location(db_session, name="Old Bar")
-        act = create_account("olduser", "old@test.com", ExternalAuthProvider.test, "ou1",
-                             claims=AccountClaims.HAPPY_HOUR)
+        act = create_account(
+            "olduser",
+            "old@test.com",
+            ExternalAuthProvider.test,
+            "ou1",
+            claims=AccountClaims.HAPPY_HOUR,
+        )
         db_session.add(act)
         db_session.commit()
 
         # Create an event far in the past
         create_event(
-            db_session, loc.id,
+            db_session,
+            loc.id,
             datetime(2020, 1, 1, tzinfo=UTC),
             tyrant_id=act.id,
         )
@@ -322,16 +354,27 @@ class TestEventsThisWeek:
 
 class TestGetAccountsWithClaim:
     """Verify ``get_accounts_with_claim`` filtering."""
+
     def test_returns_matching_users(self, db_session: Session) -> None:
         """Verify only accounts with the requested claim are returned.
 
         :param db_session: SQLAlchemy database session.
         :type db_session: Session
         """
-        act1 = create_account("hh1", "hh1@test.com", ExternalAuthProvider.test, "hh1",
-                              claims=AccountClaims.HAPPY_HOUR)
-        act2 = create_account("nohh1", "nohh1@test.com", ExternalAuthProvider.test, "nohh1",
-                              claims=AccountClaims.MEALBOT)
+        act1 = create_account(
+            "hh1",
+            "hh1@test.com",
+            ExternalAuthProvider.test,
+            "hh1",
+            claims=AccountClaims.HAPPY_HOUR,
+        )
+        act2 = create_account(
+            "nohh1",
+            "nohh1@test.com",
+            ExternalAuthProvider.test,
+            "nohh1",
+            claims=AccountClaims.MEALBOT,
+        )
         db_session.add(act1)
         db_session.add(act2)
         db_session.commit()
@@ -353,6 +396,7 @@ class TestGetAccountsWithClaim:
 
 class TestGetRandomPreviousLocationEdgeCases:
     """Verify ``get_random_previous_location`` skips closed and illegal venues."""
+
     def test_all_locations_closed(self, db_session: Session) -> None:
         """If all previous event locations are closed, return None.
 
@@ -360,11 +404,18 @@ class TestGetRandomPreviousLocationEdgeCases:
         :type db_session: Session
         """
         loc = _make_location(db_session, name="All Closed Bar", Closed=True)
-        act = create_account("closedlocuser", "cl@test.com", ExternalAuthProvider.test, "clu1",
-                             claims=AccountClaims.HAPPY_HOUR)
+        act = create_account(
+            "closedlocuser",
+            "cl@test.com",
+            ExternalAuthProvider.test,
+            "clu1",
+            claims=AccountClaims.HAPPY_HOUR,
+        )
         db_session.add(act)
         db_session.commit()
-        create_event(db_session, loc.id, datetime.now(UTC) - timedelta(days=14), tyrant_id=act.id)
+        create_event(
+            db_session, loc.id, datetime.now(UTC) - timedelta(days=14), tyrant_id=act.id
+        )
 
         result = get_random_previous_location(db_session)
         assert result is None
@@ -376,11 +427,18 @@ class TestGetRandomPreviousLocationEdgeCases:
         :type db_session: Session
         """
         loc = _make_location(db_session, name="All Illegal Bar", Illegal=True)
-        act = create_account("illegallocuser", "il@test.com", ExternalAuthProvider.test, "ilu1",
-                             claims=AccountClaims.HAPPY_HOUR)
+        act = create_account(
+            "illegallocuser",
+            "il@test.com",
+            ExternalAuthProvider.test,
+            "ilu1",
+            claims=AccountClaims.HAPPY_HOUR,
+        )
         db_session.add(act)
         db_session.commit()
-        create_event(db_session, loc.id, datetime.now(UTC) - timedelta(days=14), tyrant_id=act.id)
+        create_event(
+            db_session, loc.id, datetime.now(UTC) - timedelta(days=14), tyrant_id=act.id
+        )
 
         result = get_random_previous_location(db_session)
         assert result is None
@@ -393,12 +451,27 @@ class TestGetRandomPreviousLocationEdgeCases:
         """
         illegal_loc = _make_location(db_session, name="Illegal Bar", Illegal=True)
         legal_loc = _make_location(db_session, name="Legal Bar")
-        act = create_account("filteruser", "fi@test.com", ExternalAuthProvider.test, "fiu1",
-                             claims=AccountClaims.HAPPY_HOUR)
+        act = create_account(
+            "filteruser",
+            "fi@test.com",
+            ExternalAuthProvider.test,
+            "fiu1",
+            claims=AccountClaims.HAPPY_HOUR,
+        )
         db_session.add(act)
         db_session.commit()
-        create_event(db_session, illegal_loc.id, datetime.now(UTC) - timedelta(days=14), tyrant_id=act.id)
-        create_event(db_session, legal_loc.id, datetime.now(UTC) - timedelta(days=7), tyrant_id=act.id)
+        create_event(
+            db_session,
+            illegal_loc.id,
+            datetime.now(UTC) - timedelta(days=14),
+            tyrant_id=act.id,
+        )
+        create_event(
+            db_session,
+            legal_loc.id,
+            datetime.now(UTC) - timedelta(days=7),
+            tyrant_id=act.id,
+        )
 
         # With only one legal location, it must always be returned
         result = get_random_previous_location(db_session)
@@ -413,7 +486,9 @@ class TestEventsThisWeekNoUpperBound:
     scheduler think every week "already has an event".
     """
 
-    def test_far_future_event_excluded_from_this_week(self, db_session: Session) -> None:
+    def test_far_future_event_excluded_from_this_week(
+        self, db_session: Session
+    ) -> None:
         """An event 90 days in the future is excluded from get_events_this_week.
 
         :param db_session: SQLAlchemy database session.
@@ -421,7 +496,8 @@ class TestEventsThisWeekNoUpperBound:
         """
         loc = _make_location(db_session, name="FutureBar")
         event = create_event(
-            db_session, location_id=loc.id,
+            db_session,
+            location_id=loc.id,
             when=datetime.now(UTC) + timedelta(days=90),
         )
 
@@ -439,7 +515,9 @@ class TestEventsThisWeekStaleEventFromPriorCycle:
     skip auto-selection and incorrectly mark a pending assignment as CHOSEN.
     """
 
-    def test_auto_selected_event_from_prior_cycle_appears_this_week(self, db_session: Session) -> None:
+    def test_auto_selected_event_from_prior_cycle_appears_this_week(
+        self, db_session: Session
+    ) -> None:
         """An auto-selected event within the current week window appears in results.
 
         :param db_session: SQLAlchemy database session.
@@ -451,8 +529,11 @@ class TestEventsThisWeekStaleEventFromPriorCycle:
 
         # Create an event at current time (guaranteed within this week's window)
         event = create_event(
-            db_session, location_id=loc.id, when=now,
-            auto_selected=True, description="Auto-selected from prior cycle",
+            db_session,
+            location_id=loc.id,
+            when=now,
+            auto_selected=True,
+            description="Auto-selected from prior cycle",
         )
 
         events_this_week = get_events_this_week(db_session, now)

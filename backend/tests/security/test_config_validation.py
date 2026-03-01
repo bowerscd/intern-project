@@ -9,14 +9,15 @@ Validates that the config module handles various input scenarios correctly:
 
 import pytest
 import json
-import os
 from pathlib import Path
 
 
 class TestConfigGet:
     """Test the _get() configuration resolution function."""
 
-    def test_env_var_fallback(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    def test_env_var_fallback(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
         """Environment variables should be used when settings.json key is missing."""
         import config
 
@@ -30,7 +31,9 @@ class TestConfigGet:
         result = config._get("nonexistent_key", "TEST_CONFIG_VAR", "default")
         assert result == "from_env"
 
-    def test_default_fallback(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    def test_default_fallback(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
         """Default value should be returned when neither source provides a value."""
         import config
 
@@ -43,7 +46,9 @@ class TestConfigGet:
         result = config._get("nonexistent_key", "NONEXISTENT_VAR", "my_default")
         assert result == "my_default"
 
-    def test_settings_json_takes_priority(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    def test_settings_json_takes_priority(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
         """settings.json values take priority over environment variables."""
         import config
 
@@ -56,7 +61,9 @@ class TestConfigGet:
         result = config._get("my_key", "MY_KEY_ENV", "default")
         assert result == "from_file"
 
-    def test_missing_settings_file(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    def test_missing_settings_file(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
         """Missing settings.json should fall through to env vars."""
         import config
 

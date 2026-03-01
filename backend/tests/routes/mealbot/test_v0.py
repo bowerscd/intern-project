@@ -1,4 +1,5 @@
 """Tests for v0 legacy mealbot endpoints — permanently disabled (410 Gone)."""
+
 from starlette.testclient import TestClient
 
 

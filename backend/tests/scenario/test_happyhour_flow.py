@@ -1,4 +1,5 @@
 """End-to-end scenario tests for the happy hour flow."""
+
 from datetime import datetime, UTC, timedelta
 from starlette.testclient import TestClient
 
@@ -41,11 +42,14 @@ class TestHappyHourFlow:
 
         # 3. Schedule an event
         event_when = (datetime.now(UTC) + timedelta(days=3)).isoformat()
-        r = c.post("/api/v2/happyhour/events", json={
-            "location_id": loc_id,
-            "description": "Weekly happy hour!",
-            "when": event_when,
-        })
+        r = c.post(
+            "/api/v2/happyhour/events",
+            json={
+                "location_id": loc_id,
+                "description": "Weekly happy hour!",
+                "when": event_when,
+            },
+        )
         assert r.status_code == 201
         event = r.json()
         assert event["location_name"] == "The Portland Pub"
@@ -66,13 +70,18 @@ class TestHappyHourFlow:
         assert r.json()["closed"] is True
 
         # 7. Can't create event at closed location (or same week as existing event)
-        r = c.post("/api/v2/happyhour/events", json={
-            "location_id": loc_id,
-            "when": event_when,
-        })
+        r = c.post(
+            "/api/v2/happyhour/events",
+            json={
+                "location_id": loc_id,
+                "when": event_when,
+            },
+        )
         assert r.status_code in (400, 409)
 
-    def test_multiple_locations_and_events(self, authenticated_client: TestClient) -> None:
+    def test_multiple_locations_and_events(
+        self, authenticated_client: TestClient
+    ) -> None:
         """Verify events can span multiple locations.
 
         :param authenticated_client: Pre-authenticated HTTP test client with all claims.
@@ -95,12 +104,20 @@ class TestHappyHourFlow:
         t1 = (datetime.now(UTC) + timedelta(days=3)).isoformat()
         t2 = (datetime.now(UTC) + timedelta(days=10)).isoformat()
 
-        c.post("/api/v2/happyhour/events", json={
-            "location_id": loc1_id, "when": t1,
-        })
-        c.post("/api/v2/happyhour/events", json={
-            "location_id": loc2_id, "when": t2,
-        })
+        c.post(
+            "/api/v2/happyhour/events",
+            json={
+                "location_id": loc1_id,
+                "when": t1,
+            },
+        )
+        c.post(
+            "/api/v2/happyhour/events",
+            json={
+                "location_id": loc2_id,
+                "when": t2,
+            },
+        )
 
         # Verify event list
         r = c.get("/api/v2/happyhour/events")

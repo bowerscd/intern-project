@@ -8,6 +8,8 @@ import httpx
 import pytest
 from urllib.parse import urlparse, parse_qs, urlencode
 
+from helpers import rewrite_oidc_url
+
 
 class TestOIDCLoginFlow:
     """Full Authorization Code flow via the backend's /auth/login/test."""
@@ -20,7 +22,7 @@ class TestOIDCLoginFlow:
         resp = client.get("/api/v2/auth/login/test")
         assert resp.status_code in (302, 307)
 
-        location = resp.headers["location"]
+        location = rewrite_oidc_url(resp.headers["location"], oidc_issuer)
         parsed = urlparse(location)
         assert location.startswith(f"{oidc_issuer}/authorize")
 
@@ -44,7 +46,7 @@ class TestOIDCLoginFlow:
             # Step 1: Initiate REGISTRATION (not login, since account doesn't exist yet)
             resp = session_client.get("/api/v2/auth/register/test")
             assert resp.status_code in (302, 307)
-            authorize_url = resp.headers["location"]
+            authorize_url = rewrite_oidc_url(resp.headers["location"], oidc_issuer)
 
             # Step 2: Follow redirect to OIDC authorize (get the form)
             resp = httpx.get(authorize_url, follow_redirects=False, timeout=10.0)
@@ -125,7 +127,9 @@ class TestOIDCRegisterFlow:
         oidc_issuer, _ = oidc_server
         resp = client.get("/api/v2/auth/register/test")
         assert resp.status_code in (302, 307)
-        assert resp.headers["location"].startswith(f"{oidc_issuer}/authorize")
+        assert rewrite_oidc_url(resp.headers["location"], oidc_issuer).startswith(
+            f"{oidc_issuer}/authorize"
+        )
 
 
 class TestOIDCEdgeCases:
@@ -156,7 +160,7 @@ class TestOIDCEdgeCases:
         ) as c:
             # Start login
             resp = c.get("/api/v2/auth/login/test")
-            authorize_url = resp.headers["location"]
+            authorize_url = rewrite_oidc_url(resp.headers["location"], oidc_issuer)
 
             # Get authorize params and approve
             parsed = urlparse(authorize_url)

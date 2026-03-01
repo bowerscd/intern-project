@@ -1,4 +1,5 @@
 """Tests for happy hour database operations."""
+
 from datetime import datetime, UTC, timedelta
 
 from db.functions import (
@@ -71,7 +72,13 @@ def _make_tyrant(s: Session, name: str = "tyrant") -> Account:
     :returns: Persisted account with tyrant claims.
     :rtype: Account
     """
-    act = create_account(name, f"{name}@test.com", ExternalAuthProvider.test, name, claims=AccountClaims.HAPPY_HOUR)
+    act = create_account(
+        name,
+        f"{name}@test.com",
+        ExternalAuthProvider.test,
+        name,
+        claims=AccountClaims.HAPPY_HOUR,
+    )
     s.add(act)
     s.commit()
     return act
@@ -79,6 +86,7 @@ def _make_tyrant(s: Session, name: str = "tyrant") -> Account:
 
 class TestLocations:
     """Verify happy-hour location CRUD operations."""
+
     def test_create_location(self, db_session: Session) -> None:
         """Verify a location is created with the expected defaults.
 
@@ -148,6 +156,7 @@ class TestLocations:
 
 class TestEvents:
     """Verify happy-hour event CRUD operations."""
+
     def test_create_event(self, db_session: Session) -> None:
         """Verify an event is created with the expected attributes.
 
@@ -175,8 +184,18 @@ class TestEvents:
         """
         loc = _make_location(db_session, name="All Events Bar")
         tyrant = _make_tyrant(db_session, "allevt")
-        create_event(db_session, loc.id, datetime.now(UTC) + timedelta(days=1), tyrant_id=tyrant.id)
-        create_event(db_session, loc.id, datetime.now(UTC) + timedelta(days=8), tyrant_id=tyrant.id)
+        create_event(
+            db_session,
+            loc.id,
+            datetime.now(UTC) + timedelta(days=1),
+            tyrant_id=tyrant.id,
+        )
+        create_event(
+            db_session,
+            loc.id,
+            datetime.now(UTC) + timedelta(days=8),
+            tyrant_id=tyrant.id,
+        )
         events = get_all_events(db_session)
         assert len(events) >= 2
 
@@ -188,7 +207,12 @@ class TestEvents:
         """
         loc = _make_location(db_session, name="ID Event Bar")
         tyrant = _make_tyrant(db_session, "idevt")
-        event = create_event(db_session, loc.id, datetime.now(UTC) + timedelta(hours=1), tyrant_id=tyrant.id)
+        event = create_event(
+            db_session,
+            loc.id,
+            datetime.now(UTC) + timedelta(hours=1),
+            tyrant_id=tyrant.id,
+        )
         found = get_event_by_id(db_session, event.id)
         assert found is not None
         assert found.id == event.id
@@ -215,7 +239,8 @@ class TestEvents:
         loc = _make_location(db_session, name="Auto Bar")
         tyrant = _make_tyrant(db_session, "autoevt")
         event = create_event(
-            db_session, loc.id,
+            db_session,
+            loc.id,
             datetime.now(UTC) + timedelta(days=1),
             tyrant_id=tyrant.id,
             auto_selected=True,
@@ -225,6 +250,7 @@ class TestEvents:
 
 class TestRandomPreviousLocation:
     """Verify random location selection from previous events."""
+
     def test_no_previous_events(self, db_session: Session) -> None:
         """Verify ``None`` when there are no previous events.
 
@@ -242,7 +268,12 @@ class TestRandomPreviousLocation:
         """
         loc = _make_location(db_session, name="Random Bar")
         tyrant = _make_tyrant(db_session, "randtyrant")
-        create_event(db_session, loc.id, datetime.now(UTC) - timedelta(days=7), tyrant_id=tyrant.id)
+        create_event(
+            db_session,
+            loc.id,
+            datetime.now(UTC) - timedelta(days=7),
+            tyrant_id=tyrant.id,
+        )
         result = get_random_previous_location(db_session)
         assert result is not None
         assert result.Closed is False
@@ -255,7 +286,12 @@ class TestRandomPreviousLocation:
         """
         loc = _make_location(db_session, name="Closed Random", Closed=True)
         tyrant = _make_tyrant(db_session, "closedrand")
-        create_event(db_session, loc.id, datetime.now(UTC) - timedelta(days=7), tyrant_id=tyrant.id)
+        create_event(
+            db_session,
+            loc.id,
+            datetime.now(UTC) - timedelta(days=7),
+            tyrant_id=tyrant.id,
+        )
 
         # Only the closed location has events — should return None
         result = get_random_previous_location(db_session)
@@ -277,8 +313,13 @@ class TestTyrantRotation:
         :returns: The persisted account.
         :rtype: Account
         """
-        act = create_account(name, f"{name}@test.com", ExternalAuthProvider.test, name,
-                             claims=AccountClaims.HAPPY_HOUR_TYRANT | AccountClaims.HAPPY_HOUR)
+        act = create_account(
+            name,
+            f"{name}@test.com",
+            ExternalAuthProvider.test,
+            name,
+            claims=AccountClaims.HAPPY_HOUR_TYRANT | AccountClaims.HAPPY_HOUR,
+        )
         s.add(act)
         s.commit()
         return act
@@ -291,7 +332,10 @@ class TestTyrantRotation:
         """
         admin = self._make_admin(db_session, "rot_create")
         assignment = create_tyrant_assignment(
-            db_session, admin.id, cycle=1, position=0,
+            db_session,
+            admin.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC),
         )
         assert assignment.id is not None
@@ -309,7 +353,10 @@ class TestTyrantRotation:
         """
         admin = self._make_admin(db_session, "rot_pending")
         create_tyrant_assignment(
-            db_session, admin.id, cycle=1, position=0,
+            db_session,
+            admin.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC),
             deadline_at=datetime.now(UTC) + timedelta(days=5),
             status=TyrantAssignmentStatus.PENDING,
@@ -318,7 +365,9 @@ class TestTyrantRotation:
         assert pending is not None
         assert pending.account_id == admin.id
 
-    def test_get_current_pending_returns_none_when_all_resolved(self, db_session: Session) -> None:
+    def test_get_current_pending_returns_none_when_all_resolved(
+        self, db_session: Session
+    ) -> None:
         """Verify ``None`` when all assignments are resolved.
 
         :param db_session: SQLAlchemy database session.
@@ -326,7 +375,10 @@ class TestTyrantRotation:
         """
         admin = self._make_admin(db_session, "rot_none")
         a = create_tyrant_assignment(
-            db_session, admin.id, cycle=1, position=0,
+            db_session,
+            admin.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC),
             deadline_at=datetime.now(UTC) + timedelta(days=5),
             status=TyrantAssignmentStatus.PENDING,
@@ -352,7 +404,10 @@ class TestTyrantRotation:
         """
         admin = self._make_admin(db_session, "rot_cycnum")
         create_tyrant_assignment(
-            db_session, admin.id, cycle=3, position=0,
+            db_session,
+            admin.id,
+            cycle=3,
+            position=0,
             assigned_at=datetime.now(UTC),
         )
         assert get_current_cycle_number(db_session) == 3
@@ -365,7 +420,10 @@ class TestTyrantRotation:
         """
         admin = self._make_admin(db_session, "rot_chosen")
         a = create_tyrant_assignment(
-            db_session, admin.id, cycle=1, position=0,
+            db_session,
+            admin.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC),
             deadline_at=datetime.now(UTC) + timedelta(days=5),
             status=TyrantAssignmentStatus.PENDING,
@@ -382,7 +440,10 @@ class TestTyrantRotation:
         """
         admin = self._make_admin(db_session, "rot_missed")
         a = create_tyrant_assignment(
-            db_session, admin.id, cycle=1, position=0,
+            db_session,
+            admin.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC),
             deadline_at=datetime.now(UTC) + timedelta(days=5),
             status=TyrantAssignmentStatus.PENDING,
@@ -409,7 +470,10 @@ class TestTyrantRotation:
         admin = self._make_admin(db_session, "rot_streak")
         for i in range(3):
             a = create_tyrant_assignment(
-                db_session, admin.id, cycle=1, position=i,
+                db_session,
+                admin.id,
+                cycle=1,
+                position=i,
                 assigned_at=datetime.now(UTC) - timedelta(days=21 - i * 7),
                 deadline_at=datetime.now(UTC) - timedelta(days=16 - i * 7),
                 status=TyrantAssignmentStatus.PENDING,
@@ -426,13 +490,18 @@ class TestTyrantRotation:
         """
         admin = self._make_admin(db_session, "rot_reset")
         # miss, chosen, miss => 1 consecutive miss
-        for i, st in enumerate([
-            TyrantAssignmentStatus.MISSED,
-            TyrantAssignmentStatus.CHOSEN,
-            TyrantAssignmentStatus.MISSED,
-        ]):
+        for i, st in enumerate(
+            [
+                TyrantAssignmentStatus.MISSED,
+                TyrantAssignmentStatus.CHOSEN,
+                TyrantAssignmentStatus.MISSED,
+            ]
+        ):
             a = create_tyrant_assignment(
-                db_session, admin.id, cycle=1, position=i,
+                db_session,
+                admin.id,
+                cycle=1,
+                position=i,
                 assigned_at=datetime.now(UTC) - timedelta(days=21 - i * 7),
                 deadline_at=datetime.now(UTC) - timedelta(days=16 - i * 7),
                 status=TyrantAssignmentStatus.PENDING,
@@ -451,7 +520,10 @@ class TestTyrantRotation:
         admin2 = self._make_admin(db_session, "cyc_b")
         admin3 = self._make_admin(db_session, "cyc_c")
         rotations = create_cycle_rotation(
-            db_session, [admin1, admin2, admin3], cycle=1, now=datetime.now(UTC),
+            db_session,
+            [admin1, admin2, admin3],
+            cycle=1,
+            now=datetime.now(UTC),
         )
         assert len(rotations) == 3
         positions = [r.position for r in rotations]
@@ -468,13 +540,19 @@ class TestTyrantRotation:
         admin1 = self._make_admin(db_session, "sched_a")
         admin2 = self._make_admin(db_session, "sched_b")
         create_tyrant_assignment(
-            db_session, admin1.id, cycle=1, position=0,
+            db_session,
+            admin1.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC),
             status=TyrantAssignmentStatus.PENDING,
             deadline_at=datetime.now(UTC) + timedelta(days=5),
         )
         create_tyrant_assignment(
-            db_session, admin2.id, cycle=1, position=1,
+            db_session,
+            admin2.id,
+            cycle=1,
+            position=1,
             assigned_at=datetime.now(UTC),
         )
         nxt = get_next_scheduled_assignment(db_session, cycle=1)
@@ -492,17 +570,26 @@ class TestTyrantRotation:
         admin2 = self._make_admin(db_session, "deck_b")
         admin3 = self._make_admin(db_session, "deck_c")
         create_tyrant_assignment(
-            db_session, admin1.id, cycle=1, position=0,
+            db_session,
+            admin1.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC),
             status=TyrantAssignmentStatus.PENDING,
             deadline_at=datetime.now(UTC) + timedelta(days=5),
         )
         create_tyrant_assignment(
-            db_session, admin2.id, cycle=1, position=1,
+            db_session,
+            admin2.id,
+            cycle=1,
+            position=1,
             assigned_at=datetime.now(UTC),
         )
         create_tyrant_assignment(
-            db_session, admin3.id, cycle=1, position=2,
+            db_session,
+            admin3.id,
+            cycle=1,
+            position=2,
             assigned_at=datetime.now(UTC),
         )
         on_deck = get_on_deck_assignment(db_session, cycle=1, current_position=0)
@@ -517,7 +604,10 @@ class TestTyrantRotation:
         """
         admin = self._make_admin(db_session, "act_admin")
         a = create_tyrant_assignment(
-            db_session, admin.id, cycle=1, position=0,
+            db_session,
+            admin.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC),
         )
         assert a.status == TyrantAssignmentStatus.SCHEDULED
@@ -537,11 +627,17 @@ class TestTyrantRotation:
         admin1 = self._make_admin(db_session, "rot_sched_a")
         admin2 = self._make_admin(db_session, "rot_sched_b")
         create_tyrant_assignment(
-            db_session, admin2.id, cycle=1, position=1,
+            db_session,
+            admin2.id,
+            cycle=1,
+            position=1,
             assigned_at=datetime.now(UTC),
         )
         create_tyrant_assignment(
-            db_session, admin1.id, cycle=1, position=0,
+            db_session,
+            admin1.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC),
         )
         schedule = get_rotation_schedule(db_session, 1)
@@ -597,8 +693,13 @@ class TestTyrantRotationSetterFixed:
         :returns: The persisted account.
         :rtype: Account
         """
-        act = create_account(name, f"{name}@test.com", ExternalAuthProvider.test, name,
-                             claims=AccountClaims.HAPPY_HOUR_TYRANT | AccountClaims.HAPPY_HOUR)
+        act = create_account(
+            name,
+            f"{name}@test.com",
+            ExternalAuthProvider.test,
+            name,
+            claims=AccountClaims.HAPPY_HOUR_TYRANT | AccountClaims.HAPPY_HOUR,
+        )
         s.add(act)
         s.commit()
         return act
@@ -612,7 +713,10 @@ class TestTyrantRotationSetterFixed:
 
         admin = self._make_admin(db_session, "setter_test")
         assignment = create_tyrant_assignment(
-            db_session, admin.id, cycle=1, position=0,
+            db_session,
+            admin.id,
+            cycle=1,
+            position=0,
             assigned_at=datetime.now(UTC),
         )
 

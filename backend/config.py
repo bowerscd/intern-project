@@ -95,10 +95,14 @@ If *dev_mode* is ``true`` the default in ``settings.json`` is ``"1234"``.
 DATABASE_URI: Optional[str] = _get("database_uri", "DATABASE_URI", None)
 """SQLAlchemy connection URI.  ``None`` → ephemeral in-memory SQLite."""
 
-CORS_ALLOW_ORIGINS: List[str] = _get_json("cors_allow_origins", "CORS_ALLOW_ORIGINS", ["*"] if DEV_MODE else [])
+CORS_ALLOW_ORIGINS: List[str] = _get_json(
+    "cors_allow_origins", "CORS_ALLOW_ORIGINS", ["*"] if DEV_MODE else []
+)
 """Origins permitted by the CORS middleware."""
 
-SESSION_COOKIE_DOMAIN: Optional[str] = _get("session_cookie_domain", "SESSION_COOKIE_DOMAIN", None)
+SESSION_COOKIE_DOMAIN: Optional[str] = _get(
+    "session_cookie_domain", "SESSION_COOKIE_DOMAIN", None
+)
 """Domain attribute for the session cookie.
 
 Set to ``".yourdomain.com"`` in production so the cookie is shared across
@@ -129,7 +133,11 @@ Empty by default — only relative redirect paths are accepted.
 LOG_LEVEL: str = _get("log_level", "LOG_LEVEL", "INFO")
 """Python logging level name (e.g. ``"DEBUG"``, ``"INFO"``, ``"WARNING"``)."""
 
-SCHEDULER_ENABLED: bool = _get("scheduler_enabled", "SCHEDULER_ENABLED", True) in (True, "1", "true")
+SCHEDULER_ENABLED: bool = _get("scheduler_enabled", "SCHEDULER_ENABLED", True) in (
+    True,
+    "1",
+    "true",
+)
 """Whether the APScheduler cron jobs should start on this instance.
 
 In multi-instance deployments set ``SCHEDULER_ENABLED=0`` on all replicas
@@ -141,6 +149,7 @@ except one so that only a single process runs the periodic jobs.
 # Startup validation
 # ---------------------------------------------------------------------------
 
+
 def _validate_config() -> None:
     """Raise :class:`RuntimeError` when critical settings are missing.
 
@@ -151,6 +160,7 @@ def _validate_config() -> None:
     if DEV_MODE:
         if DATABASE_URI is not None:
             import logging as _log
+
             _log.getLogger(__name__).critical(
                 "DEV_MODE is enabled but DATABASE_URI is set — "
                 "this looks like a production deployment with dev guards disabled. "

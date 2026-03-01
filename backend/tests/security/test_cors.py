@@ -53,11 +53,15 @@ class TestCORSAllowedOrigins:
 class TestCORSDisallowedOrigins:
     """Requests from unknown origins should not include CORS allow headers."""
 
-    def test_unknown_origin_no_allow_header(self, client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_unknown_origin_no_allow_header(
+        self, client: TestClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """An origin not in the allow-list should not get Access-Control-Allow-Origin."""
         import config
 
-        monkeypatch.setattr(config, "CORS_ALLOW_ORIGINS", ["https://trusted.example.com"])
+        monkeypatch.setattr(
+            config, "CORS_ALLOW_ORIGINS", ["https://trusted.example.com"]
+        )
 
         # Need a fresh app with the updated CORS config — but since middleware
         # is already configured, this tests the running config.

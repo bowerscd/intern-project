@@ -1,4 +1,5 @@
 """Tests for mail module."""
+
 import pytest
 from datetime import datetime, UTC, timedelta
 from email.mime.text import MIMEText
@@ -18,6 +19,7 @@ from models import ExternalAuthProvider, AccountClaims, PhoneProvider
 
 class TestSmtpConfig:
     """Verify SMTP configuration is read from environment variables."""
+
     def test_smtp_cfg(self, smtp: SMTPServer) -> None:
         """Verify :func:`smtp_cfg` returns host, port, and credentials.
 
@@ -127,6 +129,7 @@ def _make_location(s: Session, name: str = "Notify Bar") -> Location:
     :rtype: Location
     """
     from db.functions import create_location
+
     return create_location(
         s,
         Name=name,
@@ -146,7 +149,9 @@ class TestNotifyHappyHourUsers:
     """Verify :func:`notify_happy_hour_users` dispatches emails and SMS."""
 
     @pytest.mark.asyncio
-    async def test_notify_email_only_users(self, smtp: SMTPServer, db_session: Session) -> None:
+    async def test_notify_email_only_users(
+        self, smtp: SMTPServer, db_session: Session
+    ) -> None:
         """Users with email but no phone should get email only.
 
         :param smtp: In-process SMTP server.
@@ -155,7 +160,10 @@ class TestNotifyHappyHourUsers:
         :type db_session: Session
         """
         act = create_account(
-            "emailuser", "emailuser@test.com", ExternalAuthProvider.test, "eu1",
+            "emailuser",
+            "emailuser@test.com",
+            ExternalAuthProvider.test,
+            "eu1",
             claims=AccountClaims.HAPPY_HOUR,
         )
         db_session.add(act)
@@ -163,7 +171,8 @@ class TestNotifyHappyHourUsers:
 
         loc = _make_location(db_session, name="Email Bar")
         event = create_event(
-            db_session, loc.id,
+            db_session,
+            loc.id,
             datetime.now(UTC) + timedelta(days=2),
             tyrant_id=act.id,
             description="Email notification test",
@@ -175,7 +184,9 @@ class TestNotifyHappyHourUsers:
         assert "emailuser@test.com" in smtp.outbox[0]["To"]
 
     @pytest.mark.asyncio
-    async def test_notify_phone_and_email_users(self, smtp: SMTPServer, db_session: Session) -> None:
+    async def test_notify_phone_and_email_users(
+        self, smtp: SMTPServer, db_session: Session
+    ) -> None:
         """Users with both email and phone should get both notifications.
 
         :param smtp: In-process SMTP server.
@@ -184,7 +195,10 @@ class TestNotifyHappyHourUsers:
         :type db_session: Session
         """
         act = create_account(
-            "bothuser", "bothuser@test.com", ExternalAuthProvider.test, "bu1",
+            "bothuser",
+            "bothuser@test.com",
+            ExternalAuthProvider.test,
+            "bu1",
             phone="5551112222",
             phone_provider=PhoneProvider.TMOBILE,
             claims=AccountClaims.HAPPY_HOUR,
@@ -194,7 +208,8 @@ class TestNotifyHappyHourUsers:
 
         loc = _make_location(db_session, name="Both Bar")
         event = create_event(
-            db_session, loc.id,
+            db_session,
+            loc.id,
             datetime.now(UTC) + timedelta(days=2),
             tyrant_id=act.id,
             description="Dual notification test",
@@ -209,7 +224,9 @@ class TestNotifyHappyHourUsers:
         assert any("5551112222@tmomail.net" in r for r in recipients)
 
     @pytest.mark.asyncio
-    async def test_notify_phone_only_user(self, smtp: SMTPServer, db_session: Session) -> None:
+    async def test_notify_phone_only_user(
+        self, smtp: SMTPServer, db_session: Session
+    ) -> None:
         """Users with phone but no email should get SMS only.
 
         :param smtp: In-process SMTP server.
@@ -218,7 +235,10 @@ class TestNotifyHappyHourUsers:
         :type db_session: Session
         """
         act = create_account(
-            "phoneuser", None, ExternalAuthProvider.test, "pu1",
+            "phoneuser",
+            None,
+            ExternalAuthProvider.test,
+            "pu1",
             phone="5553334444",
             phone_provider=PhoneProvider.VERIZON,
             claims=AccountClaims.HAPPY_HOUR,
@@ -228,7 +248,8 @@ class TestNotifyHappyHourUsers:
 
         loc = _make_location(db_session, name="Phone Bar")
         event = create_event(
-            db_session, loc.id,
+            db_session,
+            loc.id,
             datetime.now(UTC) + timedelta(days=2),
             tyrant_id=act.id,
             description="Phone notification test",
@@ -240,7 +261,9 @@ class TestNotifyHappyHourUsers:
         assert "5553334444@vzwpix.com" in smtp.outbox[0]["To"]
 
     @pytest.mark.asyncio
-    async def test_notify_skips_users_without_claim(self, smtp: SMTPServer, db_session: Session) -> None:
+    async def test_notify_skips_users_without_claim(
+        self, smtp: SMTPServer, db_session: Session
+    ) -> None:
         """Users without HAPPY_HOUR claim should not get notified.
 
         :param smtp: In-process SMTP server.
@@ -249,7 +272,10 @@ class TestNotifyHappyHourUsers:
         :type db_session: Session
         """
         act = create_account(
-            "noclaim", "noclaim@test.com", ExternalAuthProvider.test, "nc1",
+            "noclaim",
+            "noclaim@test.com",
+            ExternalAuthProvider.test,
+            "nc1",
             claims=AccountClaims.MEALBOT,
         )
         db_session.add(act)
@@ -257,7 +283,8 @@ class TestNotifyHappyHourUsers:
 
         loc = _make_location(db_session, name="NoClaim Bar")
         event = create_event(
-            db_session, loc.id,
+            db_session,
+            loc.id,
             datetime.now(UTC) + timedelta(days=2),
             tyrant_id=act.id,
         )
@@ -267,7 +294,9 @@ class TestNotifyHappyHourUsers:
         assert len(smtp.outbox) == 0
 
     @pytest.mark.asyncio
-    async def test_notify_skips_phone_none_provider(self, smtp: SMTPServer, db_session: Session) -> None:
+    async def test_notify_skips_phone_none_provider(
+        self, smtp: SMTPServer, db_session: Session
+    ) -> None:
         """Users with phone but NONE provider should not get SMS.
 
         :param smtp: In-process SMTP server.
@@ -276,7 +305,10 @@ class TestNotifyHappyHourUsers:
         :type db_session: Session
         """
         act = create_account(
-            "noprovider", "noprovider@test.com", ExternalAuthProvider.test, "np1",
+            "noprovider",
+            "noprovider@test.com",
+            ExternalAuthProvider.test,
+            "np1",
             phone="5555556666",
             phone_provider=PhoneProvider.NONE,
             claims=AccountClaims.HAPPY_HOUR,
@@ -286,7 +318,8 @@ class TestNotifyHappyHourUsers:
 
         loc = _make_location(db_session, name="NoProvider Bar")
         event = create_event(
-            db_session, loc.id,
+            db_session,
+            loc.id,
             datetime.now(UTC) + timedelta(days=2),
             tyrant_id=act.id,
         )

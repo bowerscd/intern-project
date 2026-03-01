@@ -4,7 +4,6 @@ Validates that the backend handles garbage input gracefully without 500s.
 """
 
 import pytest
-from hypothesis import given, strategies as st, settings
 from starlette.testclient import TestClient
 
 
@@ -21,32 +20,43 @@ class TestMalformedJSON:
     ]
 
     @pytest.mark.parametrize("method, path", ENDPOINTS)
-    def test_empty_body(self, authenticated_client: TestClient, method: str, path: str) -> None:
+    def test_empty_body(
+        self, authenticated_client: TestClient, method: str, path: str
+    ) -> None:
         resp = authenticated_client.request(method, path, content=b"")
         assert resp.status_code in (400, 422)
 
     @pytest.mark.parametrize("method, path", ENDPOINTS)
-    def test_garbage_body(self, authenticated_client: TestClient, method: str, path: str) -> None:
+    def test_garbage_body(
+        self, authenticated_client: TestClient, method: str, path: str
+    ) -> None:
         resp = authenticated_client.request(
-            method, path,
+            method,
+            path,
             content=b"not json at all {{{",
             headers={"Content-Type": "application/json"},
         )
         assert resp.status_code in (400, 422)
 
     @pytest.mark.parametrize("method, path", ENDPOINTS)
-    def test_null_body(self, authenticated_client: TestClient, method: str, path: str) -> None:
+    def test_null_body(
+        self, authenticated_client: TestClient, method: str, path: str
+    ) -> None:
         resp = authenticated_client.request(
-            method, path,
+            method,
+            path,
             content=b"null",
             headers={"Content-Type": "application/json"},
         )
         assert resp.status_code != 500
 
     @pytest.mark.parametrize("method, path", ENDPOINTS)
-    def test_array_instead_of_object(self, authenticated_client: TestClient, method: str, path: str) -> None:
+    def test_array_instead_of_object(
+        self, authenticated_client: TestClient, method: str, path: str
+    ) -> None:
         resp = authenticated_client.request(
-            method, path,
+            method,
+            path,
             content=b"[1, 2, 3]",
             headers={"Content-Type": "application/json"},
         )

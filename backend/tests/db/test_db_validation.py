@@ -4,6 +4,7 @@ Tests for db/functions validation:
 - create_receipt allows self-payments (payer == recipient)
 - Scheduler partial commits — no atomicity across operations
 """
+
 import pytest
 from datetime import datetime, UTC
 
@@ -41,7 +42,9 @@ def _make_users(s: Session, names: list[str]) -> object:
     return accounts
 
 
-def _make_location(s: Session, name: str = "DB Finding Bar", **overrides: Any) -> Location:
+def _make_location(
+    s: Session, name: str = "DB Finding Bar", **overrides: Any
+) -> Location:
     """Create a test location with sensible defaults.
 
     :param s: Active database session.
@@ -74,7 +77,9 @@ class TestGlobalSummaryIgnoresTimeFilters:
     for global summaries. There is no get_timebound_global_summary function.
     """
 
-    def test_resolve_summary_ignores_time_when_no_user(self, db_session: Session) -> None:
+    def test_resolve_summary_ignores_time_when_no_user(
+        self, db_session: Session
+    ) -> None:
         """resolve_summary with user=None ignores start/end parameters.
 
         :param db_session: SQLAlchemy database session.
@@ -87,6 +92,7 @@ class TestGlobalSummaryIgnoresTimeFilters:
 
         # Create an old receipt manually
         from models import DBReceipt as Receipt
+
         old_receipt = Receipt(
             Credits=10,
             Time=datetime(2020, 1, 1, tzinfo=UTC),
@@ -100,7 +106,8 @@ class TestGlobalSummaryIgnoresTimeFilters:
 
         # Request only 2025 data — should exclude the 2020 receipt
         result = resolve_summary(
-            db_session, None,
+            db_session,
+            None,
             datetime(2025, 1, 1, tzinfo=UTC),
             datetime(2025, 12, 31, tzinfo=UTC),
         )
@@ -178,14 +185,20 @@ class TestSchedulerAtomicity:
         :type db_session: Session
         """
         a = create_account(
-            "atom1", "atom1@t.com", ExternalAuthProvider.test, "atom1",
+            "atom1",
+            "atom1@t.com",
+            ExternalAuthProvider.test,
+            "atom1",
             claims=AccountClaims.BASIC | AccountClaims.HAPPY_HOUR_TYRANT,
         )
         db_session.add(a)
         db_session.commit()
 
         assignment = create_tyrant_assignment(
-            db_session, a.id, 1, position=0,
+            db_session,
+            a.id,
+            1,
+            position=0,
             assigned_at=datetime.now(UTC),
             deadline_at=datetime.now(UTC),
             status=TyrantAssignmentStatus.PENDING,
@@ -202,4 +215,3 @@ class TestSchedulerAtomicity:
             "mark_assignment_missed committed independently — "
             "if create_event fails after this, state is inconsistent"
         )
-

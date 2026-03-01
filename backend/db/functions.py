@@ -1,6 +1,7 @@
 """
 Database helper functions for account, mealbot, and happy hour operations.
 """
+
 from typing import Any, Optional
 from datetime import datetime, UTC
 
@@ -22,6 +23,7 @@ from models import (
 
 # --- Account functions ---
 
+
 def create_account(
     username: str,
     email: Optional[str],
@@ -29,7 +31,7 @@ def create_account(
     external_unique_id: str,
     phone: str | None = None,
     phone_provider: PhoneProvider = PhoneProvider.NONE,
-    claims: AccountClaims = AccountClaims.NONE
+    claims: AccountClaims = AccountClaims.NONE,
 ) -> Account:
     """Create a new account instance without persisting it to the database.
 
@@ -134,6 +136,7 @@ def get_all_accounts(s: Session) -> list[Account]:
 
 # --- Mealbot functions ---
 
+
 def create_receipt(
     s: Session,
     payer_username: str,
@@ -184,9 +187,7 @@ def get_all_records(s: Session) -> list[Receipt]:
     :returns: A list of all receipts, newest first.
     :rtype: list[Receipt]
     """
-    return s.scalars(
-        select(Receipt).order_by(Receipt.Time.desc())
-    ).all()
+    return s.scalars(select(Receipt).order_by(Receipt.Time.desc())).all()
 
 
 def count_records(s: Session) -> int:
@@ -211,7 +212,9 @@ def get_records_paginated(s: Session, offset: int, limit: int) -> list[Receipt]:
     return s.scalars(
         select(Receipt)
         .options(joinedload(Receipt.Payer), joinedload(Receipt.Recipient))
-        .order_by(Receipt.Time.desc()).offset(offset).limit(limit)
+        .order_by(Receipt.Time.desc())
+        .offset(offset)
+        .limit(limit)
     ).all()
 
 
@@ -223,12 +226,12 @@ def get_records_with_limit(s: Session, limit: int) -> list[Receipt]:
     :returns: A list of the most recent receipts, newest first.
     :rtype: list[Receipt]
     """
-    return s.scalars(
-        select(Receipt).order_by(Receipt.Time.desc()).limit(limit)
-    ).all()
+    return s.scalars(select(Receipt).order_by(Receipt.Time.desc()).limit(limit)).all()
 
 
-def get_records_for_user(s: Session, username: str, limit: int | None = None) -> list[Receipt]:
+def get_records_for_user(
+    s: Session, username: str, limit: int | None = None
+) -> list[Receipt]:
     """Retrieve receipts involving a specific user as payer or recipient.
 
     :param s: Active database session.
@@ -242,9 +245,11 @@ def get_records_for_user(s: Session, username: str, limit: int | None = None) ->
     if user is None:
         raise ValueError(f"User '{username}' does not exist")
 
-    stmt = select(Receipt).where(
-        or_(Receipt.PayerId == user.id, Receipt.RecipientId == user.id)
-    ).order_by(Receipt.Time.desc())
+    stmt = (
+        select(Receipt)
+        .where(or_(Receipt.PayerId == user.id, Receipt.RecipientId == user.id))
+        .order_by(Receipt.Time.desc())
+    )
 
     if limit is not None:
         stmt = stmt.limit(limit)
@@ -265,11 +270,14 @@ def count_records_for_user(s: Session, username: str) -> int:
     if user is None:
         raise ValueError(f"User '{username}' does not exist")
 
-    return s.execute(
-        select(func.count()).select_from(Receipt).where(
-            or_(Receipt.PayerId == user.id, Receipt.RecipientId == user.id)
-        )
-    ).scalar() or 0
+    return (
+        s.execute(
+            select(func.count())
+            .select_from(Receipt)
+            .where(or_(Receipt.PayerId == user.id, Receipt.RecipientId == user.id))
+        ).scalar()
+        or 0
+    )
 
 
 def get_records_for_user_paginated(
@@ -295,9 +303,10 @@ def get_records_for_user_paginated(
     return s.scalars(
         select(Receipt)
         .options(joinedload(Receipt.Payer), joinedload(Receipt.Recipient))
-        .where(
-            or_(Receipt.PayerId == user.id, Receipt.RecipientId == user.id)
-        ).order_by(Receipt.Time.desc()).offset(offset).limit(limit)
+        .where(or_(Receipt.PayerId == user.id, Receipt.RecipientId == user.id))
+        .order_by(Receipt.Time.desc())
+        .offset(offset)
+        .limit(limit)
     ).all()
 
 
@@ -324,12 +333,16 @@ def get_records_between_users(
     if user2 is None:
         raise ValueError(f"User '{username2}' does not exist")
 
-    stmt = select(Receipt).where(
-        or_(
-            and_(Receipt.PayerId == user1.id, Receipt.RecipientId == user2.id),
-            and_(Receipt.PayerId == user2.id, Receipt.RecipientId == user1.id),
+    stmt = (
+        select(Receipt)
+        .where(
+            or_(
+                and_(Receipt.PayerId == user1.id, Receipt.RecipientId == user2.id),
+                and_(Receipt.PayerId == user2.id, Receipt.RecipientId == user1.id),
+            )
         )
-    ).order_by(Receipt.Time.desc())
+        .order_by(Receipt.Time.desc())
+    )
 
     if limit is not None:
         stmt = stmt.limit(limit)
@@ -352,9 +365,11 @@ def get_timebound_records(
     :returns: A list of matching receipts, newest first.
     :rtype: list[Receipt]
     """
-    stmt = select(Receipt).where(
-        and_(Receipt.Time >= start, Receipt.Time <= end)
-    ).order_by(Receipt.Time.desc())
+    stmt = (
+        select(Receipt)
+        .where(and_(Receipt.Time >= start, Receipt.Time <= end))
+        .order_by(Receipt.Time.desc())
+    )
 
     if limit is not None:
         stmt = stmt.limit(limit)
@@ -384,13 +399,17 @@ def get_timebound_records_for_user(
     if user is None:
         raise ValueError(f"User '{username}' does not exist")
 
-    stmt = select(Receipt).where(
-        and_(
-            or_(Receipt.PayerId == user.id, Receipt.RecipientId == user.id),
-            Receipt.Time >= start,
-            Receipt.Time <= end,
+    stmt = (
+        select(Receipt)
+        .where(
+            and_(
+                or_(Receipt.PayerId == user.id, Receipt.RecipientId == user.id),
+                Receipt.Time >= start,
+                Receipt.Time <= end,
+            )
         )
-    ).order_by(Receipt.Time.desc())
+        .order_by(Receipt.Time.desc())
+    )
 
     if limit is not None:
         stmt = stmt.limit(limit)
@@ -425,16 +444,20 @@ def get_timebound_records_between_users(
     if user2 is None:
         raise ValueError(f"User '{username2}' does not exist")
 
-    stmt = select(Receipt).where(
-        and_(
-            or_(
-                and_(Receipt.PayerId == user1.id, Receipt.RecipientId == user2.id),
-                and_(Receipt.PayerId == user2.id, Receipt.RecipientId == user1.id),
-            ),
-            Receipt.Time >= start,
-            Receipt.Time <= end,
+    stmt = (
+        select(Receipt)
+        .where(
+            and_(
+                or_(
+                    and_(Receipt.PayerId == user1.id, Receipt.RecipientId == user2.id),
+                    and_(Receipt.PayerId == user2.id, Receipt.RecipientId == user1.id),
+                ),
+                Receipt.Time >= start,
+                Receipt.Time <= end,
+            )
         )
-    ).order_by(Receipt.Time.desc())
+        .order_by(Receipt.Time.desc())
+    )
 
     if limit is not None:
         stmt = stmt.limit(limit)
@@ -469,8 +492,11 @@ def get_global_summary(
 
     # Aggregate credits at the SQL level
     rows = s.execute(
-        select(Receipt.PayerId, Receipt.RecipientId, func.sum(Receipt.Credits).label("total"))
-        .group_by(Receipt.PayerId, Receipt.RecipientId)
+        select(
+            Receipt.PayerId,
+            Receipt.RecipientId,
+            func.sum(Receipt.Credits).label("total"),
+        ).group_by(Receipt.PayerId, Receipt.RecipientId)
     ).all()
 
     for payer_id, recip_id, total in rows:
@@ -558,6 +584,7 @@ def get_summary_for_user(
 
 # --- Happy Hour functions ---
 
+
 def create_location(s: Session, **kwargs: Any) -> Location:
     """Create and persist a new happy hour location.
 
@@ -602,9 +629,7 @@ def get_locations_paginated(s: Session, offset: int, limit: int) -> list[Locatio
     :returns: A page of locations.
     :rtype: list[Location]
     """
-    return s.scalars(
-        select(Location).offset(offset).limit(limit)
-    ).all()
+    return s.scalars(select(Location).offset(offset).limit(limit)).all()
 
 
 def get_location_by_id(s: Session, location_id: int) -> Location | None:
@@ -704,7 +729,9 @@ def get_events_paginated(s: Session, offset: int, limit: int) -> list[Event]:
     return s.scalars(
         select(Event)
         .options(joinedload(Event.Location), joinedload(Event.Tyrant))
-        .order_by(Event.When.desc()).offset(offset).limit(limit)
+        .order_by(Event.When.desc())
+        .offset(offset)
+        .limit(limit)
     ).all()
 
 
@@ -731,7 +758,8 @@ def get_upcoming_event(s: Session) -> Event | None:
     return s.scalars(
         select(Event)
         .options(joinedload(Event.Location), joinedload(Event.Tyrant))
-        .where(Event.When >= now).order_by(Event.When.asc())
+        .where(Event.When >= now)
+        .order_by(Event.When.asc())
     ).first()
 
 
@@ -810,13 +838,12 @@ def get_accounts_with_claim(s: Session, claim: AccountClaims) -> list[Account]:
     """
     claim_val = literal(claim.value)
     return s.scalars(
-        select(Account).where(
-            Account.claims.bitwise_and(claim_val) == claim_val
-        )
+        select(Account).where(Account.claims.bitwise_and(claim_val) == claim_val)
     ).all()
 
 
 # --- Tyrant Rotation functions ---
+
 
 def create_tyrant_assignment(
     s: Session,
@@ -926,7 +953,9 @@ def get_next_scheduled_assignment(s: Session, cycle: int) -> TyrantRotation | No
     ).first()
 
 
-def get_on_deck_assignment(s: Session, cycle: int, current_position: int) -> TyrantRotation | None:
+def get_on_deck_assignment(
+    s: Session, cycle: int, current_position: int
+) -> TyrantRotation | None:
     """Get the next SCHEDULED assignment after the given position.
 
     Used to find the "on deck" person who will be assigned next week.
@@ -1023,7 +1052,9 @@ def get_consecutive_misses(s: Session, account_id: int) -> int:
     return count
 
 
-def _update_assignment_status(s: Session, assignment_id: int, status: TyrantAssignmentStatus) -> None:
+def _update_assignment_status(
+    s: Session, assignment_id: int, status: TyrantAssignmentStatus
+) -> None:
     """Update a tyrant rotation assignment's status.
 
     :param s: Active database session.
@@ -1056,7 +1087,9 @@ def mark_assignment_missed(s: Session, assignment_id: int) -> None:
     _update_assignment_status(s, assignment_id, TyrantAssignmentStatus.MISSED)
 
 
-def remove_claim_from_account(s: Session, account_id: int, claim: AccountClaims) -> None:
+def remove_claim_from_account(
+    s: Session, account_id: int, claim: AccountClaims
+) -> None:
     """Remove a specific claim from an account's bitmask.
 
     :param s: Active database session.
@@ -1069,7 +1102,9 @@ def remove_claim_from_account(s: Session, account_id: int, claim: AccountClaims)
         s.flush()
 
 
-def update_account_claims(s: Session, account_id: int, new_claims: AccountClaims) -> None:
+def update_account_claims(
+    s: Session, account_id: int, new_claims: AccountClaims
+) -> None:
     """Set an account's claims to a new bitmask value.
 
     :param s: Active database session.

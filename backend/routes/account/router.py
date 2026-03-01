@@ -12,6 +12,6 @@ from routes.shared import database_lifespan
 
 Accounts: APIRouter = APIRouter(
     tags=[ApiTags.Accounts],
-    prefix='/api/v2/account',
+    prefix="/api/v2/account",
     lifespan=database_lifespan,
 )

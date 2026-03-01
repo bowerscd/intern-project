@@ -10,15 +10,11 @@ from .v2 import MealbotV2
 
 
 Mealbot: APIRouter = APIRouter(
-    tags=[ApiTags.Mealbot],
-    prefix='/api',
-    lifespan=database_lifespan
+    tags=[ApiTags.Mealbot], prefix="/api", lifespan=database_lifespan
 )
 
 Mealbot.include_router(MealbotV0)
 Mealbot.include_router(MealbotV1)
 Mealbot.include_router(MealbotV2)
 
-__all__ = [
-    "Mealbot"
-]
+__all__ = ["Mealbot"]

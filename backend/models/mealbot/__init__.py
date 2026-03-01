@@ -19,16 +19,22 @@ class Receipt(Model):
 
     __tablename__ = "receipts"
     __table_args__ = (
-        CheckConstraint("\"PayerId\" != \"RecipientId\"", name="ck_receipts_no_self_payment"),
-        CheckConstraint("\"Credits\" > 0", name="ck_receipts_positive_credits"),
+        CheckConstraint(
+            '"PayerId" != "RecipientId"', name="ck_receipts_no_self_payment"
+        ),
+        CheckConstraint('"Credits" > 0', name="ck_receipts_positive_credits"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     Credits: Mapped[int]
-    Time: Mapped[datetime] = mapped_column(insert_default=lambda: datetime.now(UTC), index=True)
+    Time: Mapped[datetime] = mapped_column(
+        insert_default=lambda: datetime.now(UTC), index=True
+    )
 
     RecorderId: Mapped[Optional[int]] = mapped_column(ForeignKey("accounts.id"))
-    Recorder: Mapped[Optional[Account]] = relationship("Account", foreign_keys=[RecorderId])
+    Recorder: Mapped[Optional[Account]] = relationship(
+        "Account", foreign_keys=[RecorderId]
+    )
 
     PayerId: Mapped[int] = mapped_column(ForeignKey("accounts.id"))
     Payer: Mapped[Account] = relationship("Account", foreign_keys=[PayerId])

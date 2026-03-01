@@ -1,6 +1,7 @@
 """
 Happy Hour location endpoints — authenticated, require HAPPY_HOUR claim.
 """
+
 from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, status, Query
@@ -9,7 +10,12 @@ from routes.shared import Database, RequireLogin
 from models import AccountClaims
 from csrf import validate_csrf_token
 
-from schemas.happyhour import LocationCreate, LocationUpdate, LocationResponse, PaginatedLocationResponse
+from schemas.happyhour import (
+    LocationCreate,
+    LocationUpdate,
+    LocationResponse,
+    PaginatedLocationResponse,
+)
 
 from .router import HappyHour
 

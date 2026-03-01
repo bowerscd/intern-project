@@ -12,8 +12,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.oidc
-    expose:
-      - "9000"
+    environment:
+      - MOCK_OIDC_ISSUER=http://oidc:9000
+    ports:
+      - "9000:9000"
     networks:
       - app-net
     restart: unless-stopped
@@ -29,12 +31,13 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DEV=0
+      - DEV=1
+      - RATELIMIT_ENABLED=false
       - SERVER_HOSTNAME=${SERVER_HOSTNAME:-localhost}
       - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET is required}
       - DATABASE_URI=${DATABASE_URI:-sqlite:////data/app.db}
-      - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS:-["https://sites.localhost"]}
-      - SESSION_COOKIE_DOMAIN=${SESSION_COOKIE_DOMAIN:-.localhost}
+      - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS:-["http://localhost:8000","http://127.0.0.1","http://localhost:5000"]}
+      - SESSION_COOKIE_DOMAIN=${SESSION_COOKIE_DOMAIN:-}
       - SESSION_SAME_SITE=lax
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
       # OIDC — Google (production)

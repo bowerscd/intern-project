@@ -4,6 +4,7 @@ Event creation is restricted to HAPPY_HOUR_TYRANT users, and only the
 currently assigned tyrant may create during their rotation window.
 If no assignment is pending, any HAPPY_HOUR user may create.
 """
+
 from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, status, Query
@@ -171,9 +172,9 @@ async def get_event(
     summary="Schedule a new happy hour event",
     dependencies=[Depends(validate_csrf_token)],
     description="Schedule a new happy hour event. Only the currently assigned tyrant "
-                "(HAPPY_HOUR_TYRANT) may create during a rotation window. If no assignment "
-                "is pending, any HAPPY_HOUR user may create. Automatically sends email "
-                "and SMS notifications to all users with HAPPY_HOUR permissions.",
+    "(HAPPY_HOUR_TYRANT) may create during a rotation window. If no assignment "
+    "is pending, any HAPPY_HOUR user may create. Automatically sends email "
+    "and SMS notifications to all users with HAPPY_HOUR permissions.",
     response_model=EventResponse,
     status_code=status.HTTP_201_CREATED,
 )
@@ -210,7 +211,10 @@ async def create_event_endpoint(
 
         if pending is not None:
             # There is an active rotation assignment
-            if not (account.claims & AccountClaims.HAPPY_HOUR_TYRANT == AccountClaims.HAPPY_HOUR_TYRANT):
+            if not (
+                account.claims & AccountClaims.HAPPY_HOUR_TYRANT
+                == AccountClaims.HAPPY_HOUR_TYRANT
+            ):
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Only HAPPY_HOUR_TYRANT users may create events during a rotation window",
@@ -223,6 +227,7 @@ async def create_event_endpoint(
 
         # Guard against duplicate events in the same weekly window as the proposed event
         from datetime import datetime, UTC
+
         when_ref = body.when if body.when else datetime.now(UTC)
         existing = get_events_this_week(db, when_ref)
         if existing:
@@ -271,13 +276,16 @@ async def create_event_endpoint(
     # Send notifications outside the DB transaction using a fresh session
     try:
         from mail.outgoing import notify_happy_hour_users
+
         with db:
             from db.functions import get_event_by_id
+
             fresh_event = get_event_by_id(db, event_id)
             if fresh_event is not None:
                 await notify_happy_hour_users(fresh_event, db)
     except Exception:
         import logging
+
         logging.getLogger(__name__).exception("Failed to send event notifications")
 
     return response
@@ -287,7 +295,7 @@ async def create_event_endpoint(
     "/rotation",
     summary="Get the current rotation schedule",
     description="Get the full tyrant rotation schedule for the current cycle. "
-                "Requires HAPPY_HOUR claim.",
+    "Requires HAPPY_HOUR claim.",
     response_model=RotationScheduleResponse,
 )
 async def get_rotation(

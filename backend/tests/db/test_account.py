@@ -1,4 +1,5 @@
 """Tests for account database operations."""
+
 import pytest
 
 from db.functions import (
@@ -17,6 +18,7 @@ from models import ExternalAuthProvider, PhoneProvider, AccountClaims
 
 class TestCreateAccount:
     """Verify account creation and uniqueness constraints."""
+
     def test_create_account_basic(self, db_session: Session) -> None:
         """Verify basic account creation stores username and email.
 
@@ -39,7 +41,10 @@ class TestCreateAccount:
         :type db_session: Session
         """
         act = create_account(
-            "bob", "bob@test.com", ExternalAuthProvider.test, "b1",
+            "bob",
+            "bob@test.com",
+            ExternalAuthProvider.test,
+            "b1",
             claims=AccountClaims.MEALBOT | AccountClaims.HAPPY_HOUR,
         )
         db_session.add(act)
@@ -56,8 +61,12 @@ class TestCreateAccount:
         :type db_session: Session
         """
         act = create_account(
-            "carol", "carol@test.com", ExternalAuthProvider.test, "c1",
-            phone="5551234567", phone_provider=PhoneProvider.VERIZON,
+            "carol",
+            "carol@test.com",
+            ExternalAuthProvider.test,
+            "c1",
+            phone="5551234567",
+            phone_provider=PhoneProvider.VERIZON,
         )
         db_session.add(act)
         db_session.commit()
@@ -71,11 +80,15 @@ class TestCreateAccount:
         :param db_session: SQLAlchemy database session.
         :type db_session: Session
         """
-        act1 = create_account("dupeuser", "dup1@test.com", ExternalAuthProvider.test, "d1")
+        act1 = create_account(
+            "dupeuser", "dup1@test.com", ExternalAuthProvider.test, "d1"
+        )
         db_session.add(act1)
         db_session.commit()
 
-        act2 = create_account("dupeuser", "dup2@test.com", ExternalAuthProvider.test, "d2")
+        act2 = create_account(
+            "dupeuser", "dup2@test.com", ExternalAuthProvider.test, "d2"
+        )
         db_session.add(act2)
         with pytest.raises(Exception):
             db_session.commit()
@@ -86,11 +99,15 @@ class TestCreateAccount:
         :param db_session: SQLAlchemy database session.
         :type db_session: Session
         """
-        act1 = create_account("email1", "same@test.com", ExternalAuthProvider.test, "e1")
+        act1 = create_account(
+            "email1", "same@test.com", ExternalAuthProvider.test, "e1"
+        )
         db_session.add(act1)
         db_session.commit()
 
-        act2 = create_account("email2", "same@test.com", ExternalAuthProvider.test, "e2")
+        act2 = create_account(
+            "email2", "same@test.com", ExternalAuthProvider.test, "e2"
+        )
         db_session.add(act2)
         with pytest.raises(Exception):
             db_session.commit()
@@ -98,13 +115,16 @@ class TestCreateAccount:
 
 class TestGetAccount:
     """Verify account retrieval by various lookup keys."""
+
     def test_get_by_email(self, db_session: Session) -> None:
         """Verify account lookup by email address.
 
         :param db_session: SQLAlchemy database session.
         :type db_session: Session
         """
-        act = create_account("byemail", "find@test.com", ExternalAuthProvider.test, "f1")
+        act = create_account(
+            "byemail", "find@test.com", ExternalAuthProvider.test, "f1"
+        )
         db_session.add(act)
         db_session.commit()
 
@@ -128,8 +148,12 @@ class TestGetAccount:
         :type db_session: Session
         """
         act = create_account(
-            "byphone", "phone@test.com", ExternalAuthProvider.test, "ph1",
-            phone="5559999999", phone_provider=PhoneProvider.TMOBILE,
+            "byphone",
+            "phone@test.com",
+            ExternalAuthProvider.test,
+            "ph1",
+            phone="5559999999",
+            phone_provider=PhoneProvider.TMOBILE,
         )
         db_session.add(act)
         db_session.commit()
@@ -180,11 +204,15 @@ class TestGetAccount:
         :param db_session: SQLAlchemy database session.
         :type db_session: Session
         """
-        act = create_account("byprov", "prov@test.com", ExternalAuthProvider.google, "goog-123")
+        act = create_account(
+            "byprov", "prov@test.com", ExternalAuthProvider.google, "goog-123"
+        )
         db_session.add(act)
         db_session.commit()
 
-        found = get_account_by_provider(db_session, ExternalAuthProvider.google, "goog-123")
+        found = get_account_by_provider(
+            db_session, ExternalAuthProvider.google, "goog-123"
+        )
         assert found is not None
         assert found.username == "byprov"
 
@@ -194,7 +222,10 @@ class TestGetAccount:
         :param db_session: SQLAlchemy database session.
         :type db_session: Session
         """
-        assert get_account_by_provider(db_session, ExternalAuthProvider.google, "nope") is None
+        assert (
+            get_account_by_provider(db_session, ExternalAuthProvider.google, "nope")
+            is None
+        )
 
     def test_get_all_accounts(self, db_session: Session) -> None:
         """Verify all persisted accounts are returned.
@@ -203,7 +234,9 @@ class TestGetAccount:
         :type db_session: Session
         """
         for i in range(3):
-            act = create_account(f"all{i}", f"all{i}@test.com", ExternalAuthProvider.test, f"all{i}")
+            act = create_account(
+                f"all{i}", f"all{i}@test.com", ExternalAuthProvider.test, f"all{i}"
+            )
             db_session.add(act)
         db_session.commit()
 
@@ -213,15 +246,34 @@ class TestGetAccount:
 
 class TestAccountClaims:
     """Verify bitwise claim-flag queries."""
+
     def test_get_accounts_with_claim(self, db_session: Session) -> None:
         """Verify only accounts matching the requested claim are returned.
 
         :param db_session: SQLAlchemy database session.
         :type db_session: Session
         """
-        a1 = create_account("clm1", "clm1@test.com", ExternalAuthProvider.test, "cl1", claims=AccountClaims.MEALBOT)
-        a2 = create_account("clm2", "clm2@test.com", ExternalAuthProvider.test, "cl2", claims=AccountClaims.HAPPY_HOUR)
-        a3 = create_account("clm3", "clm3@test.com", ExternalAuthProvider.test, "cl3", claims=AccountClaims.MEALBOT | AccountClaims.HAPPY_HOUR)
+        a1 = create_account(
+            "clm1",
+            "clm1@test.com",
+            ExternalAuthProvider.test,
+            "cl1",
+            claims=AccountClaims.MEALBOT,
+        )
+        a2 = create_account(
+            "clm2",
+            "clm2@test.com",
+            ExternalAuthProvider.test,
+            "cl2",
+            claims=AccountClaims.HAPPY_HOUR,
+        )
+        a3 = create_account(
+            "clm3",
+            "clm3@test.com",
+            ExternalAuthProvider.test,
+            "cl3",
+            claims=AccountClaims.MEALBOT | AccountClaims.HAPPY_HOUR,
+        )
         db_session.add_all([a1, a2, a3])
         db_session.commit()
 

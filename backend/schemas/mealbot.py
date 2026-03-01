@@ -1,6 +1,7 @@
 """
 Pydantic schemas for Mealbot API request/response models.
 """
+
 from datetime import datetime
 from typing import Any, Literal
 
@@ -9,10 +10,15 @@ from pydantic import BaseModel, Field, ConfigDict
 
 # --- v1 schemas (backwards-compatible) ---
 
+
 class AccountModificationRequest(BaseModel):
     """Request schema for creating a v1 user account."""
 
-    user: str = Field(..., pattern=r"^[a-z]{3}[a-z]+$", description="Username (lowercase, minimum 4 chars)")
+    user: str = Field(
+        ...,
+        pattern=r"^[a-z]{3}[a-z]+$",
+        description="Username (lowercase, minimum 4 chars)",
+    )
     operation: Literal["CREATE"] = Field(..., description="Operation to perform")
 
 
@@ -21,7 +27,9 @@ class CreateRecordRequest(BaseModel):
 
     payer: str = Field(..., description="Username of the payer")
     recipient: str = Field(..., description="Username of the recipient")
-    credits: int = Field(..., gt=0, le=1000, description="Number of credits (positive integer, max 1000)")
+    credits: int = Field(
+        ..., gt=0, le=1000, description="Number of credits (positive integer, max 1000)"
+    )
 
 
 class RecordResponse(BaseModel):
@@ -35,7 +43,7 @@ class RecordResponse(BaseModel):
     date: datetime = Field(..., description="When the record was created")
 
     @staticmethod
-    def from_receipt(r: Any) -> 'RecordResponse':
+    def from_receipt(r: Any) -> "RecordResponse":
         """Build a :class:`RecordResponse` from a database receipt entity.
 
         :param r: A :class:`Receipt` ORM instance.

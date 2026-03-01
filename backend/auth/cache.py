@@ -30,6 +30,7 @@ class AuthCache:
         :param expiry: Seconds to wait before purging.
         """
         from asyncio import sleep
+
         await sleep(expiry)
 
         async with self._cache_lock:

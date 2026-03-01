@@ -1,4 +1,5 @@
 """Tests for query correctness: missing upper bounds, N+1 patterns."""
+
 from datetime import datetime, UTC, timedelta
 
 from db.functions import (
@@ -6,7 +7,6 @@ from db.functions import (
     create_location,
     create_event,
     get_events_this_week,
-    get_random_previous_location,
 )
 from typing import Any
 from models.happyhour.location import Location
@@ -39,8 +39,10 @@ class TestEventsThisWeekUpperBound:
         results = get_events_this_week(db_session, now)
         threshold = now + timedelta(days=30)
         future_events = [
-            e for e in results
-            if (e.When.replace(tzinfo=UTC) if e.When.tzinfo is None else e.When) > threshold
+            e
+            for e in results
+            if (e.When.replace(tzinfo=UTC) if e.When.tzinfo is None else e.When)
+            > threshold
         ]
 
         assert len(future_events) == 0, (

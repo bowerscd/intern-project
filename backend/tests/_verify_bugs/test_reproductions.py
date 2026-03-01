@@ -51,7 +51,9 @@ class TestFixed03_OpenRedirectBlocked:
         """Relative paths pass validation."""
         from routes.auth.login import _validate_redirect
 
-        assert _validate_redirect("/api/v2/account/profile") == "/api/v2/account/profile"
+        assert (
+            _validate_redirect("/api/v2/account/profile") == "/api/v2/account/profile"
+        )
         assert _validate_redirect("/dashboard") == "/dashboard"
 
     def test_absolute_url_rejected(self) -> None:
@@ -173,6 +175,3 @@ class TestFixed19_WednesdayNoonSameDay:
         result = _next_wednesday_noon(wed_afternoon)
         expected = datetime(2026, 3, 4, 12, 0, tzinfo=pst)
         assert result.date() == expected.date()
-
-
-

@@ -13,6 +13,7 @@ class TestProviderUsageInUserCreation:
     def test_v2_user_endpoint_removed(self) -> None:
         """Verify ``create_mealbot_user`` no longer exists on the v2 router."""
         import routes.mealbot.v2 as v2_mod
+
         assert not hasattr(v2_mod, "create_mealbot_user"), (
             "POST /v2/mealbot/user should have been removed"
         )

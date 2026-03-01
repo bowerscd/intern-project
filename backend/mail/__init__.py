@@ -17,7 +17,7 @@ class Host(NamedTuple):
     Password: str
 
 
-def smtp_server_mail(_from_subtype: str = '') -> str:
+def smtp_server_mail(_from_subtype: str = "") -> str:
     """Return the configured sender email address.
 
     An optional *_from_subtype* is inserted before the ``@`` to create
@@ -35,13 +35,13 @@ def smtp_server_mail(_from_subtype: str = '') -> str:
 
     global __sender_email
 
-    if _from_subtype and not re.match(r'^[a-zA-Z0-9+_.\-]*$', _from_subtype):
+    if _from_subtype and not re.match(r"^[a-zA-Z0-9+_.\-]*$", _from_subtype):
         raise ValueError(f"Invalid _from_subtype: {_from_subtype!r}")
 
     if __sender_email is None:
-        __sender_email = environ['MAIL_SENDER']
+        __sender_email = environ["MAIL_SENDER"]
 
-    return __sender_email.replace('@', f"{_from_subtype}@")
+    return __sender_email.replace("@", f"{_from_subtype}@")
 
 
 def smtp_cfg() -> Host:
@@ -59,10 +59,12 @@ def smtp_cfg() -> Host:
     global __smtp_host_url
 
     if __smtp_host_url is None:
-        __smtp_host_url = urlparse(environ['SMTP_URI'])
+        __smtp_host_url = urlparse(environ["SMTP_URI"])
 
     if __smtp_host_url.scheme.lower() != "smtp":
-        raise ValueError(f"SMTP_URI scheme must be 'smtp', got '{__smtp_host_url.scheme}'")
+        raise ValueError(
+            f"SMTP_URI scheme must be 'smtp', got '{__smtp_host_url.scheme}'"
+        )
     if __smtp_host_url.port is None:
         raise ValueError("SMTP_URI must include a port")
     if __smtp_host_url.hostname is None:
@@ -72,8 +74,10 @@ def smtp_cfg() -> Host:
     if __smtp_host_url.password is None:
         raise ValueError("SMTP_URI must include a password")
 
-    return Host(__smtp_host_url.scheme,
-                __smtp_host_url.port,
-                __smtp_host_url.hostname,
-                __smtp_host_url.username,
-                __smtp_host_url.password)
+    return Host(
+        __smtp_host_url.scheme,
+        __smtp_host_url.port,
+        __smtp_host_url.hostname,
+        __smtp_host_url.username,
+        __smtp_host_url.password,
+    )

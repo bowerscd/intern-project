@@ -20,7 +20,7 @@ from .router import Authentication
     summary="Complete registration",
     dependencies=[Depends(validate_csrf_token)],
     description="After OIDC authentication in register mode, the user picks a "
-                "username to finish creating their account.",
+    "username to finish creating their account.",
     status_code=status.HTTP_201_CREATED,
 )
 @limiter.limit("5/minute")

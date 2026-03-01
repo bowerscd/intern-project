@@ -7,6 +7,7 @@ class TestServerModule:
     def test_dev_mode_hostname(self) -> None:
         """Verify :func:`hostname` returns ``localhost`` in dev mode."""
         from server import hostname
+
         h = hostname()
         assert h == "localhost"
 
@@ -14,6 +15,7 @@ class TestServerModule:
         """Verify :func:`api_server` returns an HTTP localhost URL in dev mode."""
         from server import api_server
         from config import DEV_MODE
+
         if DEV_MODE:
             s = api_server()
             assert s.startswith("http://")
@@ -29,6 +31,7 @@ class TestCorsConfig:
     def test_dev_cors_default_is_wildcard(self) -> None:
         """In dev mode the default CORS origins list is ``['*']``."""
         from config import DEV_MODE, CORS_ALLOW_ORIGINS
+
         if DEV_MODE:
             assert CORS_ALLOW_ORIGINS == ["*"]
 
@@ -42,4 +45,5 @@ class TestSessionSecret:
     def test_dev_secret_is_deterministic(self) -> None:
         """In dev mode the secret is the static value from settings.json."""
         from app import secret
+
         assert secret == "dev-only-not-for-production"

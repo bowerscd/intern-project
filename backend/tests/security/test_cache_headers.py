@@ -3,7 +3,6 @@
 Validates that API responses have appropriate caching directives.
 """
 
-import pytest
 from starlette.testclient import TestClient
 
 
@@ -29,7 +28,9 @@ class TestAPICacheHeaders:
 class TestSecurityHeaders:
     """Responses should include basic security headers."""
 
-    def test_content_type_header_present(self, authenticated_client: TestClient) -> None:
+    def test_content_type_header_present(
+        self, authenticated_client: TestClient
+    ) -> None:
         resp = authenticated_client.get("/api/v2/account/profile")
         assert "content-type" in resp.headers
         assert "application/json" in resp.headers["content-type"]

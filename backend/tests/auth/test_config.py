@@ -1,4 +1,5 @@
 """Tests for AuthConfig."""
+
 import pytest
 
 from auth.config import AuthConfig
@@ -7,6 +8,7 @@ from tests import TEST_REDIRECT, TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_ENV_VA
 
 class TestAuthConfig:
     """Verify :class:`~auth.config.AuthConfig` loads credentials from the environment."""
+
     def test_init_loads_env_vars(self) -> None:
         """Verify client ID, secret, and redirect URL are read from env vars."""
         cfg = AuthConfig(

@@ -4,7 +4,11 @@ from fastapi import Depends, HTTPException, Request, status
 
 from csrf import validate_csrf_token
 from db.functions import get_account_by_username
-from models import ExternalAuthProvider, DBAccountClaimRequest as AccountClaimRequest, AccountClaimStatus
+from models import (
+    ExternalAuthProvider,
+    DBAccountClaimRequest as AccountClaimRequest,
+    AccountClaimStatus,
+)
 from routes.shared import Database
 from schemas.account import ClaimAccountRequest
 from ratelimit import limiter
@@ -18,8 +22,8 @@ from .router import Authentication
     summary="Claim legacy account",
     dependencies=[Depends(validate_csrf_token)],
     description="After OIDC authentication in register mode, the user can "
-                "claim ownership of an existing (imported/legacy) account. "
-                "An admin must approve the claim before login is possible.",
+    "claim ownership of an existing (imported/legacy) account. "
+    "An admin must approve the claim before login is possible.",
     status_code=status.HTTP_202_ACCEPTED,
 )
 @limiter.limit("5/minute")

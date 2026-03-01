@@ -1,4 +1,5 @@
 """Tests for v1 legacy mealbot endpoints — permanently disabled (410 Gone)."""
+
 from starlette.testclient import TestClient
 
 
@@ -38,9 +39,10 @@ class TestV1PermanentlyDisabled:
         :param client: Unauthenticated HTTP test client.
         :type client: TestClient
         """
-        r = client.post("/api/v1/Record", json={
-            "payer": "alice", "recipient": "bobbi", "credits": 3
-        })
+        r = client.post(
+            "/api/v1/Record",
+            json={"payer": "alice", "recipient": "bobbi", "credits": 3},
+        )
         assert r.status_code == 410
 
     def test_410_detail_message(self, client: TestClient) -> None:

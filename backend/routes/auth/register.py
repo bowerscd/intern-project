@@ -16,8 +16,8 @@ from .router import Authentication, AuthMgrs
     "/register/{provider}",
     summary="Start OIDC registration flow",
     description="Redirects the user to the OIDC provider's authorization endpoint "
-                "to begin a new account registration. Only new users should use "
-                "this endpoint; existing users should use /login/{provider} instead.",
+    "to begin a new account registration. Only new users should use "
+    "this endpoint; existing users should use /login/{provider} instead.",
 )
 @limiter.limit("5/minute")
 async def register(
@@ -39,5 +39,5 @@ async def register(
     """
     _validate_redirect(redirect)
     auth = AuthMgrs[provider.name]
-    scopes_list = set(scopes.split(' '))
+    scopes_list = set(scopes.split(" "))
     return await auth.login(redirect, scopes_list, mode="register")

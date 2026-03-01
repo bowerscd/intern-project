@@ -1,4 +1,5 @@
 """Tests for mealbot database operations."""
+
 import pytest
 from datetime import datetime, UTC, timedelta
 
@@ -34,6 +35,7 @@ def _make_users(s: Session, names: list[str]) -> None:
 
 class TestCreateReceipt:
     """Verify receipt creation and validation."""
+
     def test_create_receipt(self, db_session: Session) -> None:
         """Verify a receipt is created with the correct credit amount.
 
@@ -69,6 +71,7 @@ class TestCreateReceipt:
 
 class TestGetRecords:
     """Verify record retrieval and filtering."""
+
     def test_get_all_records(self, db_session: Session) -> None:
         """Verify all records are returned.
 
@@ -135,6 +138,7 @@ class TestGetRecords:
 
 class TestTimeboundRecords:
     """Verify time-bounded record queries."""
+
     def test_get_timebound_records(self, db_session: Session) -> None:
         """Verify records within a time window are returned.
 
@@ -180,7 +184,8 @@ class TestTimeboundRecords:
 
         now = datetime.now(UTC)
         records = get_timebound_records_for_user(
-            db_session, "tbua",
+            db_session,
+            "tbua",
             start=now - timedelta(minutes=5),
             end=now + timedelta(minutes=5),
         )
@@ -189,6 +194,7 @@ class TestTimeboundRecords:
 
 class TestSummary:
     """Verify credit summary aggregation."""
+
     def test_global_summary(self, db_session: Session) -> None:
         """Verify the global summary includes bidirectional credits.
 
@@ -241,7 +247,8 @@ class TestSummary:
 
         now = datetime.now(UTC)
         summary = get_summary_for_user(
-            db_session, "tsua",
+            db_session,
+            "tsua",
             start=now - timedelta(minutes=5),
             end=now + timedelta(minutes=5),
         )

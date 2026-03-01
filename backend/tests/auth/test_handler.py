@@ -1,6 +1,6 @@
 """Tests for AuthenticationHandler login flow."""
+
 import pytest
-import inspect
 from unittest.mock import AsyncMock, patch
 
 from auth.config import AuthConfig
@@ -10,6 +10,7 @@ from tests import TEST_ENV_VAR_PREFIX
 
 class ConcreteAuthHandler(AuthenticationHandler):
     """Concrete implementation for testing."""
+
     pass
 
 
@@ -51,7 +52,12 @@ class TestLogin:
         :param handler: Authentication handler under test.
         :type handler: ConcreteAuthHandler
         """
-        with patch.object(handler._config_mgr, "config", new_callable=AsyncMock, return_value=MOCK_OIDC_CONFIG):
+        with patch.object(
+            handler._config_mgr,
+            "config",
+            new_callable=AsyncMock,
+            return_value=MOCK_OIDC_CONFIG,
+        ):
             response = await handler.login("/home")
             # Should be a redirect response (302)
             assert response.status_code == 302
@@ -63,7 +69,12 @@ class TestLogin:
         :param handler: Authentication handler under test.
         :type handler: ConcreteAuthHandler
         """
-        with patch.object(handler._config_mgr, "config", new_callable=AsyncMock, return_value=MOCK_OIDC_CONFIG):
+        with patch.object(
+            handler._config_mgr,
+            "config",
+            new_callable=AsyncMock,
+            return_value=MOCK_OIDC_CONFIG,
+        ):
             response = await handler.login("/home")
 
             # Check cookies were set (state and nonce)
@@ -73,13 +84,20 @@ class TestLogin:
             assert "auth_nonce" in cookie_names
 
     @pytest.mark.asyncio
-    async def test_login_redirect_url_contains_params(self, handler: ConcreteAuthHandler) -> None:
+    async def test_login_redirect_url_contains_params(
+        self, handler: ConcreteAuthHandler
+    ) -> None:
         """Verify the redirect URL includes required OIDC query parameters.
 
         :param handler: Authentication handler under test.
         :type handler: ConcreteAuthHandler
         """
-        with patch.object(handler._config_mgr, "config", new_callable=AsyncMock, return_value=MOCK_OIDC_CONFIG):
+        with patch.object(
+            handler._config_mgr,
+            "config",
+            new_callable=AsyncMock,
+            return_value=MOCK_OIDC_CONFIG,
+        ):
             response = await handler.login("/home", scopes={"openid", "email"})
             location = dict(response.raw_headers).get(b"location", b"").decode()
             assert "accounts.example.com" in location
@@ -91,13 +109,16 @@ class TestAuthenticate:
     """Verify :meth:`AuthenticationHandler.authenticate` input validation."""
 
     @pytest.mark.asyncio
-    async def test_authenticate_missing_nonce_raises(self, handler: ConcreteAuthHandler) -> None:
+    async def test_authenticate_missing_nonce_raises(
+        self, handler: ConcreteAuthHandler
+    ) -> None:
         """Verify a missing ``auth_nonce`` cookie raises :class:`HTTPException`.
 
         :param handler: Authentication handler under test.
         :type handler: ConcreteAuthHandler
         """
         from fastapi import HTTPException
+
         with pytest.raises(HTTPException):
             await handler.authenticate(
                 cookies={},
@@ -105,13 +126,16 @@ class TestAuthenticate:
             )
 
     @pytest.mark.asyncio
-    async def test_authenticate_missing_state_raises(self, handler: ConcreteAuthHandler) -> None:
+    async def test_authenticate_missing_state_raises(
+        self, handler: ConcreteAuthHandler
+    ) -> None:
         """Verify a missing ``auth_state`` cookie raises :class:`HTTPException`.
 
         :param handler: Authentication handler under test.
         :type handler: ConcreteAuthHandler
         """
         from fastapi import HTTPException
+
         with pytest.raises(HTTPException):
             await handler.authenticate(
                 cookies={"auth_nonce": "n1"},
@@ -119,13 +143,16 @@ class TestAuthenticate:
             )
 
     @pytest.mark.asyncio
-    async def test_authenticate_state_mismatch_raises(self, handler: ConcreteAuthHandler) -> None:
+    async def test_authenticate_state_mismatch_raises(
+        self, handler: ConcreteAuthHandler
+    ) -> None:
         """Verify a state mismatch between cookie and query raises :class:`HTTPException`.
 
         :param handler: Authentication handler under test.
         :type handler: ConcreteAuthHandler
         """
         from fastapi import HTTPException
+
         with pytest.raises(HTTPException):
             await handler.authenticate(
                 cookies={"auth_nonce": "n1", "auth_state": "state1"},
@@ -133,13 +160,16 @@ class TestAuthenticate:
             )
 
     @pytest.mark.asyncio
-    async def test_authenticate_missing_code_raises(self, handler: ConcreteAuthHandler) -> None:
+    async def test_authenticate_missing_code_raises(
+        self, handler: ConcreteAuthHandler
+    ) -> None:
         """Verify a missing ``code`` query parameter raises :class:`HTTPException`.
 
         :param handler: Authentication handler under test.
         :type handler: ConcreteAuthHandler
         """
         from fastapi import HTTPException
+
         with pytest.raises(HTTPException):
             await handler.authenticate(
                 cookies={"auth_nonce": "n1", "auth_state": "ok"},
@@ -151,7 +181,9 @@ class TestAuthCookieSecureFlag:
     """Auth cookies respect DEV_MODE for the secure flag."""
 
     @pytest.mark.asyncio
-    async def test_redirect_cookies_secure_in_production(self, handler: ConcreteAuthHandler) -> None:
+    async def test_redirect_cookies_secure_in_production(
+        self, handler: ConcreteAuthHandler
+    ) -> None:
         """The OIDC redirect response sets Secure on auth cookies over HTTPS.
 
         :param handler: Authentication handler under test.
@@ -159,15 +191,19 @@ class TestAuthCookieSecureFlag:
         """
         from starlette.responses import RedirectResponse
 
-        with patch("config.DEV_MODE", False), \
-             patch.object(handler._config_mgr, "config", new_callable=AsyncMock,
-                          return_value=MOCK_OIDC_CONFIG):
+        with (
+            patch("config.DEV_MODE", False),
+            patch.object(
+                handler._config_mgr,
+                "config",
+                new_callable=AsyncMock,
+                return_value=MOCK_OIDC_CONFIG,
+            ),
+        ):
             response = await handler._redirect("https://example.com/start", {"openid"})
 
         assert isinstance(response, RedirectResponse)
-        cookie_headers = [
-            v for k, v in response.raw_headers if k == b"set-cookie"
-        ]
+        cookie_headers = [v for k, v in response.raw_headers if k == b"set-cookie"]
         assert len(cookie_headers) >= 2, "Expected state + nonce cookies"
 
         for raw in cookie_headers:
@@ -175,4 +211,3 @@ class TestAuthCookieSecureFlag:
             assert "Secure" in header_str, (
                 f"Cookie should be Secure in production: {header_str}"
             )
-

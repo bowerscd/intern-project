@@ -18,22 +18,26 @@ class Account(Model):
     """
 
     __tablename__ = "accounts"
-    id:       Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     username: Mapped[str] = mapped_column(String(), unique=True)
-    email:    Mapped[Optional[str]] = mapped_column(String(), unique=True)
+    email: Mapped[Optional[str]] = mapped_column(String(), unique=True)
 
-    phone:    Mapped[Optional[str]] = mapped_column(String(), unique=True)
-    phone_provider: Mapped[int] = mapped_column(SqlValueEnum(PhoneProvider), default=PhoneProvider.NONE)
+    phone: Mapped[Optional[str]] = mapped_column(String(), unique=True)
+    phone_provider: Mapped[int] = mapped_column(
+        SqlValueEnum(PhoneProvider), default=PhoneProvider.NONE
+    )
 
-    account_provider:   Mapped[ExternalAuthProvider] = mapped_column(SqlValueEnum(ExternalAuthProvider))
+    account_provider: Mapped[ExternalAuthProvider] = mapped_column(
+        SqlValueEnum(ExternalAuthProvider)
+    )
     external_unique_id: Mapped[str] = mapped_column(String())
 
-    claims: Mapped[int] = mapped_column(SqlValueEnum(AccountClaims), default=AccountClaims.NONE)
-
-    __table_args__ = (
-        UniqueConstraint("account_provider", "external_unique_id"),
+    claims: Mapped[int] = mapped_column(
+        SqlValueEnum(AccountClaims), default=AccountClaims.NONE
     )
+
+    __table_args__ = (UniqueConstraint("account_provider", "external_unique_id"),)
 
     def __repr__(self) -> str:
         """Return a developer-friendly string representation of the account.
@@ -41,4 +45,6 @@ class Account(Model):
         :returns: A string showing the account's id, username and claims.
         :rtype: str
         """
-        return f"<User id={self.id!r} username={self.username!r} claims={self.claims!r}>"
+        return (
+            f"<User id={self.id!r} username={self.username!r} claims={self.claims!r}>"
+        )

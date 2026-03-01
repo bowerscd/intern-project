@@ -3,7 +3,4 @@
 from .base import AuthenticationHandler
 from .config import AuthConfig as Config
 
-__all__ = [
-    "AuthenticationHandler",
-    "Config"
-]
+__all__ = ["AuthenticationHandler", "Config"]

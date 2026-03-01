@@ -1,5 +1,6 @@
 """Outgoing email and SMS delivery via async SMTP."""
 
+import logging
 from typing import Any
 
 from email.message import Message
@@ -7,8 +8,10 @@ from email.mime.text import MIMEText
 
 from . import smtp_cfg, smtp_server_mail
 
+logger = logging.getLogger(__name__)
 
-async def send_email(to: str, msg: Message, _from_subtype: str = '') -> None:
+
+async def send_email(to: str, msg: Message, _from_subtype: str = "") -> None:
     """Send an email via async SMTP.
 
     Creates a copy of the message to avoid mutating the caller's object
@@ -27,10 +30,10 @@ async def send_email(to: str, msg: Message, _from_subtype: str = '') -> None:
 
     # Work on a copy to avoid header accumulation when callers reuse messages
     msg_copy = copy.deepcopy(msg)
-    del msg_copy['To']
-    del msg_copy['From']
-    msg_copy['To'] = to
-    msg_copy['From'] = smtp_server_mail(_from_subtype)
+    del msg_copy["To"]
+    del msg_copy["From"]
+    msg_copy["To"] = to
+    msg_copy["From"] = smtp_server_mail(_from_subtype)
 
     if not DEV_MODE:
         await aiosmtplib.send(
@@ -49,7 +52,9 @@ async def send_email(to: str, msg: Message, _from_subtype: str = '') -> None:
         )
 
 
-async def send_sms(phone: str, gateway: str, msg: Message, _from_subtype: str = '') -> None:
+async def send_sms(
+    phone: str, gateway: str, msg: Message, _from_subtype: str = ""
+) -> None:
     """Send an SMS via a carrier's email-to-SMS gateway.
 
     :param phone: Recipient phone number (digits only).
@@ -98,6 +103,7 @@ async def notify_happy_hour_users(event: Any, db_session: Any) -> None:
     users = get_accounts_with_claim(db_session, AccountClaims.HAPPY_HOUR)
 
     import asyncio
+
     results = await asyncio.gather(
         *[_notify_user(user, event.email(), event.text()) for user in users],
         return_exceptions=True,
@@ -134,9 +140,9 @@ async def notify_tyrant_assigned(account: Any, deadline_at: Any) -> None:
         f"Cheers,\nHappy Hour Bot"
     )
 
-    email_msg = MIMEText(body, 'plain', 'utf-8')
-    email_msg['Subject'] = subject
-    sms_msg = MIMEText(body, 'plain', 'utf-8')
+    email_msg = MIMEText(body, "plain", "utf-8")
+    email_msg["Subject"] = subject
+    sms_msg = MIMEText(body, "plain", "utf-8")
 
     await _notify_user(account, email_msg, sms_msg)
 
@@ -159,8 +165,8 @@ async def notify_tyrant_on_deck(account: Any, current_tyrant_name: str) -> None:
         f"Cheers,\nHappy Hour Bot"
     )
 
-    email_msg = MIMEText(body, 'plain', 'utf-8')
-    email_msg['Subject'] = subject
-    sms_msg = MIMEText(body, 'plain', 'utf-8')
+    email_msg = MIMEText(body, "plain", "utf-8")
+    email_msg["Subject"] = subject
+    sms_msg = MIMEText(body, "plain", "utf-8")
 
     await _notify_user(account, email_msg, sms_msg)

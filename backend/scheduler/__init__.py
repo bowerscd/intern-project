@@ -8,6 +8,7 @@ APScheduler jobs for happy hour tyrant rotation and auto-selection.
   an event with TyrantID=NULL. After 3 consecutive misses the admin loses
   the HAPPY_HOUR_TYRANT claim.
 """
+
 import logging
 from datetime import datetime, UTC, timedelta
 from zoneinfo import ZoneInfo
@@ -97,7 +98,9 @@ async def assign_tyrant() -> None:
             with db.session() as s:
                 admins = get_accounts_with_claim(s, AccountClaims.HAPPY_HOUR_TYRANT)
                 if not admins:
-                    logger.warning("No HAPPY_HOUR_TYRANT users found for tyrant assignment")
+                    logger.warning(
+                        "No HAPPY_HOUR_TYRANT users found for tyrant assignment"
+                    )
                     return
 
                 cycle = get_current_cycle_number(s)
@@ -129,13 +132,17 @@ async def assign_tyrant() -> None:
                 # Ensure the tyrant also has HAPPY_HOUR claim
                 if not (tyrant.claims & AccountClaims.HAPPY_HOUR):
                     from db.functions import update_account_claims
-                    update_account_claims(s, tyrant.id, tyrant.claims | AccountClaims.HAPPY_HOUR)
+
+                    update_account_claims(
+                        s, tyrant.id, tyrant.claims | AccountClaims.HAPPY_HOUR
+                    )
 
                 s.commit()
 
                 # Notify the assigned tyrant
                 try:
                     from mail.outgoing import notify_tyrant_assigned
+
                     await notify_tyrant_assigned(tyrant, deadline)
                 except Exception as e:
                     logger.error(f"Failed to notify tyrant {tyrant.username}: {e}")
@@ -145,6 +152,7 @@ async def assign_tyrant() -> None:
                 if on_deck is not None:
                     try:
                         from mail.outgoing import notify_tyrant_on_deck
+
                         await notify_tyrant_on_deck(on_deck.Account, tyrant.username)
                     except Exception as e:
                         logger.error(
@@ -188,7 +196,9 @@ async def auto_select_happy_hour() -> None:
                 pending = get_current_pending_assignment(s)
 
                 if events:
-                    logger.info("Happy hour already decided this week, skipping auto-select")
+                    logger.info(
+                        "Happy hour already decided this week, skipping auto-select"
+                    )
                     # Mark the pending assignment as chosen since an event exists
                     if pending:
                         mark_assignment_chosen(s, pending.id)
@@ -215,7 +225,9 @@ async def auto_select_happy_hour() -> None:
                 # Pick a random previous location
                 location = get_random_previous_location(s)
                 if location is None:
-                    logger.warning("No previous locations to choose from for auto-select")
+                    logger.warning(
+                        "No previous locations to choose from for auto-select"
+                    )
                     if pending:
                         s.commit()  # persist missed status changes
                     return
@@ -233,10 +245,14 @@ async def auto_select_happy_hour() -> None:
                         auto_selected=True,
                     )
                 except IntegrityError:
-                    logger.info("Event already exists for this week (concurrent creation), skipping auto-select")
+                    logger.info(
+                        "Event already exists for this week (concurrent creation), skipping auto-select"
+                    )
                     return
 
-                logger.info(f"Auto-selected happy hour at {location.Name} for {friday_event}")
+                logger.info(
+                    f"Auto-selected happy hour at {location.Name} for {friday_event}"
+                )
                 s.commit()
                 event_id = event.id
 
@@ -244,6 +260,7 @@ async def auto_select_happy_hour() -> None:
             try:
                 with db.session() as s2:
                     from db.functions import get_event_by_id
+
                     fresh_event = get_event_by_id(s2, event_id)
                     if fresh_event is not None:
                         await notify_happy_hour_users(fresh_event, s2)
@@ -273,12 +290,12 @@ def start_scheduler() -> None:
     sched.add_job(
         assign_tyrant,
         CronTrigger(
-            day_of_week='fri',
+            day_of_week="fri",
             hour=16,
             minute=0,
-            timezone='America/Los_Angeles',
+            timezone="America/Los_Angeles",
         ),
-        id='happy_hour_assign_tyrant',
+        id="happy_hour_assign_tyrant",
         replace_existing=True,
         misfire_grace_time=7200,
     )
@@ -287,12 +304,12 @@ def start_scheduler() -> None:
     sched.add_job(
         auto_select_happy_hour,
         CronTrigger(
-            day_of_week='wed',
+            day_of_week="wed",
             hour=12,
             minute=0,
-            timezone='America/Los_Angeles',
+            timezone="America/Los_Angeles",
         ),
-        id='happy_hour_auto_select',
+        id="happy_hour_auto_select",
         replace_existing=True,
         misfire_grace_time=7200,
     )

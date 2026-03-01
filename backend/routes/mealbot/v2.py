@@ -2,6 +2,7 @@
 v2 Mealbot API endpoints — authenticated.
 Requires MEALBOT claim for most operations.
 """
+
 from typing import Annotated, Any, Optional
 from datetime import datetime
 
@@ -87,7 +88,9 @@ async def my_ledger(
     with db:
         total = count_records_for_user(db, account.username)
         offset = (page - 1) * page_size
-        receipts = get_records_for_user_paginated(db, account.username, offset, page_size)
+        receipts = get_records_for_user_paginated(
+            db, account.username, offset, page_size
+        )
 
         return PaginatedRecordResponse(
             items=[RecordResponse.from_receipt(r) for r in receipts],

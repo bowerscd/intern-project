@@ -1,6 +1,7 @@
 """
 Self-service claims management endpoint — authenticated.
 """
+
 from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, status
@@ -24,7 +25,7 @@ BLOCKED_CLAIMS = frozenset({"ADMIN", "BASIC"})
     summary="Update own claims",
     dependencies=[Depends(validate_csrf_token)],
     description="Add or remove permission claims on the authenticated user's account. "
-                "The ADMIN claim cannot be modified through this endpoint.",
+    "The ADMIN claim cannot be modified through this endpoint.",
     response_model=ProfileResponse,
 )
 async def update_claims(

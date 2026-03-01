@@ -11,7 +11,7 @@ from .router import Authentication
     "/csrf-token",
     summary="Get CSRF token",
     description="Return a CSRF token that must be included in the "
-                "X-CSRF-Token header on all POST, PATCH, PUT, and DELETE requests.",
+    "X-CSRF-Token header on all POST, PATCH, PUT, and DELETE requests.",
 )
 async def get_csrf_token(request: Request) -> dict:
     """Generate or retrieve the session's CSRF token.

@@ -70,6 +70,7 @@ def _compare_type(
         return False
     return None
 
+
 # -- Alembic Config object (wraps alembic.ini) ------------------------------
 config = context.config
 

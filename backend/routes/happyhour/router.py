@@ -12,6 +12,6 @@ from routes.shared import database_lifespan
 
 HappyHour: APIRouter = APIRouter(
     tags=[ApiTags.HappyHour],
-    prefix='/api/v2/happyhour',
+    prefix="/api/v2/happyhour",
     lifespan=database_lifespan,
 )

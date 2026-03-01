@@ -22,7 +22,7 @@ class ExternalAuthProvider(Enum):
     local mock OIDC server during development.
     """
 
-    test   = (auto(), os.environ.get("TEST_OIDC_ISSUER", "https://accounts.localhost"))
+    test = (auto(), os.environ.get("TEST_OIDC_ISSUER", "https://accounts.localhost"))
     google = (auto(), "https://accounts.google.com")
 
     @property
@@ -45,9 +45,7 @@ class ExternalAuthProvider(Enum):
 
     @classmethod
     def __get_pydantic_core_schema__(
-        cls,
-        source_type: Any,
-        handler: GetCoreSchemaHandler
+        cls, source_type: Any, handler: GetCoreSchemaHandler
     ) -> CoreSchema:
         """Build a Pydantic core schema that validates strings into enum members.
 
@@ -65,16 +63,13 @@ class ExternalAuthProvider(Enum):
             cls._validate,
             core_schema.str_schema(),
             serialization=core_schema.plain_serializer_function_ser_schema(
-                cls._serialize,
-                info_arg=False,
-                return_schema=core_schema.str_schema()
-            )
+                cls._serialize, info_arg=False, return_schema=core_schema.str_schema()
+            ),
         )
 
         def __return(
-                _core_schema: CoreSchema,
-                _handler: GetJsonSchemaHandler
-                ) -> JsonSchemaValue:
+            _core_schema: CoreSchema, _handler: GetJsonSchemaHandler
+        ) -> JsonSchemaValue:
             """Return a JSON-schema snippet listing the enum member names.
 
             :param _core_schema: The core schema (unused).
@@ -91,7 +86,7 @@ class ExternalAuthProvider(Enum):
         return s
 
     @staticmethod
-    def _validate(value: str) -> 'ExternalAuthProvider':
+    def _validate(value: str) -> "ExternalAuthProvider":
         """Validate a string and convert it to an :class:`ExternalAuthProvider` member.
 
         :param value: The provider name string.
@@ -105,7 +100,7 @@ class ExternalAuthProvider(Enum):
         raise ValueError(f"invalid provider: {value!r}")
 
     @staticmethod
-    def _serialize(value: 'ExternalAuthProvider') -> str:
+    def _serialize(value: "ExternalAuthProvider") -> str:
         """Serialize an :class:`ExternalAuthProvider` member to its name string.
 
         :param value: The enum member to serialize.
@@ -123,21 +118,21 @@ class PhoneProvider(Enum):
     member).
     """
 
-    NONE                = (auto(), None)
-    ALL_TELL            = (auto(), "mms.alltelwireless.com")
-    AT_T                = (auto(), "mms.att.net")
-    BOOST_WIRELESS      = (auto(), "myboostmobile.com")
-    CONSUMER_CELLULAR   = (auto(), "mailmymobile.net")
-    CRICKET_WIRELESS    = (auto(), "mms.cricketwireless.net")
-    FIRST_NET           = (auto(), "sms.firstnet.com")
-    GOOGLE_FI           = (auto(), "msg.fi.google.com")
-    METRO_PCS           = (auto(), "mymetropcs.com")
-    SPRINT              = (auto(), "pm.sprint.com")
-    TMOBILE             = (auto(), "tmomail.net")
-    US_CELLULAR         = (auto(), "mms.uscc.net")
-    VERIZON             = (auto(), "vzwpix.com")
-    VIRGIN_MOBILE       = (auto(), "vmpix.com")
-    XFINITY_MOBILE      = (auto(), "mypixmessages.com")
+    NONE = (auto(), None)
+    ALL_TELL = (auto(), "mms.alltelwireless.com")
+    AT_T = (auto(), "mms.att.net")
+    BOOST_WIRELESS = (auto(), "myboostmobile.com")
+    CONSUMER_CELLULAR = (auto(), "mailmymobile.net")
+    CRICKET_WIRELESS = (auto(), "mms.cricketwireless.net")
+    FIRST_NET = (auto(), "sms.firstnet.com")
+    GOOGLE_FI = (auto(), "msg.fi.google.com")
+    METRO_PCS = (auto(), "mymetropcs.com")
+    SPRINT = (auto(), "pm.sprint.com")
+    TMOBILE = (auto(), "tmomail.net")
+    US_CELLULAR = (auto(), "mms.uscc.net")
+    VERIZON = (auto(), "vzwpix.com")
+    VIRGIN_MOBILE = (auto(), "vmpix.com")
+    XFINITY_MOBILE = (auto(), "mypixmessages.com")
 
     @property
     def value(self) -> int:
@@ -191,16 +186,16 @@ class AccountClaims(IntFlag):
     several permissions simultaneously.
     """
 
-    NONE             = 0
-    BASIC            = auto()
-    ADMIN            = auto()
-    MEALBOT          = auto()
-    COOKBOOK          = auto()
-    HAPPY_HOUR       = auto()
+    NONE = 0
+    BASIC = auto()
+    ADMIN = auto()
+    MEALBOT = auto()
+    COOKBOOK = auto()
+    HAPPY_HOUR = auto()
     HAPPY_HOUR_TYRANT = auto()
 
     @classproperty
-    def ANY(cls) -> 'AccountClaims':
+    def ANY(cls) -> "AccountClaims":
         """Return a bitmask with every defined claim enabled.
 
         :returns: A combined :class:`AccountClaims` value.
