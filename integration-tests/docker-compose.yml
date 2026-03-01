@@ -49,7 +49,7 @@ services:
       - TEST_OIDC_ISSUER=http://oidc:9000
       - TEST_CLIENT_ID=client_id1
       - TEST_CLIENT_SECRET=definitely_a_secret
-      - TEST_REDIRECT_URI=http://frontend:5000/api/v2/auth/callback/test
+      - TEST_REDIRECT_URI=http://localhost:5000/api/v2/auth/callback/test
       # SMTP (optional)
       - SMTP_URI=${SMTP_URI:-}
       - MAIL_SENDER=${MAIL_SENDER:-}
