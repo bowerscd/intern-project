@@ -121,8 +121,15 @@ def _mint_id_token(
 # ---------------------------------------------------------------------------
 
 
-def make_handler(issuer: str):
-    """Factory: return a handler class bound to a specific issuer URL."""
+def make_handler(issuer: str, external_issuer: str | None = None):
+    """Factory: return a handler class bound to a specific issuer URL.
+
+    *external_issuer*, when provided, is used for the
+    ``authorization_endpoint`` in the well-known config so that a browser
+    running **outside** the Docker network can reach the authorize page,
+    while the ``token_endpoint`` (server-to-server) still uses *issuer*.
+    """
+    browser_issuer = external_issuer or issuer
 
     class OIDCHandler(BaseHTTPRequestHandler):
         """Handles the four OIDC endpoints the backend needs."""
@@ -178,7 +185,7 @@ def make_handler(issuer: str):
         def _handle_well_known(self) -> None:
             self._send_json({
                 "issuer": issuer,
-                "authorization_endpoint": f"{issuer}/authorize",
+                "authorization_endpoint": f"{browser_issuer}/authorize",
                 "token_endpoint": f"{issuer}/token",
                 "jwks_uri": f"{issuer}/jwks",
                 "id_token_signing_alg_values_supported": ["RS256"],
@@ -320,10 +327,13 @@ def stop_server(server: HTTPServer) -> None:
 
 def main() -> None:
     issuer = os.environ.get("MOCK_OIDC_ISSUER", f"http://localhost:{PORT}")
-    server = HTTPServer(("0.0.0.0", PORT), make_handler(issuer))
+    external_issuer = os.environ.get("MOCK_OIDC_EXTERNAL_ISSUER")
+    server = HTTPServer(("0.0.0.0", PORT), make_handler(issuer, external_issuer))
     print(f"[mock-oidc] Mock OIDC provider running at {issuer}")
+    if external_issuer:
+        print(f"[mock-oidc] External (browser) issuer: {external_issuer}")
     print(f"[mock-oidc] JWKS:      {issuer}/jwks")
-    print(f"[mock-oidc] Authorize: {issuer}/authorize")
+    print(f"[mock-oidc] Authorize: {external_issuer or issuer}/authorize")
     print(f"[mock-oidc] Token:     {issuer}/token")
     print(f"[mock-oidc] Client ID: {CLIENT_ID}")
     try:
