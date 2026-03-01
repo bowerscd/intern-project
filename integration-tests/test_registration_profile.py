@@ -17,7 +17,7 @@ class TestRegistrationProfile:
     ) -> None:
         """Profile should reflect the OIDC identity and chosen username."""
         backend_url, _ = backend_server
-        oidc_issuer, _ = oidc_serverALl
+        oidc_issuer, _ = oidc_server
 
         client = oidc_register_session(
             backend_url, oidc_issuer,
