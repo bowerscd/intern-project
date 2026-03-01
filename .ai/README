@@ -1,0 +1,3 @@
+AI context store. Consumed automatically by LLM prompts.
+Do not edit manually — append via tooling or AI session.
+Format: JSONL (one JSON object per line in lessons.jsonl).
