@@ -231,10 +231,12 @@ def api_proxy(path):
     fwd["X-Forwarded-Host"] = request.host
     fwd["X-Forwarded-Proto"] = request.scheme
 
-    # Forward only the backend session cookie, not all cookies
-    cookies_to_forward = {}
-    if SESSION_COOKIE_NAME in request.cookies:
-        cookies_to_forward[SESSION_COOKIE_NAME] = request.cookies[SESSION_COOKIE_NAME]
+    # Forward only the backend session cookie and OIDC anti-CSRF cookies,
+    # not all cookies.
+    FORWARDED_COOKIES = {SESSION_COOKIE_NAME, "auth_state", "auth_nonce"}
+    cookies_to_forward = {
+        k: v for k, v in request.cookies.items() if k in FORWARDED_COOKIES
+    }
 
     resp = http_requests.request(
         method=request.method,
