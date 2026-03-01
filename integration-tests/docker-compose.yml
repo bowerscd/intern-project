@@ -32,7 +32,7 @@ services:
       - DEV=0
       - SERVER_HOSTNAME=${SERVER_HOSTNAME:-localhost}
       - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET is required}
-      - DATABASE_URI=${DATABASE_URI:-sqlite:///data/app.db}
+      - DATABASE_URI=${DATABASE_URI:-sqlite:////data/app.db}
       - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS:-["https://sites.localhost"]}
       - SESSION_COOKIE_DOMAIN=${SESSION_COOKIE_DOMAIN:-.localhost}
       - SESSION_SAME_SITE=lax

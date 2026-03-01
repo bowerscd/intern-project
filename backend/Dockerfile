@@ -4,8 +4,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Create non-root user
-RUN groupadd --system appgroup && useradd --system --gid appgroup appuser
+# Create non-root user and writable data directory
+RUN groupadd --system appgroup && useradd --system --gid appgroup appuser \
+ && mkdir -p /data && chown appuser:appgroup /data
 
 # Install dependencies first for layer caching
 COPY requirements.txt .
