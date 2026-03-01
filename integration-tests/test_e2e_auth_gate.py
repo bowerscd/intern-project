@@ -9,6 +9,8 @@ import httpx
 import pytest
 from urllib.parse import urlparse, parse_qs, urlencode
 
+from helpers import create_backend_client
+
 
 PROTECTED_PAGES = [
     "/",
@@ -32,9 +34,7 @@ class TestUnauthenticatedRedirects:
     """Pages that require auth should redirect to /login without a session cookie."""
 
     @pytest.mark.parametrize("path", PROTECTED_PAGES)
-    def test_redirect_to_login(
-        self, frontend_client: httpx.Client, path: str
-    ) -> None:
+    def test_redirect_to_login(self, frontend_client: httpx.Client, path: str) -> None:
         resp = frontend_client.get(path)
         assert resp.status_code == 302
         assert resp.headers["location"].endswith("/login")
@@ -44,9 +44,7 @@ class TestPublicPagesAccessible:
     """Public pages should be accessible without a session cookie."""
 
     @pytest.mark.parametrize("path", PUBLIC_PAGES)
-    def test_public_page_ok(
-        self, frontend_client: httpx.Client, path: str
-    ) -> None:
+    def test_public_page_ok(self, frontend_client: httpx.Client, path: str) -> None:
         resp = frontend_client.get(path)
         assert resp.status_code == 200
 
@@ -61,9 +59,7 @@ class TestProxyForwarding:
         resp = frontend_client.get("/api/v2/account/profile")
         assert resp.status_code in (401, 403)
 
-    def test_proxy_path_traversal_blocked(
-        self, frontend_server
-    ) -> None:
+    def test_proxy_path_traversal_blocked(self, frontend_server) -> None:
         """Path traversal through the proxy should be rejected."""
         frontend_url, _ = frontend_server
         # httpx normalizes '..' in URLs, so use a raw socket or path that
@@ -91,9 +87,7 @@ class TestAuthenticatedFlow:
         oidc_issuer, _ = oidc_server
 
         # ── Step 1: Register a user through the backend API ──
-        backend_client = httpx.Client(
-            base_url=backend_url, follow_redirects=False, timeout=10.0
-        )
+        backend_client = create_backend_client(backend_url)
 
         resp = backend_client.get("/api/v2/auth/register/test")
         assert resp.status_code in (302, 307)
@@ -122,7 +116,8 @@ class TestAuthenticatedFlow:
         assert resp.status_code in (302, 307)
 
         # Complete registration
-        csrf = backend_client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
+        csrf_resp = backend_client.get("/api/v2/auth/csrf-token")
+        csrf = csrf_resp.json()["csrf_token"]
         resp = backend_client.post(
             "/api/v2/auth/complete-registration",
             json={"username": "auth_gate_test_user"},

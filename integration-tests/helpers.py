@@ -10,6 +10,30 @@ import httpx
 from urllib.parse import urlparse, parse_qs, urlencode
 
 
+def create_backend_client(base_url: str, **kwargs) -> httpx.Client:
+    """Create an :class:`httpx.Client` with automatic cookie syncing.
+
+    ``http.cookiejar.CookieJar`` applies RFC 2965 effective-host-name rules
+    that can silently drop ``Set-Cookie`` values for bare hostnames such as
+    ``localhost`` (it appends ``.local`` to the effective request host,
+    causing a domain mismatch on the send path).  The returned client
+    installs a response event hook that copies every ``Set-Cookie`` value
+    directly into the client's :class:`httpx.Cookies`, bypassing the
+    policy filter.  This ensures session cookies survive across requests
+    regardless of the hostname.
+    """
+    kwargs.setdefault("follow_redirects", False)
+    kwargs.setdefault("timeout", 10.0)
+    client = httpx.Client(base_url=base_url, **kwargs)
+
+    def _sync_cookies(response: httpx.Response) -> None:
+        for name, value in response.cookies.items():
+            client.cookies.set(name, value, domain=response.url.host, path="/")
+
+    client.event_hooks["response"].append(_sync_cookies)
+    return client
+
+
 def rewrite_oidc_url(url: str, oidc_issuer: str) -> str:
     """Rewrite a Docker-internal OIDC URL to be reachable from the test host.
 
@@ -53,9 +77,7 @@ def oidc_register_session(
     :param email: Email address for the test user.
     :returns: An httpx client with cookies from the OIDC callback.
     """
-    client = httpx.Client(
-        base_url=backend_url, follow_redirects=False, timeout=10.0
-    )
+    client = create_backend_client(backend_url)
 
     # 1. Initiate registration
     resp = client.get("/api/v2/auth/register/test")
@@ -72,16 +94,15 @@ def oidc_register_session(
     # 3. Approve the OIDC request (simulate the user clicking Authorize)
     parsed = urlparse(authorize_url)
     qs = parse_qs(parsed.query)
-    approve_url = (
-        f"{oidc_issuer}/authorize/approve?"
-        + urlencode({
+    approve_url = f"{oidc_issuer}/authorize/approve?" + urlencode(
+        {
             "redirect_uri": qs["redirect_uri"][0],
             "state": qs["state"][0],
             "nonce": qs["nonce"][0],
             "sub": sub,
             "name": name,
             "email": email,
-        })
+        }
     )
     resp = httpx.get(approve_url, follow_redirects=False, timeout=10.0)
     assert resp.status_code == 302
@@ -107,13 +128,16 @@ def complete_registration(client: httpx.Client, username: str) -> dict:
     :param username: The desired username.
     :returns: The JSON response body from the registration endpoint.
     """
-    csrf = client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
+    csrf_resp = client.get("/api/v2/auth/csrf-token")
+    csrf = csrf_resp.json()["csrf_token"]
     resp = client.post(
         "/api/v2/auth/complete-registration",
         json={"username": username},
         headers={"X-CSRF-Token": csrf},
     )
-    assert resp.status_code == 201, resp.text[:500]
+    assert resp.status_code == 201, (
+        f"{resp.text[:300]}  ||  client_cookies={list(client.cookies.keys())}"
+    )
     return resp.json()
 
 
@@ -140,7 +164,11 @@ def register_user(
     :returns: An httpx client with a fully authenticated session.
     """
     client = oidc_register_session(
-        backend_url, oidc_issuer, sub=sub, name=name, email=email,
+        backend_url,
+        oidc_issuer,
+        sub=sub,
+        name=name,
+        email=email,
     )
     complete_registration(client, username)
     return client

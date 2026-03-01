@@ -5,10 +5,9 @@ Validates the complete login/register flow through:
 """
 
 import httpx
-import pytest
 from urllib.parse import urlparse, parse_qs, urlencode
 
-from helpers import rewrite_oidc_url
+from helpers import rewrite_oidc_url, create_backend_client
 
 
 class TestOIDCLoginFlow:
@@ -40,9 +39,7 @@ class TestOIDCLoginFlow:
         oidc_issuer, _ = oidc_server
 
         # Use a dedicated client with cookie jar to track the full flow
-        with httpx.Client(
-            base_url=backend_url, follow_redirects=False, timeout=10.0
-        ) as session_client:
+        with create_backend_client(backend_url) as session_client:
             # Step 1: Initiate REGISTRATION (not login, since account doesn't exist yet)
             resp = session_client.get("/api/v2/auth/register/test")
             assert resp.status_code in (302, 307)
@@ -104,12 +101,13 @@ class TestOIDCLoginFlow:
             assert reg_result["username"] == "e2e_integration_user"
 
             # Step 8: Verify we have a session cookie
-            session_cookies = {
-                c.name: c.value
-                for c in session_client.cookies.jar
-            }
-            session_cookie_names = [n for n in session_cookies if "session" in n.lower()]
-            assert session_cookie_names, f"No session cookie set. Cookies: {session_cookies}"
+            session_cookies = {c.name: c.value for c in session_client.cookies.jar}
+            session_cookie_names = [
+                n for n in session_cookies if "session" in n.lower()
+            ]
+            assert session_cookie_names, (
+                f"No session cookie set. Cookies: {session_cookies}"
+            )
 
             # Step 9: Authenticated request should succeed
             resp = session_client.get("/api/v2/account/profile")
@@ -135,9 +133,7 @@ class TestOIDCRegisterFlow:
 class TestOIDCEdgeCases:
     """OIDC edge cases that should be handled gracefully."""
 
-    def test_callback_without_login_returns_error(
-        self, client: httpx.Client
-    ) -> None:
+    def test_callback_without_login_returns_error(self, client: httpx.Client) -> None:
         """Hitting the callback directly with a fake code should fail cleanly."""
         resp = client.get("/api/v2/auth/callback/test?code=fake&state=fake")
         # Should fail (no matching state cookie / invalid code), not crash
@@ -155,9 +151,7 @@ class TestOIDCEdgeCases:
         backend_url, _ = backend_server
         oidc_issuer, _ = oidc_server
 
-        with httpx.Client(
-            base_url=backend_url, follow_redirects=False, timeout=10.0
-        ) as c:
+        with create_backend_client(backend_url) as c:
             # Start login
             resp = c.get("/api/v2/auth/login/test")
             authorize_url = rewrite_oidc_url(resp.headers["location"], oidc_issuer)
@@ -182,7 +176,7 @@ class TestOIDCEdgeCases:
             # First use: should succeed
             resp = c.get(callback_path)
             # May redirect or return error (state cookie mismatch possible)
-            first_status = resp.status_code
+            _ = resp.status_code
 
             # Second use: same code should fail (already consumed)
             resp2 = c.get(callback_path)
