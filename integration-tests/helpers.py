@@ -6,37 +6,43 @@ modules don't duplicate the multi-step flow.
 
 from __future__ import annotations
 
+import http.cookiejar as cookielib
+
 import httpx
 from urllib.parse import urlparse, parse_qs, urlencode
 
 
-def create_backend_client(base_url: str, **kwargs) -> httpx.Client:
-    """Create an :class:`httpx.Client` with automatic cookie syncing.
+class _PermissiveCookiePolicy(cookielib.DefaultCookiePolicy):
+    """Cookie policy that unconditionally accepts and returns all cookies.
 
-    ``http.cookiejar.CookieJar`` applies RFC 2965 effective-host-name rules
-    that can silently drop ``Set-Cookie`` values for bare hostnames such as
-    ``localhost`` (it appends ``.local`` to the effective request host,
-    causing a domain mismatch on the send path).  The returned client
-    installs a response event hook that copies every ``Set-Cookie`` value
-    directly into the client's :class:`httpx.Cookies`, bypassing the
-    policy filter.  This ensures session cookies survive across requests
-    regardless of the hostname.
+    ``http.cookiejar.DefaultCookiePolicy`` applies RFC 2965
+    effective-host-name rules that silently drop ``Set-Cookie`` values for
+    bare hostnames such as ``localhost`` (it appends ``.local`` to the
+    effective request host, causing a domain mismatch on the send path).
+
+    This policy disables those checks so that **every** ``Set-Cookie`` is
+    stored and **every** stored cookie is sent back, which is the behaviour
+    we need for integration tests that talk to ``http://localhost:…``.
+    """
+
+    def set_ok(self, cookie, request):  # noqa: ARG002
+        return True
+
+    def return_ok(self, cookie, request):  # noqa: ARG002
+        return True
+
+
+def create_backend_client(base_url: str, **kwargs) -> httpx.Client:
+    """Create an :class:`httpx.Client` with permissive cookie handling.
+
+    Replaces the default ``http.cookiejar`` cookie policy with
+    :class:`_PermissiveCookiePolicy` so that cookies for bare hostnames
+    like ``localhost`` are stored and resent correctly.
     """
     kwargs.setdefault("follow_redirects", False)
     kwargs.setdefault("timeout", 10.0)
     client = httpx.Client(base_url=base_url, **kwargs)
-
-    def _sync_cookies(response: httpx.Response) -> None:
-        for name, value in response.cookies.items():
-            # Purge every existing jar entry with this name (any domain/path)
-            # so that http.cookiejar's own copy doesn't create a duplicate
-            # that shadows the value we're about to set.
-            stale = [c for c in client.cookies.jar if c.name == name]
-            for c in stale:
-                client.cookies.jar.clear(c.domain, c.path, c.name)
-            client.cookies.set(name, value, domain=response.url.host, path="/")
-
-    client.event_hooks["response"].append(_sync_cookies)
+    client.cookies.jar._policy = _PermissiveCookiePolicy()
     return client
 
 

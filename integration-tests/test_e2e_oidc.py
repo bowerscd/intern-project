@@ -181,4 +181,6 @@ class TestOIDCEdgeCases:
             # Second use: same code should fail (already consumed)
             resp2 = c.get(callback_path)
             # Either the backend or the OIDC provider rejects the replayed code
-            assert resp2.status_code in (302, 307, 400, 401, 403, 500)
+            # 422 is also valid — the callback deletes auth cookies on first use,
+            # so the second call has no auth_state/auth_nonce.
+            assert resp2.status_code in (302, 307, 400, 401, 403, 422, 500)
