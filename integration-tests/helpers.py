@@ -6,44 +6,22 @@ modules don't duplicate the multi-step flow.
 
 from __future__ import annotations
 
-import http.cookiejar as cookielib
-
 import httpx
 from urllib.parse import urlparse, parse_qs, urlencode
 
 
-class _PermissiveCookiePolicy(cookielib.DefaultCookiePolicy):
-    """Cookie policy that unconditionally accepts and returns all cookies.
-
-    ``http.cookiejar.DefaultCookiePolicy`` applies RFC 2965
-    effective-host-name rules that silently drop ``Set-Cookie`` values for
-    bare hostnames such as ``localhost`` (it appends ``.local`` to the
-    effective request host, causing a domain mismatch on the send path).
-
-    This policy disables those checks so that **every** ``Set-Cookie`` is
-    stored and **every** stored cookie is sent back, which is the behaviour
-    we need for integration tests that talk to ``http://localhost:…``.
-    """
-
-    def set_ok(self, cookie, request):  # noqa: ARG002
-        return True
-
-    def return_ok(self, cookie, request):  # noqa: ARG002
-        return True
-
-
 def create_backend_client(base_url: str, **kwargs) -> httpx.Client:
-    """Create an :class:`httpx.Client` with permissive cookie handling.
+    """Create an :class:`httpx.Client` pre-configured for integration tests.
 
-    Replaces the default ``http.cookiejar`` cookie policy with
-    :class:`_PermissiveCookiePolicy` so that cookies for bare hostnames
-    like ``localhost`` are stored and resent correctly.
+    Uses ``127.0.0.1`` URLs (not bare ``localhost``) so that Python's
+    default ``http.cookiejar.DefaultCookiePolicy`` accepts and returns
+    cookies correctly.  The standard policy applies RFC 2965
+    effective-host-name rules that silently drop cookies for bare
+    hostnames like ``localhost``; IP addresses are unaffected.
     """
     kwargs.setdefault("follow_redirects", False)
     kwargs.setdefault("timeout", 10.0)
-    client = httpx.Client(base_url=base_url, **kwargs)
-    client.cookies.jar._policy = _PermissiveCookiePolicy()
-    return client
+    return httpx.Client(base_url=base_url, **kwargs)
 
 
 def rewrite_oidc_url(url: str, oidc_issuer: str) -> str:

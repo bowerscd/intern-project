@@ -113,7 +113,7 @@ def oidc_server():
     instance and return the host-reachable URL instead.
     """
     if _EXTERNAL_BACKEND_URL:
-        yield "http://localhost:9000", 9000
+        yield "http://127.0.0.1:9000", 9000
         return
     server, issuer_url, port = start_oidc(port=0)
     yield issuer_url, port

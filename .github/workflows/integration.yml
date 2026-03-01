@@ -40,8 +40,8 @@ jobs:
       - name: Run integration tests
         working-directory: integration-tests
         env:
-          BACKEND_URL: http://localhost:8000
-          FRONTEND_URL: http://localhost:5000
+          BACKEND_URL: http://127.0.0.1:8000
+          FRONTEND_URL: http://127.0.0.1:5000
         run: python -m pytest . -v --timeout=60
 
       - name: Tear down stack
