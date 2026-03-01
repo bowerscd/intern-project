@@ -28,6 +28,12 @@ def create_backend_client(base_url: str, **kwargs) -> httpx.Client:
 
     def _sync_cookies(response: httpx.Response) -> None:
         for name, value in response.cookies.items():
+            # Purge every existing jar entry with this name (any domain/path)
+            # so that http.cookiejar's own copy doesn't create a duplicate
+            # that shadows the value we're about to set.
+            stale = [c for c in client.cookies.jar if c.name == name]
+            for c in stale:
+                client.cookies.jar.clear(c.domain, c.path, c.name)
             client.cookies.set(name, value, domain=response.url.host, path="/")
 
     client.event_hooks["response"].append(_sync_cookies)
