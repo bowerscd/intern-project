@@ -12,10 +12,46 @@ Requires Playwright::
 
 from __future__ import annotations
 
+import sys
+
 import pytest
 
 
 pytestmark = pytest.mark.browser
+
+
+def _log(msg: str) -> None:
+    """Write diagnostic info to stderr so it shows in CI logs."""
+    print(f"[DIAG] {msg}", file=sys.stderr, flush=True)
+
+
+def _attach_network_logger(page) -> list:
+    """Attach response listener and return the collected log entries."""
+    entries = []
+
+    def _on_response(response):
+        entry = f"{response.request.method} {response.url} → {response.status}"
+        headers = response.headers
+        if "location" in headers:
+            entry += f"  Location: {headers['location']}"
+        entries.append(entry)
+        _log(entry)
+
+    page.on("response", _on_response)
+    return entries
+
+
+def _dump_page_state(page, label: str, network_log: list) -> None:
+    """Print diagnostic info about the current page state."""
+    _log(f"=== {label} ===")
+    _log(f"URL: {page.url}")
+    _log(f"Content length: {len(page.content())}")
+    _log(f"Content (first 2000 chars): {page.content()[:2000]}")
+    _log(f"Cookies: {page.context.cookies()}")
+    _log(f"Network log ({len(network_log)} entries):")
+    for entry in network_log:
+        _log(f"  {entry}")
+    _log(f"=== end {label} ===")
 
 
 class TestBrowserRegistrationFlow:
@@ -33,6 +69,9 @@ class TestBrowserRegistrationFlow:
         5. Verify redirect to /account
         """
         oidc_issuer, _ = oidc_server
+
+        # Attach network logger for diagnostics
+        network_log = _attach_network_logger(page)
 
         # ── Step 1: Load the login page ──
         page.goto("/login")
@@ -63,6 +102,10 @@ class TestBrowserRegistrationFlow:
         page.click("button[type='submit']")
 
         # ── Step 4: Complete Registration page ──
+        # Diagnostic: wait a moment then dump page state before the wait_for_url
+        page.wait_for_timeout(3000)
+        _dump_page_state(page, "after OIDC submit (before wait_for_url)", network_log)
+
         # After the OIDC callback the backend redirects to /auth/complete-registration
         # on its own port (the redirect_uri in the test config points at the backend
         # directly).  Navigate to the *frontend's* complete-registration page — the
@@ -138,6 +181,8 @@ class TestBrowserRegistrationFlow:
         """
         frontend_url, frontend_port = frontend_server
 
+        network_log = _attach_network_logger(page)
+
         page.goto(f"{frontend_url}/login")
         page.wait_for_selector("#login-actions a", timeout=5000)
         page.locator("a", has_text="Register with Test Provider").click()
@@ -147,6 +192,10 @@ class TestBrowserRegistrationFlow:
         page.fill("input[name='name']", name)
         page.fill("input[name='email']", email)
         page.click("button[type='submit']")
+
+        # Diagnostic: wait a moment then dump page state
+        page.wait_for_timeout(3000)
+        _dump_page_state(page, "helper: after OIDC submit", network_log)
 
         page.wait_for_url("**/complete-registration**", timeout=10000)
 
