@@ -57,6 +57,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
 
       - name: Build and push
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: ./backend
@@ -69,7 +70,7 @@ jobs:
       - name: Trivy vulnerability scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository_owner }}/vibe-coded-backend:sha-${{ github.sha }}
+          image-ref: ${{ env.REGISTRY }}/${{ github.repository_owner }}/vibe-coded-backend@${{ steps.build.outputs.digest }}
           format: sarif
           output: backend-trivy.sarif
           severity: CRITICAL,HIGH
@@ -111,6 +112,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
 
       - name: Build and push
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
@@ -123,7 +125,7 @@ jobs:
       - name: Trivy vulnerability scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository_owner }}/vibe-coded-frontend:sha-${{ github.sha }}
+          image-ref: ${{ env.REGISTRY }}/${{ github.repository_owner }}/vibe-coded-frontend@${{ steps.build.outputs.digest }}
           format: sarif
           output: frontend-trivy.sarif
           severity: CRITICAL,HIGH
