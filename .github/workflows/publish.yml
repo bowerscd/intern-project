@@ -14,9 +14,24 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
+  # ── CI Gates ──────────────────────────────────────────────────────────
+  backend-ci:
+    name: Backend CI
+    uses: ./.github/workflows/backend.yml
+
+  frontend-ci:
+    name: Frontend CI
+    uses: ./.github/workflows/frontend.yml
+
+  integration-ci:
+    name: Integration Tests
+    uses: ./.github/workflows/integration.yml
+    secrets: inherit
+
   # ── Backend ──────────────────────────────────────────────────────────
   publish-backend:
     name: Backend image
+    needs: [backend-ci, frontend-ci, integration-ci]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -70,6 +85,7 @@ jobs:
   # ── Frontend ─────────────────────────────────────────────────────────
   publish-frontend:
     name: Frontend image
+    needs: [backend-ci, frontend-ci, integration-ci]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
