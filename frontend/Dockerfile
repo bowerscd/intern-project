@@ -1,5 +1,5 @@
 # Stage 1: Compile TypeScript → static/dist/
-FROM node:22-slim AS ts-builder
+FROM node:25-slim AS ts-builder
 WORKDIR /build
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts
