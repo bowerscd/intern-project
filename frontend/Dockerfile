@@ -10,6 +10,10 @@ RUN npx tsc -p tsconfig.json
 # Stage 2: Python application
 FROM python:3.14-slim
 
+LABEL org.opencontainers.image.title="vibe-coded-frontend" \
+      org.opencontainers.image.description="Frontend proxy for vibe-coded" \
+      org.opencontainers.image.source="https://github.com/bowerscd/intern-project"
+
 WORKDIR /app
 
 # Create non-root user
@@ -30,6 +34,9 @@ COPY --from=ts-builder /build/static/dist/ static/dist/
 USER appuser
 
 EXPOSE 5000
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=15s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/healthz')"
 
 CMD ["gunicorn", "app:app", \
      "--bind", "0.0.0.0:5000", \

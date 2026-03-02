@@ -1,5 +1,9 @@
 FROM python:3.14-slim
 
+LABEL org.opencontainers.image.title="vibe-coded-backend" \
+      org.opencontainers.image.description="Backend API for vibe-coded" \
+      org.opencontainers.image.source="https://github.com/bowerscd/intern-project"
+
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 
 WORKDIR /app
@@ -20,8 +24,12 @@ USER appuser
 
 EXPOSE 8000
 
-# In production, set TRUSTED_PROXY_HOSTS to the actual proxy IPs
-CMD uvicorn app:app \
+HEALTHCHECK --interval=10s --timeout=5s --start-period=15s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"
+
+# Run migrations on every start (idempotent), then hand PID 1 to uvicorn.
+# In production, set FORWARDED_ALLOW_IPS to the actual proxy IPs.
+CMD alembic upgrade head && exec uvicorn app:app \
     --host 0.0.0.0 \
     --port 8000 \
     --proxy-headers \
