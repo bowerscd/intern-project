@@ -29,6 +29,7 @@ install-browser: install ## Alias for install (Playwright now included by defaul
 
 up: ## Start the Docker Compose stack and wait for all services to be healthy
 	mkdir -p backend-data
+	chmod 777 backend-data
 	$(COMPOSE) up --build --wait -d
 
 down: ## Stop the Docker Compose stack
