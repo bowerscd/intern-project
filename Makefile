@@ -11,6 +11,7 @@
 # dependencies stay isolated (backend ≠ frontend ≠ integration-tests).
 
 PYTHON ?= python3
+COMPOSE ?= podman-compose
 
 # Venv interpreters — used internally by sub-makes
 BACKEND_VENV      := backend/.venv/bin
@@ -18,7 +19,7 @@ FRONTEND_VENV     := frontend/.venv/bin
 INTEGRATION_VENV  := integration-tests/.venv/bin
 
 .PHONY: help setup setup-backend setup-frontend setup-integration \
-        test test-backend test-frontend test-integration \
+        test test-backend test-frontend test-integration test-integration-local \
         lint lint-backend lint-frontend format clean install-hooks
 
 # ─── Help ─────────────────────────────────────────────────────────────────────
@@ -51,7 +52,7 @@ setup-integration: $(INTEGRATION_VENV)/activate ## Set up integration-tests venv
 
 # ─── Tests ────────────────────────────────────────────────────────────────────
 
-test: test-backend test-frontend ## Run backend + frontend tests
+test: test-backend test-frontend test-integration ## Run all tests
 
 test-backend: ## Run backend tests
 	cd backend && $(CURDIR)/$(BACKEND_VENV)/python -m pytest tests/ -v --import-mode=importlib --cache-clear
@@ -61,7 +62,10 @@ test-frontend: ## Run frontend Python + TypeScript tests
 	cd frontend && npx vitest run
 
 test-integration: ## Run integration tests (Docker/Podman stack)
-	cd integration-tests && $(CURDIR)/$(INTEGRATION_VENV)/python -m pytest . -v --timeout=60 -m "not browser"
+	COMPOSE=$(COMPOSE) $(MAKE) -C integration-tests test
+
+test-integration-local: ## Run integration tests against local processes (no Docker)
+	PYTHON=$(CURDIR)/$(INTEGRATION_VENV)/python $(MAKE) -C integration-tests test-local
 
 # ─── Lint / Format ───────────────────────────────────────────────────────────
 
@@ -69,9 +73,11 @@ lint: lint-backend lint-frontend ## Lint all projects
 
 lint-backend: ## Lint backend with ruff
 	cd backend && $(CURDIR)/$(BACKEND_VENV)/python -m ruff check .
+	cd backend && $(CURDIR)/$(BACKEND_VENV)/python -m ruff format --check .
 
 lint-frontend: ## Lint frontend (ruff + tsc --noEmit)
 	cd frontend && $(CURDIR)/$(FRONTEND_VENV)/python -m ruff check .
+	cd frontend && $(CURDIR)/$(FRONTEND_VENV)/python -m ruff format --check .
 	cd frontend && npx tsc -p tsconfig.json --noEmit
 
 format: ## Auto-format all Python code

@@ -27,11 +27,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt -r tests/requirements.txt
 
-      - name: Ruff check
-        run: python -m ruff check .
-
-      - name: Ruff format check
-        run: python -m ruff format --check .
+      - name: Lint
+        run: make lint
 
   test:
     name: Test
@@ -49,12 +46,7 @@ jobs:
         run: pip install -r requirements.txt -r tests/requirements.txt
 
       - name: Run tests
-        env:
-          DEV: "1"
-          SESSION_SECRET: "dev-only-not-for-production"
-        run: |
-          python -m pytest tests/ -v --import-mode=importlib --cache-clear \
-            --cov=. --cov-report=term-missing
+        run: make test-cov
 
   build:
     name: Build check

@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 # Pre-commit hook — lint + test gate for AI-generated commits.
 #
-# Runs:  ruff check (backend + frontend)
-#        tsc --noEmit (frontend TypeScript)
-#        pytest backend
-#        pytest frontend (Python)
-#        vitest (frontend TypeScript)
+# Delegates entirely to Makefile targets so hook and CI stay in sync:
+#   make lint-backend    make lint-frontend
+#   make test-backend    make test-frontend
 #
 # Bypass:  git commit --no-verify
 # Skip tests only:  SKIP_TESTS=1 git commit
@@ -38,35 +36,20 @@ run_step() {
     fi
 }
 
-run_step_in() {
-    local label="$1"
-    local dir="$2"
-    shift 2
-    printf "  %-40s" "$label"
-    if (cd "$dir" && "$@" > /dev/null 2>&1); then
-        printf "\033[32m✔\033[0m\n"
-    else
-        printf "\033[31m✘\033[0m\n"
-        FAILED=1
-    fi
-}
-
 echo "pre-commit: running checks…"
 
 # ── Lint ──────────────────────────────────────────────────────────────────────
 
-run_step "ruff check backend"      "$BACKEND_PY"  -m ruff check "$ROOT/backend"
-run_step "ruff check frontend"     "$FRONTEND_PY" -m ruff check "$ROOT/frontend"
-run_step "tsc --noEmit frontend"   npx --prefix "$ROOT/frontend" tsc -p "$ROOT/frontend/tsconfig.json" --noEmit
+run_step "lint backend"       make -C "$ROOT" lint-backend
+run_step "lint frontend"      make -C "$ROOT" lint-frontend
 
 # ── Tests (skip with SKIP_TESTS=1) ───────────────────────────────────────────
 
 if [ "${SKIP_TESTS:-0}" = "1" ]; then
     echo "  (tests skipped — SKIP_TESTS=1)"
 else
-    run_step_in "pytest backend"  "$ROOT/backend"  "$BACKEND_PY"  -m pytest tests/ -x -q --import-mode=importlib --no-header --tb=line
-    run_step_in "pytest frontend" "$ROOT/frontend" "$FRONTEND_PY" -m pytest tests/ -x -q --no-header --tb=line
-    run_step_in "vitest frontend" "$ROOT/frontend" npx vitest run --reporter=dot 2>&1
+    run_step "test backend"   make -C "$ROOT" test-backend
+    run_step "test frontend"  make -C "$ROOT" test-frontend
 fi
 
 # ── Result ────────────────────────────────────────────────────────────────────

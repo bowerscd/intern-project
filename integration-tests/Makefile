@@ -6,9 +6,14 @@
 #   make test         # bring up Docker stack and run tests
 #   make test-local   # run tests with local processes (no Docker)
 
-PYTHON  ?= python3
-PIP     ?= pip
-COMPOSE ?= docker compose
+PYTHON       ?= python3
+PIP          ?= pip
+COMPOSE      ?= docker compose
+BACKEND_URL  ?= http://127.0.0.1:8000
+FRONTEND_URL ?= http://127.0.0.1:5000
+
+# Force Docker image format so HEALTHCHECK works under Podman (OCI format ignores it)
+export BUILDAH_FORMAT ?= docker
 
 .PHONY: help install install-browser test test-local test-browser up down clean
 
@@ -22,13 +27,14 @@ install: ## Install test dependencies
 install-browser: install ## Install deps + Playwright Chromium browser
 	$(PYTHON) -m playwright install --with-deps chromium
 
-up: ## Start the Docker Compose stack (build images first)
-	$(COMPOSE) up --build -d
+up: ## Start the Docker Compose stack and wait for all services to be healthy
+	$(COMPOSE) up --build --wait -d
 
 down: ## Stop the Docker Compose stack
 	$(COMPOSE) down
 
 test: up ## Run integration tests via Docker Compose (no browser tests)
+	BACKEND_URL=$(BACKEND_URL) FRONTEND_URL=$(FRONTEND_URL) \
 	$(PYTHON) -m pytest . -v --timeout=60 -m "not browser"; \
 	status=$$?; \
 	$(COMPOSE) down; \

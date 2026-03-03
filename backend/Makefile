@@ -6,10 +6,12 @@
 #   make test         # run the test suite
 #   make docker       # build the container image
 
-PYTHON    ?= python3
-PIP       ?= pip
-IMAGE     ?= vibe-coded-backend
-TAG       ?= latest
+PYTHON         ?= python3
+PIP            ?= pip
+IMAGE          ?= vibe-coded-backend
+TAG            ?= latest
+DEV            ?= 1
+SESSION_SECRET ?= dev-only-not-for-production
 
 .PHONY: help install build test test-cov lint format clean docker dev
 
@@ -24,14 +26,17 @@ build: ## Run Alembic migration check (verify heads)
 	$(PYTHON) -m alembic check 2>/dev/null || $(PYTHON) -m alembic heads
 
 test: ## Run the test suite
-	$(PYTHON) -m pytest tests/ -v --import-mode=importlib --cache-clear
+        DEV=$(DEV) SESSION_SECRET=$(SESSION_SECRET) \
+        $(PYTHON) -m pytest tests/ -v --import-mode=importlib --cache-clear
 
 test-cov: ## Run tests with coverage report
-	$(PYTHON) -m pytest tests/ -v --import-mode=importlib --cache-clear \
-		--cov=. --cov-report=term-missing
+        DEV=$(DEV) SESSION_SECRET=$(SESSION_SECRET) \
+        $(PYTHON) -m pytest tests/ -v --import-mode=importlib --cache-clear \
+                --cov=. --cov-report=term-missing
 
-lint: ## Lint with ruff
-	$(PYTHON) -m ruff check .
+lint: ## Lint with ruff (check + format)
+        $(PYTHON) -m ruff check .
+        $(PYTHON) -m ruff format --check .
 
 format: ## Auto-format with ruff
 	$(PYTHON) -m ruff format .

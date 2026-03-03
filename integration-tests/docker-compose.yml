@@ -34,6 +34,7 @@ services:
     environment:
       - DEV=1
       - RATELIMIT_ENABLED=false
+      - SERVER_HOSTNAME=localhost
       - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET is required}
       - DATABASE_URI=${DATABASE_URI:-sqlite:////data/app.db}
       - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS:-["http://localhost:8000","http://127.0.0.1","http://localhost:5000"]}
@@ -73,6 +74,7 @@ services:
       - "5000:80"
     environment:
       - BACKEND_HOSTNAME=backend
+      - SERVER_HOSTNAME=localhost
       - USE_MOCK=false
       - USE_PROXY=true
       - DEV=1
