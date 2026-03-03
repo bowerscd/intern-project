@@ -50,8 +50,8 @@ test-ts-cov: ## Run TypeScript tests with coverage
 test: test-py test-ts ## Run all tests (Python + TypeScript)
 
 lint: ## Lint Python (ruff check + format) and TypeScript (tsc --noEmit)
-        $(PYTHON) -m ruff check .
-        $(PYTHON) -m ruff format --check .
+	$(PYTHON) -m ruff check .
+	$(PYTHON) -m ruff format --check .
 	$(TSC) -p tsconfig.json --noEmit
 
 format: ## Auto-format Python code with ruff

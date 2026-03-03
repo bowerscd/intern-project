@@ -26,17 +26,17 @@ build: ## Run Alembic migration check (verify heads)
 	$(PYTHON) -m alembic check 2>/dev/null || $(PYTHON) -m alembic heads
 
 test: ## Run the test suite
-        DEV=$(DEV) SESSION_SECRET=$(SESSION_SECRET) \
-        $(PYTHON) -m pytest tests/ -v --import-mode=importlib --cache-clear
+	DEV=$(DEV) SESSION_SECRET=$(SESSION_SECRET) \
+	$(PYTHON) -m pytest tests/ -v --import-mode=importlib --cache-clear
 
 test-cov: ## Run tests with coverage report
-        DEV=$(DEV) SESSION_SECRET=$(SESSION_SECRET) \
-        $(PYTHON) -m pytest tests/ -v --import-mode=importlib --cache-clear \
-                --cov=. --cov-report=term-missing
+	DEV=$(DEV) SESSION_SECRET=$(SESSION_SECRET) \
+	$(PYTHON) -m pytest tests/ -v --import-mode=importlib --cache-clear \
+		--cov=. --cov-report=term-missing
 
 lint: ## Lint with ruff (check + format)
-        $(PYTHON) -m ruff check .
-        $(PYTHON) -m ruff format --check .
+	$(PYTHON) -m ruff check .
+	$(PYTHON) -m ruff format --check .
 
 format: ## Auto-format with ruff
 	$(PYTHON) -m ruff format .
