@@ -36,6 +36,7 @@ down: ## Stop the Docker Compose stack
 	$(COMPOSE) down
 
 test: up ## Run integration tests via Docker Compose (all tests, including browser)
+	chmod 666 backend-data/app.db
 	BACKEND_URL=$(BACKEND_URL) FRONTEND_URL=$(FRONTEND_URL) \
 	BACKEND_DB_PATH=$(CURDIR)/backend-data/app.db \
 	$(PYTHON) -m pytest . -v --timeout=60; \
