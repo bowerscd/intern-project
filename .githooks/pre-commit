@@ -38,6 +38,11 @@ run_step() {
 
 echo "pre-commit: running checks…"
 
+# ── Format (auto-fix, then re-stage touched files) ────────────────────────────
+
+make -C "$ROOT" format > /dev/null 2>&1
+git add -u
+
 # ── Lint ──────────────────────────────────────────────────────────────────────
 
 run_step "lint backend"       make -C "$ROOT" lint-backend
