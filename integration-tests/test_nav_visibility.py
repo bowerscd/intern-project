@@ -315,12 +315,12 @@ class TestNavAuthenticatedHtml:
         _complete_registration(backend_client, "nav_auth_html_user")
 
         # Extract the session cookie
-        session_cookie_value = None
+        session_cookie = None
         for cookie in backend_client.cookies.jar:
             if "session" in cookie.name.lower():
-                session_cookie_value = cookie.value
+                session_cookie = (cookie.name, cookie.value)
                 break
-        assert session_cookie_value is not None, (
+        assert session_cookie is not None, (
             "Backend did not set a session cookie after registration"
         )
         backend_client.close()
@@ -329,7 +329,7 @@ class TestNavAuthenticatedHtml:
         with httpx.Client(
             base_url=frontend_url, follow_redirects=False, timeout=10.0
         ) as fe_session:
-            fe_session.cookies.set("localhost.session", session_cookie_value)
+            fe_session.cookies.set(session_cookie[0], session_cookie[1])
 
             resp = fe_session.get("/account")
             assert resp.status_code == 200

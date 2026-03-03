@@ -149,6 +149,7 @@ def backend_server(oidc_server, _db_path):
     env = {
         **os.environ,
         "DEV": "1",
+            "SERVER_HOSTNAME": "localhost",
         "TEST_OIDC_ISSUER": oidc_issuer,
         "TEST_CLIENT_ID": "client_id1",
         "TEST_CLIENT_SECRET": "definitely_a_secret",
@@ -239,7 +240,7 @@ def frontend_server(backend_server):
         "USE_MOCK": "false",
         "USE_PROXY": "true",
         "DEV": "1",
-        "SESSION_COOKIE_NAME": "localhost.session",
+            "SERVER_HOSTNAME": "localhost",
         "FLASK_RUN_PORT": str(port),
     }
 

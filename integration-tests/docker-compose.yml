@@ -30,11 +30,10 @@ services:
     build:
       context: ../backend
     ports:
-      - "8000:8000"
+      - "8000:80"
     environment:
       - DEV=1
       - RATELIMIT_ENABLED=false
-      - SERVER_HOSTNAME=${SERVER_HOSTNAME:-localhost}
       - SESSION_SECRET=${SESSION_SECRET:?SESSION_SECRET is required}
       - DATABASE_URI=${DATABASE_URI:-sqlite:////data/app.db}
       - CORS_ALLOW_ORIGINS=${CORS_ALLOW_ORIGINS:-["http://localhost:8000","http://127.0.0.1","http://localhost:5000"]}
@@ -60,7 +59,7 @@ services:
       - app-net
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost/healthz')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -71,13 +70,12 @@ services:
     build:
       context: ../frontend
     ports:
-      - "5000:5000"
+      - "5000:80"
     environment:
-      - API_BASE=http://backend:8000
+      - BACKEND_HOSTNAME=backend
       - USE_MOCK=false
       - USE_PROXY=true
       - DEV=1
-      - SESSION_COOKIE_NAME=${SESSION_COOKIE_NAME:-localhost.session}
     depends_on:
       backend:
         condition: service_healthy
@@ -85,7 +83,7 @@ services:
       - app-net
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/healthz')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost/healthz')"]
       interval: 10s
       timeout: 5s
       retries: 5

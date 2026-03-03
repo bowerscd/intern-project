@@ -63,15 +63,29 @@ In mock mode, gating is disabled entirely.
 
 ## Configuration
 
-See [.env.example](.env.example) for all variables. Key settings:
+Configuration is managed through `config.py` and `server.py` modules, which read environment variables with smart defaults.
 
-| Variable | Purpose |
-|----------|---------|
-| `API_BASE` | Backend URL for proxy/direct mode |
-| `USE_MOCK` | Enable mock data mode (`true`/`false`) |
-| `USE_PROXY` | Enable reverse proxy mode (`true`/`false`) |
-| `DEV` | Dev mode — relaxed caching, verbose errors |
-| `SESSION_COOKIE_NAME` | Cookie name to check for auth gating |
+Key settings:
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `SERVER_HOSTNAME` | OS hostname | Public hostname — used for session cookie name |
+| `BACKEND_HOSTNAME` | `backend` | Internal Docker hostname for backend service |
+| `BACKEND_PORT` | `80` | Backend service port |
+| `PORT` | `80` | Port this service listens on |
+| `USE_MOCK` | `false` | Enable mock data mode |
+| `USE_PROXY` | `true` | Enable reverse proxy mode (`/api/*` → backend) |
+| `DEV` | `false` | Dev mode — relaxed caching, verbose errors |
+
+**Smart defaults:**
+- `SESSION_COOKIE_NAME` auto-computed as `{SERVER_HOSTNAME}.session`
+- Backend URL constructed from `BACKEND_HOSTNAME` and `BACKEND_PORT`
+- `API_BASE` (client-side) automatically set based on proxy/mock mode
+- `SERVER_HOSTNAME` defaults to `socket.gethostname()` if not set
+
+**Legacy variables** (now ignored):
+- `API_BASE` — use `BACKEND_HOSTNAME` and `BACKEND_PORT` instead
+- `SESSION_COOKIE_NAME` — auto-computed from `SERVER_HOSTNAME`
 
 ## Development
 

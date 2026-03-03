@@ -33,13 +33,13 @@ COPY --from=ts-builder /build/static/dist/ static/dist/
 # Switch to non-root user
 USER appuser
 
-EXPOSE 5000
+EXPOSE 80
 
 HEALTHCHECK --interval=10s --timeout=5s --start-period=15s --retries=3 \
-  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/healthz')"
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost/healthz')"
 
-CMD ["gunicorn", "app:app", \
-     "--bind", "0.0.0.0:5000", \
-     "--workers", "2", \
-     "--timeout", "60", \
-     "--access-logfile", "-"]
+CMD gunicorn app:app \
+    --bind "0.0.0.0:${PORT:-80}" \
+    --workers 2 \
+    --timeout 60 \
+    --access-logfile -

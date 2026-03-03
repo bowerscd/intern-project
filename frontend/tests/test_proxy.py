@@ -72,13 +72,15 @@ class TestProxyEnabled:
     def test_cookies_forwarded(self, app, monkeypatch):
         """Session cookies are relayed to the backend."""
         import app as app_module
+        from server import session_cookie_name
 
+        cookie_name = session_cookie_name()
         monkeypatch.setattr(app_module, "USE_PROXY", True)
         monkeypatch.setattr(app_module, "BACKEND_URL", "http://mock-backend:8000")
 
         def request_callback(request):
             # Verify cookie was forwarded
-            assert "localhost.session" in (request.headers.get("Cookie", "") or "")
+            assert cookie_name in (request.headers.get("Cookie", "") or "")
             return (200, {}, '{"ok": true}')
 
         responses.add_callback(
@@ -89,7 +91,7 @@ class TestProxyEnabled:
         )
 
         c = app.test_client()
-        c.set_cookie("localhost.session", "signed-value", domain="localhost")
+        c.set_cookie(cookie_name, "signed-value")
         resp = c.get("/api/v2/account/profile")
         assert resp.status_code == 200
 

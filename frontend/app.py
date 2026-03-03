@@ -2,36 +2,21 @@ import logging
 import uuid
 
 from flask import Flask, render_template, request, Response, redirect, jsonify
-import os
 import requests as http_requests
 from werkzeug.middleware.proxy_fix import ProxyFix
+
+from config import DEV_MODE, USE_MOCK, USE_PROXY
+from server import api_base, backend_url, session_cookie_name
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=2, x_proto=1, x_host=1)  # type: ignore[assignment]
 
-# Configuration
-BACKEND_URL = os.environ.get("API_BASE", "http://localhost:8000")
-USE_MOCK = os.environ.get("USE_MOCK", "false").lower() in ("true", "1", "yes")
-USE_PROXY = os.environ.get("USE_PROXY", "true").lower() in ("true", "1", "yes")
-DEV_MODE = os.environ.get("DEV", "").lower() in ("true", "1", "yes")
+# Configuration (now pulled from config and server modules)
+BACKEND_URL = backend_url()
+API_BASE = api_base()
+SESSION_COOKIE_NAME = session_cookie_name()
 
 logger = logging.getLogger(__name__)
-
-# API_BASE tells the browser where to send API requests.
-#   Mock mode  → irrelevant (mocks handle everything client-side)
-#   Proxy mode → "" (same origin, Flask proxies to backend)
-#   Direct mode→ BACKEND_URL (browser calls api.yourdomain.com directly)
-if USE_MOCK:
-    API_BASE = BACKEND_URL
-elif USE_PROXY:
-    API_BASE = ""
-else:
-    API_BASE = BACKEND_URL
-
-# Name of the session cookie set by the backend (via proxy).
-# Must match the backend's SESSION_COOKIE_NAME: f"{hostname()}.session"
-# Dev: "localhost.session"  Prod: "yourdomain.com.session"
-SESSION_COOKIE_NAME = os.environ.get("SESSION_COOKIE_NAME", "localhost.session")
 
 # Paths that do not require an authenticated session cookie.
 PUBLIC_PATHS = frozenset(

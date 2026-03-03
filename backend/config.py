@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import socket
 from pathlib import Path
 from typing import Any, List, Optional
 
@@ -82,8 +83,8 @@ def _get_json(key: str, env_var: str | None = None, default: Any = None) -> Any:
 DEV_MODE: bool = _get("dev_mode", "DEV", False) in (True, "1")
 """Whether the application is running in development mode."""
 
-SERVER_HOSTNAME: str = _get("server_hostname", "SERVER_HOSTNAME", "localhost")
-"""The public-facing server hostname."""
+SERVER_HOSTNAME: str = _get("server_hostname", "SERVER_HOSTNAME", None) or socket.gethostname()
+"""The public-facing server hostname (defaults to OS hostname)."""
 
 SESSION_SECRET: str = _get("session_secret", "SESSION_SECRET", None)  # type: ignore[assignment]
 """Secret key used for session cookie signing.

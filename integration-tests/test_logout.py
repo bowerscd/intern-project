@@ -76,9 +76,9 @@ class TestLogoutInvalidatesSession:
         with httpx.Client(
             base_url=frontend_url, follow_redirects=False, timeout=10.0
         ) as fe:
-            fe.cookies.set(session_cookie[0], session_cookie[1])
-            resp = fe.get("/account")
-            assert resp.status_code == 200
+                fe.cookies.set(session_cookie[0], session_cookie[1])
+                resp = fe.get("/account")
+                assert resp.status_code == 200
 
         # Logout via backend
         csrf = client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
