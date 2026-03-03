@@ -287,11 +287,16 @@ def backend_db_path(_db_path, backend_server) -> str:
 
     Depends on *backend_server* to ensure the subprocess (and its DB)
     has been initialised before any test tries to open the file.
-    Skips the test when running against external servers (Docker)
-    because the SQLite file lives inside the container.
+
+    In Docker mode the DB is exposed via a bind mount; its host-side path
+    is passed in via the ``BACKEND_DB_PATH`` env var.  If that env var is
+    absent the test is skipped (old behaviour, kept as a safety net).
     """
     if _EXTERNAL_BACKEND_URL:
-        pytest.skip("Direct DB access unavailable with external backend (Docker)")
+        env_path = os.environ.get("BACKEND_DB_PATH")
+        if env_path:
+            return env_path
+        pytest.skip("Direct DB access unavailable: set BACKEND_DB_PATH to the mounted DB file")
     return _db_path
 
 

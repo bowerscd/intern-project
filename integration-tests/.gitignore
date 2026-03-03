@@ -17,3 +17,6 @@ ms-playwright/
 # Playwright test artifacts
 test-results/
 playwright-report/
+
+# Backend DB bind-mount directory (created at test runtime)
+backend-data/

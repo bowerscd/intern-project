@@ -65,7 +65,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - backend-data:/data
+      - ./backend-data:/data
 
   frontend:
     build:
@@ -93,6 +93,3 @@ services:
 networks:
   app-net:
     driver: bridge
-
-volumes:
-  backend-data:
