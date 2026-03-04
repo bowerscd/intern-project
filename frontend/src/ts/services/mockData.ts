@@ -4,6 +4,7 @@ import type { DataProvider } from "./dataProvider.js";
 export const mockProfile: Profile = {
   id: 1,
   username: "demo.user",
+  oidc_email: "demo@example.com",
   email: "demo@example.com",
   phone: "5551112233",
   phone_provider: "verizon",

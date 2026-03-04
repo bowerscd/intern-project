@@ -71,6 +71,42 @@ export async function renderCompleteRegistration() {
       result.innerHTML = status(`Error: ${err.message}`);
     }
   });
+
+  // Dynamically render the claim section only if there are claimable accounts.
+  try {
+    const claimable = await api.getClaimableAccounts();
+    const claimSection = document.getElementById("claim-section");
+    if (claimable.length > 0 && claimSection) {
+      claimSection.innerHTML = `
+        <section class="card" style="margin-top: 1rem;">
+          <h3>Have an existing account?</h3>
+          <p style="color: #aaa; margin-bottom: 0.75rem;">
+            If you had an account before this site moved to the new login system,
+            you can link your login to it instead of creating a new one.
+          </p>
+          <form id="claim-account-form">
+            <label for="claim-username">Existing Username</label>
+            <input id="claim-username" name="username" placeholder="legacy.user" />
+            <button type="submit">Claim Account</button>
+          </form>
+          <div id="claim-account-result"></div>
+        </section>`;
+      byId<HTMLFormElement>("claim-account-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const username = (byId("claim-username") as HTMLInputElement).value.trim();
+        const claimResult = byId("claim-account-result");
+        if (!username) { claimResult.innerHTML = status("Username is required."); return; }
+        try {
+          const res = await api.claimAccount({ username });
+          claimResult.innerHTML = status(res.message || "Claim submitted for admin review.");
+        } catch (err: any) {
+          claimResult.innerHTML = status(`Error: ${err.message}`);
+        }
+      });
+    }
+  } catch (err) {
+    console.error("[claim section] failed to load claimable accounts:", err);
+  }
 }
 
 export async function renderClaimAccount() {
@@ -90,27 +126,45 @@ export async function renderClaimAccount() {
 }
 
 export async function renderAccount() {
-  const profile = await dataProvider.getProfile();
+  const [profile, phoneProviders] = await Promise.all([
+    dataProvider.getProfile(),
+    api.getPhoneProviders(),
+  ]);
   const claims = decodeClaims(profile.claims);
-  
+
+  const currentProvider = profile.phone_provider ?? "";
+  const providerOptions = phoneProviders
+    .map(p => `<option value="${p}" ${p === currentProvider ? "selected" : ""}>${p.replace(/_/g, " ")}</option>`)
+    .join("");
+  const oidcEmail = profile.oidc_email ?? profile.email ?? "";
+  const emailStored = profile.email !== null && profile.email !== "";
   byId("profile-form").innerHTML = `
     <label>Username</label>
     <input value="${esc(profile.username)}" disabled />
     <label>Email</label>
-    <input value="${esc(profile.email ?? "")}" disabled style="background: #2a2a2a; color: #888;" />
-    <p style="font-size: 0.85em; color: #aaa; margin: 4px 0 12px 0;">Tied to OIDC login</p>
+    <input value="${esc(oidcEmail)}" disabled style="background: #2a2a2a; color: #888;" />
+    <p style="font-size: 0.85em; color: #aaa; margin: 4px 0 12px 0;">Tied to your login provider — cannot be changed here.</p>
+    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 12px;">
+      <input type="checkbox" id="email-notify-toggle" ${emailStored ? "checked" : ""} />
+      <span>Save email for notifications</span>
+    </label>
     <label>Phone</label>
-    <input id="phone-input" value="${esc(profile.phone ?? "")}" placeholder="5551234567" />
-    <label>Provider</label>
-    <input id="provider-input" value="${esc(profile.phone_provider ?? "")}" placeholder="verizon" />
+    <input id="phone-input" value="${esc(profile.phone ?? "")}" placeholder="555-123-4567" />
+    <label>Carrier</label>
+    <select id="provider-select"><option value="">-- none --</option>${providerOptions}</select>
     <button type="button" id="save-profile-btn" style="margin-top: 12px;">Save Profile</button>
   `;
   
   byId("save-profile-btn")?.addEventListener("click", async () => {
-    const phone = (byId("phone-input") as HTMLInputElement).value.trim();
-    const phone_provider = (byId("provider-input") as HTMLInputElement).value.trim();
+    const saveEmail = (byId("email-notify-toggle") as HTMLInputElement).checked;
+    const rawPhone = (byId("phone-input") as HTMLInputElement).value.trim();
+    const phone = rawPhone.replace(/[\s().+-]/g, "");  // strip formatting chars
+    const phone_provider = (byId("provider-select") as HTMLSelectElement).value.trim();
+    // Always send email: set to oidc_email when opting in, empty string to opt out.
+    // This ensures the DB is always correct regardless of prior state.
+    const emailPatch: { email: string } = { email: saveEmail ? oidcEmail : "" };
     try {
-      await api.updateProfile({ phone: phone || undefined, phone_provider: phone_provider || undefined });
+      await api.updateProfile({ ...emailPatch, phone: phone || undefined, phone_provider: phone_provider || undefined });
       byId("account-result").innerHTML = status("Profile saved.");
     } catch (err: any) {
       byId("account-result").innerHTML = status(`Error: ${err.message}`);

@@ -1,6 +1,7 @@
 export type Profile = {
   id: number;
   username: string;
+  oidc_email: string | null;
   email: string | null;
   phone: string | null;
   phone_provider: string;

@@ -134,6 +134,10 @@ export function completeRegistration(body: CompleteRegistrationRequest): Promise
 export type ClaimAccountRequest = { username: string };
 export type ClaimAccountResponse = { claim_id: number; status: string; message: string };
 
+export function getClaimableAccounts(): Promise<string[]> {
+  return get("/api/v2/auth/claimable-accounts");
+}
+
 export function claimAccount(body: ClaimAccountRequest): Promise<ClaimAccountResponse> {
   return post("/api/v2/auth/claim-account", body);
 }
@@ -143,6 +147,7 @@ export function claimAccount(body: ClaimAccountRequest): Promise<ClaimAccountRes
 export type ProfileResponse = {
   id: number;
   username: string;
+  oidc_email: string | null;
   email: string | null;
   phone: string | null;
   phone_provider: string;
@@ -150,6 +155,7 @@ export type ProfileResponse = {
 };
 
 export type ProfileUpdate = {
+  email?: string;
   phone?: string;
   phone_provider?: string;
 };
@@ -161,6 +167,10 @@ export type ClaimsUpdate = {
 
 export function getProfile(): Promise<ProfileResponse> {
   return get("/api/v2/account/profile");
+}
+
+export function getPhoneProviders(): Promise<string[]> {
+  return get("/api/v2/account/phone-providers");
 }
 
 export function updateProfile(body: ProfileUpdate): Promise<ProfileResponse> {

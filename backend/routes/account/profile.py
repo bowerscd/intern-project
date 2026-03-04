@@ -4,7 +4,8 @@ Account profile endpoints — authenticated.
 
 from typing import Annotated, Any
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
+from sqlalchemy.exc import IntegrityError
 
 from routes.shared import Database, RequireLogin
 from models import AccountClaims
@@ -17,22 +18,44 @@ from .router import Accounts
 
 
 @Accounts.get(
+    "/phone-providers",
+    summary="List supported phone carriers",
+    description="Returns the names of all supported SMS carrier gateways.",
+    response_model=list[str],
+)
+async def list_phone_providers() -> list[str]:
+    """Return all valid :class:`PhoneProvider` member names.
+
+    Used by the frontend to build a carrier dropdown without hardcoding
+    the enum values.
+
+    :returns: Sorted list of provider name strings, excluding ``NONE``.
+    :rtype: list[str]
+    """
+    return [p.name for p in PhoneProvider if p != PhoneProvider.NONE]
+
+
+@Accounts.get(
     "/profile",
     summary="Get user profile",
     description="Get the authenticated user's profile information. Requires BASIC claim.",
     response_model=ProfileResponse,
 )
 async def get_profile(
+    request: Request,
     account: Annotated[Any, Depends(RequireLogin(AccountClaims.BASIC))],
 ) -> ProfileResponse:
     """Return the authenticated user's profile.
 
+    :param request: The incoming :class:`Request`.
     :param account: The authenticated account (injected by
         :class:`RequireLogin`).
     :returns: A :class:`ProfileResponse` for the current user.
     :rtype: ProfileResponse
     """
-    return ProfileResponse.from_account(account)
+    return ProfileResponse.from_account(
+        account, oidc_email=request.session.get("oidc_email")
+    )
 
 
 @Accounts.patch(
@@ -44,6 +67,7 @@ async def get_profile(
     response_model=ProfileResponse,
 )
 async def update_profile(
+    request: Request,
     body: ProfileUpdate,
     account: Annotated[Any, Depends(RequireLogin(AccountClaims.BASIC))],
     db: Database,
@@ -69,6 +93,9 @@ async def update_profile(
                 detail="Account not found",
             )
 
+        if body.email is not None:
+            act.email = body.email or None  # empty string → NULL
+
         if body.phone is not None:
             act.phone = body.phone
 
@@ -82,7 +109,16 @@ async def update_profile(
                     detail=f"Invalid phone provider: {body.phone_provider}",
                 )
 
-        db.commit()
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Email address is already in use.",
+            )
         db.refresh(act)
 
-        return ProfileResponse.from_account(act)
+        return ProfileResponse.from_account(
+            act, oidc_email=request.session.get("oidc_email")
+        )

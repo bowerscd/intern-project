@@ -55,7 +55,7 @@ async def complete_registration(
     with db:
         act = create_account(
             username=body.username,
-            email=None,
+            email=pending.get("email"),
             account_provider=provider,
             external_unique_id=sub,
             claims=AccountClaims.BASIC,
@@ -73,5 +73,8 @@ async def complete_registration(
         # Regenerate session to prevent session fixation
         request.session.clear()
         request.session[AUTH_SESSION_KEY] = act.id
+        oidc_email = pending.get("email")
+        if oidc_email:
+            request.session["oidc_email"] = oidc_email
 
     return {"id": act.id, "username": act.username}

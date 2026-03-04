@@ -6,15 +6,45 @@ from csrf import validate_csrf_token
 from db.functions import get_account_by_username
 from models import (
     ExternalAuthProvider,
+    DBAccount as Account,
     DBAccountClaimRequest as AccountClaimRequest,
     AccountClaimStatus,
 )
 from routes.shared import Database
 from schemas.account import ClaimAccountRequest
 from ratelimit import limiter
+from sqlalchemy import select, and_
 
 from .authenticate import PENDING_REGISTRATION_KEY
 from .router import Authentication
+
+LEGACY_PLACEHOLDER_SUB = "legacy-placeholder"
+
+
+@Authentication.get(
+    "/claimable-accounts",
+    summary="List claimable accounts",
+    description="Returns usernames of legacy accounts not yet linked to an OIDC identity.",
+    response_model=list[str],
+)
+async def list_claimable_accounts(db: Database) -> list[str]:
+    """Return usernames of unlinked legacy accounts available to claim.
+
+    An account is claimable if its ``external_unique_id`` is still the
+    legacy placeholder, meaning it has not yet been linked to any OIDC
+    identity.
+
+    :param db: Active database session.
+    :returns: Sorted list of claimable usernames.
+    :rtype: list[str]
+    """
+    with db:
+        rows = db.scalars(
+            select(Account.username).where(
+                Account.external_unique_id == LEGACY_PLACEHOLDER_SUB
+            )
+        ).all()
+    return sorted(rows)
 
 
 @Authentication.post(
@@ -66,8 +96,6 @@ async def claim_account(
             )
 
         # Check for an existing pending claim by the same requester
-        from sqlalchemy import select, and_
-
         existing = db.scalars(
             select(AccountClaimRequest).where(
                 and_(

@@ -13,6 +13,7 @@ export const liveDataProvider = {
     return {
       id: raw.id,
       username: raw.username,
+      oidc_email: raw.oidc_email,
       email: raw.email,
       phone: raw.phone,
       phone_provider: raw.phone_provider,

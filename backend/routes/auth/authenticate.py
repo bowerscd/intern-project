@@ -124,8 +124,20 @@ async def authenticate(
                     detail="authentication failed",
                 )
 
+            # Sync the OIDC-provided email back into the account on every login.
+            # This makes the OIDC provider authoritative: if the user cleared
+            # their stored email (opted out of notifications), the next login
+            # re-populates it so the "save email for notifications" toggle is
+            # self-healing rather than permanently destructive.
+            oidc_email = identity["id"].get("email")
+            if oidc_email and act.email != oidc_email:
+                act.email = oidc_email
+                db.commit()
+
             # Regenerate session to prevent session fixation
             request.session.clear()
             request.session[AUTH_SESSION_KEY] = act.id
+            if oidc_email:
+                request.session["oidc_email"] = oidc_email
 
     return redirect

@@ -15,7 +15,8 @@ class ProfileResponse(BaseModel):
 
     :cvar id: Account primary key.
     :cvar username: Unique username.
-    :cvar email: Email address, or ``None``.
+    :cvar oidc_email: Email from the OIDC provider (session-sourced, never null if logged in via OIDC).
+    :cvar email: Stored notification email, or ``None`` when opt-out.
     :cvar phone: Phone number, or ``None``.
     :cvar phone_provider: Name of the phone carrier.
     :cvar claims: Bitmask of account claims.
@@ -23,22 +24,25 @@ class ProfileResponse(BaseModel):
 
     id: int
     username: str
+    oidc_email: Optional[str]
     email: Optional[str]
     phone: Optional[str]
     phone_provider: str
     claims: int
 
     @staticmethod
-    def from_account(act: Any) -> "ProfileResponse":
+    def from_account(act: Any, oidc_email: Optional[str] = None) -> "ProfileResponse":
         """Build a :class:`ProfileResponse` from a database account entity.
 
         :param act: An :class:`Account` ORM instance.
+        :param oidc_email: The OIDC provider email from the session, if available.
         :returns: A populated response model.
         :rtype: ProfileResponse
         """
         return ProfileResponse(
             id=act.id,
             username=act.username,
+            oidc_email=oidc_email,
             email=act.email,
             phone=act.phone,
             phone_provider=act.phone_provider.name
@@ -51,12 +55,14 @@ class ProfileResponse(BaseModel):
 class ProfileUpdate(BaseModel):
     """Request schema for updating a user's profile.
 
-    Used to set the phone number and carrier for SMS notifications.
+    Used to set the email address, phone number, and carrier for notifications.
 
+    :cvar email: New email address, or ``None`` to leave unchanged.
     :cvar phone: New phone number, or ``None`` to leave unchanged.
     :cvar phone_provider: New carrier name, or ``None`` to leave unchanged.
     """
 
+    email: Optional[str] = Field(None, description="Email address for notifications")
     phone: Optional[str] = Field(
         None, description="Phone number for SMS notifications", pattern=r"^\d{10,15}$"
     )
