@@ -300,16 +300,14 @@ class TestProfileOidcEmail:
 
 
 # ===========================================================================
-# TestCompleteRegistrationClaimCard  (browser tests)
+# TestCompleteRegistrationClaimCard  (browser / Playwright)
 # ===========================================================================
 
-@pytest.mark.browser
 class TestCompleteRegistrationClaimCard:
     """Browser tests: the claim card on the complete-registration page.
 
     Requires Playwright (``pip install playwright && playwright install chromium``).
-    Skipped automatically if the ``browser`` mark is deselected or if Playwright
-    is not installed.
+    Skipped automatically if Playwright is not installed.
 
     The claim card HTML (injected by renderCompleteRegistration()):
         <form id="claim-account-form">
@@ -449,7 +447,7 @@ class TestCompleteRegistrationClaimCard:
         # Log in through the browser
         page.goto(f"{frontend_url}/login")
         page.wait_for_selector("#login-actions a", timeout=5000)
-        page.locator("a", has_text="Log in with Test Provider").click()
+        page.locator("a", has_text="Login with Test Provider").click()
 
         page.wait_for_selector("button[type='submit']", timeout=10000)
         page.fill("input[name='sub']", "browser-oidc-email-display-1")
@@ -457,7 +455,10 @@ class TestCompleteRegistrationClaimCard:
         page.fill("input[name='email']", "email-display@test.local")
         page.click("button[type='submit']")
 
+        # After OIDC callback the backend redirects to /account on the
+        # backend's port.  Bounce to the frontend URL where the page lives.
         page.wait_for_url("**/account**", timeout=10000)
+        page.goto(f"{frontend_url}/account")
 
         # Wait for the profile form to render — JS populates it asynchronously.
         page.wait_for_selector("#profile-form input[disabled]", timeout=8000)

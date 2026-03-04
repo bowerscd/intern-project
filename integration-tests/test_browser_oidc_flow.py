@@ -2,7 +2,7 @@
 
 Drives the complete user journey through a real browser:
   Login page → "Register with Test Provider" → Mock OIDC form → Approve
-  → Complete Registration page → fill username → Account page.
+  → Complete Registration page → fill username → pending approval message.
 
 Requires Playwright::
 
@@ -13,9 +13,6 @@ Requires Playwright::
 from __future__ import annotations
 
 import pytest
-
-
-pytestmark = pytest.mark.browser
 
 
 class TestBrowserRegistrationFlow:
@@ -30,7 +27,7 @@ class TestBrowserRegistrationFlow:
         2. Click "Register with Test Provider"
         3. Fill in the Mock OIDC form and click Authorize
         4. Fill in a username on the complete-registration page
-        5. Verify redirect to /account
+        5. Verify the pending approval message appears
         """
         oidc_issuer, _ = oidc_server
 
@@ -75,9 +72,13 @@ class TestBrowserRegistrationFlow:
         page.fill("#username", "browser_e2e_user")
         page.click('#complete-registration-form button[type="submit"]')
 
-        # ── Step 5: Verify success and redirect to /account ──
-        page.wait_for_url("**/account**", timeout=10000)
-        assert "/account" in page.url
+        # ── Step 5: Verify pending approval message ──
+        result = page.locator("#complete-registration-result")
+        result.wait_for(state="visible", timeout=5000)
+        result_text = result.inner_text().lower()
+        assert "pending" in result_text or "approval" in result_text, (
+            f"Expected pending approval message, got: {result_text}"
+        )
 
     def test_duplicate_registration_shows_error(
         self, page, browser_context, frontend_server, backend_server, oidc_server
@@ -135,6 +136,8 @@ class TestBrowserRegistrationFlow:
         """Drive the OIDC registration flow in the browser.
 
         Shared logic extracted so multiple tests can reuse it.
+        When ``expect_success`` is True, waits for the pending approval
+        message to appear after form submission.
         """
         frontend_url, frontend_port = frontend_server
 
@@ -161,4 +164,6 @@ class TestBrowserRegistrationFlow:
         page.click('#complete-registration-form button[type="submit"]')
 
         if expect_success:
-            page.wait_for_url("**/account**", timeout=10000)
+            # Wait for the pending approval message
+            result = page.locator("#complete-registration-result")
+            result.wait_for(state="visible", timeout=5000)

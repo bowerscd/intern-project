@@ -15,7 +15,7 @@ FRONTEND_URL ?= http://127.0.0.1:5000
 # Force Docker image format so HEALTHCHECK works under Podman (OCI format ignores it)
 export BUILDAH_FORMAT ?= docker
 
-.PHONY: help install install-browser test test-local test-browser up down clean
+.PHONY: help install test test-local up down clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -24,8 +24,6 @@ help: ## Show this help
 install: ## Install test dependencies (Python packages + Playwright Chromium)
 	$(PIP) install -r requirements.txt
 	$(PYTHON) -m playwright install --with-deps chromium
-
-install-browser: install ## Alias for install (Playwright now included by default)
 
 up: ## Start the Docker Compose stack and wait for all services to be healthy
 	mkdir -p backend-data
@@ -44,13 +42,7 @@ test: up ## Run integration tests via Docker Compose (all tests, including brows
 	$(COMPOSE) down; \
 	exit $$status
 
-test-local: ## Run integration tests with local processes (no browser tests)
-	$(PYTHON) -m pytest . -v --timeout=60 -m "not browser"
-
-test-browser: ## Run only Playwright browser tests (local processes)
-	$(PYTHON) -m pytest . -v --timeout=60 -m browser
-
-test-all: ## Run all tests including browser tests (local processes)
+test-local: ## Run integration tests with local processes
 	$(PYTHON) -m pytest . -v --timeout=60
 
 clean: ## Tear down stack, remove volumes, and delete local DB

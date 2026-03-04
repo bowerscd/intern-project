@@ -8,21 +8,12 @@ Requires Playwright to be installed::
     pip install playwright
     playwright install --with-deps chromium
 
-Run only browser tests::
-
-    pytest -m browser -v
-
-Skip browser tests::
-
-    pytest -m 'not browser' -v
+Automatically skipped if Playwright is not installed.
 """
 
 from __future__ import annotations
 
 import pytest
-
-
-pytestmark = pytest.mark.browser
 
 
 class TestPublicPages:

@@ -19,43 +19,25 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-# Run all integration tests (excluding browser tests)
-pytest -v -m "not browser"
+# Run all integration tests
+pytest -v
 
-# With coverage (reports backend line coverage)
-pytest --cov --cov-report=term-missing -m "not browser"
+# With coverage
+pytest --cov --cov-report=term-missing
 ```
 
-### Browser (Playwright) tests
+### Playwright setup
 
-Browser tests use Playwright to drive a real Chromium browser through the UI.
-Browser binaries are **not** committed to the repository — each developer
-installs them locally:
+Some tests use Playwright to drive a real Chromium browser through the UI.
+If Playwright is not installed, those tests are automatically skipped.
 
 ```bash
 # One-time setup: install Playwright + Chromium
 pip install -r requirements.txt
 playwright install --with-deps chromium
-
-# Or use the Makefile shortcut:
-make install-browser
 ```
 
-Then run:
-
-```bash
-# Browser tests only
-pytest -v -m browser
-
-# All tests (HTTP + browser)
-pytest -v
-
-# Via Makefile
-make test-browser   # browser tests only
-make test-all       # everything
-```
-
-If Playwright is not installed, browser tests are automatically skipped.
+If Playwright is not installed, browser-based tests are automatically skipped.
 
 ## Test categories
 

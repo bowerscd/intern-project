@@ -320,26 +320,6 @@ def frontend_client(frontend_server) -> Generator[httpx.Client, None, None]:
 # Playwright browser fixtures
 # ---------------------------------------------------------------------------
 
-def pytest_configure(config):
-    """Register the ``browser`` marker so that Playwright tests can be
-    selectively included or excluded (``-m browser`` / ``-m 'not browser'``).
-    """
-    config.addinivalue_line(
-        "markers",
-        "browser: marks tests that require a real browser via Playwright",
-    )
-
-
-def pytest_collection_modifyitems(config, items):
-    """Auto-skip ``@pytest.mark.browser`` tests when Playwright is not installed."""
-    if _HAS_PLAYWRIGHT:
-        return
-    skip_pw = pytest.mark.skip(reason="Playwright is not installed — run `pip install playwright && playwright install --with-deps chromium`")
-    for item in items:
-        if "browser" in item.keywords:
-            item.add_marker(skip_pw)
-
-
 @pytest.fixture(scope="session")
 def _playwright_instance():
     """Start a single Playwright instance for the test session."""
