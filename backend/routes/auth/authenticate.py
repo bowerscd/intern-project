@@ -1,6 +1,7 @@
 """OIDC callback endpoint — token exchange and session establishment."""
 
 from typing import Annotated, Tuple
+from urllib.parse import urlencode
 
 from fastapi import Cookie, HTTPException, Query, Request, status
 from starlette.responses import RedirectResponse
@@ -11,6 +12,7 @@ from sqlalchemy import Row
 from models import (
     DBAccount as Account,
     ExternalAuthProvider,
+    AccountStatus,
 )
 
 from routes.shared import Database, AUTH_SESSION_KEY
@@ -123,6 +125,18 @@ async def authenticate(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="authentication failed",
                 )
+
+            if act.status == AccountStatus.PENDING_APPROVAL:
+                qs = urlencode({"error": "Your account is pending admin approval."})
+                return RedirectResponse(f"/login?{qs}", status_code=302)
+
+            if act.status == AccountStatus.BANNED:
+                qs = urlencode({"error": "Your account is banned."})
+                return RedirectResponse(f"/login?{qs}", status_code=302)
+
+            if act.status == AccountStatus.DEFUNCT:
+                qs = urlencode({"error": "Your account has been disabled."})
+                return RedirectResponse(f"/login?{qs}", status_code=302)
 
             # Sync the OIDC-provided email back into the account on every login.
             # This makes the OIDC provider authoritative: if the user cleared

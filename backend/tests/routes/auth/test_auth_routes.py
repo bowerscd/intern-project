@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
 
 
-from models import ExternalAuthProvider
+from models import ExternalAuthProvider, AccountStatus
 from db import Database
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 
@@ -233,6 +233,7 @@ class TestCallbackRoute:
                 ExternalAuthProvider.test,
                 "existing_ext_id",
             )
+            act.status = AccountStatus.ACTIVE
             s.add(act)
             s.commit()
 
@@ -441,6 +442,9 @@ class TestCompleteRegistration:
     ) -> None:
         """A user with a pending registration can pick a username and create an account.
 
+        The account is created with PENDING_APPROVAL status — no session
+        is established.
+
         :param client: Unauthenticated HTTP test client.
         :type client: TestClient
         :param database: Started database instance.
@@ -463,6 +467,8 @@ class TestCompleteRegistration:
         data = r.json()
         assert data["username"] == "myuser"
         assert "id" in data
+        assert data["status"] == "pending_approval"
+        assert "message" in data
 
     def test_complete_registration_duplicate_username(
         self, client: TestClient, database: Database

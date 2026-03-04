@@ -7,7 +7,7 @@ Validates the complete login/register flow through:
 import httpx
 from urllib.parse import urlparse, parse_qs, urlencode
 
-from helpers import rewrite_oidc_url, create_backend_client
+from helpers import activate_account, oidc_login, rewrite_oidc_url, create_backend_client
 
 
 class TestOIDCLoginFlow:
@@ -32,9 +32,9 @@ class TestOIDCLoginFlow:
         assert "redirect_uri" in qs
 
     def test_full_login_flow(
-        self, client: httpx.Client, backend_server, oidc_server
+        self, client: httpx.Client, backend_server, oidc_server, backend_db_path
     ) -> None:
-        """Complete OIDC flow: register → OIDC → callback → complete-registration → session."""
+        """Complete OIDC flow: register → OIDC → callback → complete-registration → pending → activate → login → session."""
         backend_url, _ = backend_server
         oidc_issuer, _ = oidc_server
 
@@ -100,20 +100,27 @@ class TestOIDCLoginFlow:
             reg_result = resp.json()
             assert reg_result["username"] == "e2e_integration_user"
 
-            # Step 8: Verify we have a session cookie
-            session_cookies = {c.name: c.value for c in session_client.cookies.jar}
-            session_cookie_names = [
-                n for n in session_cookies if "session" in n.lower()
-            ]
-            assert session_cookie_names, (
-                f"No session cookie set. Cookies: {session_cookies}"
-            )
+            # Step 8: Registration now returns pending_approval status and
+            # does NOT establish a session (admin approval required).
+            assert reg_result["status"] == "pending_approval"
+            assert "message" in reg_result
 
-            # Step 9: Authenticated request should succeed
-            resp = session_client.get("/api/v2/account/profile")
+        # Step 9: Activate the account (simulating admin approval) and re-login
+        activate_account(backend_db_path, "e2e_integration_user")
+        login_client = oidc_login(
+            backend_url, oidc_issuer,
+            sub="integration-user-1",
+            name="E2E Test User",
+            email="e2e@test.local",
+        )
+        try:
+            # Step 10: Authenticated request should succeed
+            resp = login_client.get("/api/v2/account/profile")
             assert resp.status_code == 200
             profile = resp.json()
             assert profile["username"] == "e2e_integration_user"
+        finally:
+            login_client.close()
 
 
 class TestOIDCRegisterFlow:

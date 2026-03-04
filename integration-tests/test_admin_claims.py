@@ -14,6 +14,7 @@ import pytest
 
 from helpers import oidc_register_session as _oidc_register_session
 from helpers import complete_registration as _complete_registration
+from helpers import activate_account, oidc_login
 
 
 class TestAdminClaimApproval:
@@ -33,19 +34,25 @@ class TestAdminClaimApproval:
             sub="admin-claim-test", name="Admin User", email="admin@test.local",
         )
         admin_data = _complete_registration(admin_client, "claim_admin_user")
+        admin_client.close()
 
         import sqlite3
 
         conn = sqlite3.connect(backend_db_path)
         try:
-            # BASIC=1, ADMIN=2 → 3 means both
+            # BASIC=1, ADMIN=2 → 3 means both; also activate
             conn.execute(
-                "UPDATE accounts SET claims = 3 WHERE username = ?",
+                "UPDATE accounts SET claims = 3, status = 'active' WHERE username = ?",
                 ("claim_admin_user",),
             )
             conn.commit()
         finally:
             conn.close()
+
+        admin_client = oidc_login(
+            backend_url, oidc_issuer,
+            sub="admin-claim-test", name="Admin User", email="admin@test.local",
+        )
 
         # Verify the admin now has ADMIN claim
         resp = admin_client.get("/api/v2/account/profile")
@@ -154,16 +161,22 @@ class TestAdminClaimApproval:
             sub="admin-deny-test", name="Deny Admin", email="deny-admin@test.local",
         )
         _complete_registration(admin_client, "deny_admin_user")
+        admin_client.close()
 
         conn = sqlite3.connect(backend_db_path)
         try:
             conn.execute(
-                "UPDATE accounts SET claims = 3 WHERE username = ?",
+                "UPDATE accounts SET claims = 3, status = 'active' WHERE username = ?",
                 ("deny_admin_user",),
             )
             conn.commit()
         finally:
             conn.close()
+
+        admin_client = oidc_login(
+            backend_url, oidc_issuer,
+            sub="admin-deny-test", name="Deny Admin", email="deny-admin@test.local",
+        )
 
         # ── Create legacy account ──
 
@@ -225,7 +238,7 @@ class TestAdminClaimApproval:
         admin_client.close()
 
     def test_non_admin_cannot_list_claims(
-        self, backend_server, oidc_server
+        self, backend_server, oidc_server, backend_db_path
     ) -> None:
         """A non-admin user is rejected with 403 when accessing admin endpoints."""
         backend_url, _ = backend_server
@@ -237,6 +250,13 @@ class TestAdminClaimApproval:
             sub="non-admin-claim-test", name="Normal User", email="normal@test.local",
         )
         _complete_registration(client, "normal_claim_user")
+        client.close()
+
+        activate_account(backend_db_path, "normal_claim_user")
+        client = oidc_login(
+            backend_url, oidc_issuer,
+            sub="non-admin-claim-test", name="Normal User", email="normal@test.local",
+        )
 
         resp = client.get("/api/v2/account/admin/claims")
         assert resp.status_code == 403
@@ -258,16 +278,22 @@ class TestAdminClaimApproval:
             sub="admin-double-test", name="Double Admin", email="double-admin@test.local",
         )
         _complete_registration(admin_client, "double_admin_user")
+        admin_client.close()
 
         conn = sqlite3.connect(backend_db_path)
         try:
             conn.execute(
-                "UPDATE accounts SET claims = 3 WHERE username = ?",
+                "UPDATE accounts SET claims = 3, status = 'active' WHERE username = ?",
                 ("double_admin_user",),
             )
             conn.commit()
         finally:
             conn.close()
+
+        admin_client = oidc_login(
+            backend_url, oidc_issuer,
+            sub="admin-double-test", name="Double Admin", email="double-admin@test.local",
+        )
 
         # Create legacy account
         conn = sqlite3.connect(backend_db_path)

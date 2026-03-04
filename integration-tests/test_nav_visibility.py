@@ -20,7 +20,7 @@ from typing import Dict, List, Optional, Tuple
 import httpx
 import pytest
 
-from helpers import oidc_register_session, complete_registration
+from helpers import oidc_register_session, complete_registration, activate_account, oidc_login
 
 
 # ---------------------------------------------------------------------------
@@ -242,7 +242,7 @@ class TestNavProtectedPageAccess:
         assert resp.headers["location"].endswith("/login")
 
     def test_admin_api_requires_admin_claim(
-        self, backend_server, oidc_server
+        self, backend_server, oidc_server, backend_db_path
     ) -> None:
         """A regular (non-admin) user gets 403 on admin API endpoints."""
         backend_url, _ = backend_server
@@ -253,7 +253,15 @@ class TestNavProtectedPageAccess:
             sub="nav-test-nonadmin", name="Nav NonAdmin", email="nav-nonadmin@test.local",
         )
         _complete_registration(client, "nav_nonadmin_user")
+        client.close()
 
+        # Activate so the 403 comes from the claims check, not the status check
+        activate_account(backend_db_path, "nav_nonadmin_user")
+
+        client = oidc_login(
+            backend_url, oidc_issuer,
+            sub="nav-test-nonadmin", name="Nav NonAdmin", email="nav-nonadmin@test.local",
+        )
         resp = client.get("/api/v2/account/admin/claims")
         assert resp.status_code == 403
         client.close()
@@ -272,18 +280,23 @@ class TestNavProtectedPageAccess:
             sub="nav-test-admin", name="Nav Admin", email="nav-admin@test.local",
         )
         _complete_registration(client, "nav_admin_user")
+        client.close()
 
-        # Grant ADMIN claim (BASIC|ADMIN = 3)
+        # Activate + grant ADMIN claim (BASIC|ADMIN = 3)
         conn = sqlite3.connect(backend_db_path)
         try:
             conn.execute(
-                "UPDATE accounts SET claims = 3 WHERE username = ?",
+                "UPDATE accounts SET status = 'active', claims = 3 WHERE username = ?",
                 ("nav_admin_user",),
             )
             conn.commit()
         finally:
             conn.close()
 
+        client = oidc_login(
+            backend_url, oidc_issuer,
+            sub="nav-test-admin", name="Nav Admin", email="nav-admin@test.local",
+        )
         resp = client.get("/api/v2/account/admin/claims")
         assert resp.status_code == 200
         assert isinstance(resp.json(), list)
@@ -299,20 +312,27 @@ class TestNavAuthenticatedHtml:
     """
 
     def test_protected_page_nav_has_data_requires(
-        self, frontend_server, backend_server, oidc_server
+        self, frontend_server, backend_server, oidc_server, backend_db_path
     ) -> None:
         """An authenticated user's page still includes data-requires on nav links."""
         frontend_url, _ = frontend_server
         backend_url, _ = backend_server
         oidc_issuer, _ = oidc_server
 
-        # Authenticate through the backend API (the session cookie is signed
-        # by the backend so it's valid when forwarded through the proxy).
-        backend_client = _oidc_login_session(
+        # Register, activate, then re-login to get an authenticated session.
+        reg_client = _oidc_login_session(
             backend_url, oidc_issuer,
             sub="nav-auth-html-user", name="Nav Auth User", email="nav-auth@test.local",
         )
-        _complete_registration(backend_client, "nav_auth_html_user")
+        _complete_registration(reg_client, "nav_auth_html_user")
+        reg_client.close()
+
+        activate_account(backend_db_path, "nav_auth_html_user")
+
+        backend_client = oidc_login(
+            backend_url, oidc_issuer,
+            sub="nav-auth-html-user", name="Nav Auth User", email="nav-auth@test.local",
+        )
 
         # Extract the session cookie
         session_cookie = None
@@ -321,7 +341,7 @@ class TestNavAuthenticatedHtml:
                 session_cookie = (cookie.name, cookie.value)
                 break
         assert session_cookie is not None, (
-            "Backend did not set a session cookie after registration"
+            "Backend did not set a session cookie after login"
         )
         backend_client.close()
 

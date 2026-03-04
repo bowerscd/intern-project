@@ -6,7 +6,12 @@ from sqlalchemy import String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from models.database import Model
-from models.enums import PhoneProvider, ExternalAuthProvider, AccountClaims
+from models.enums import (
+    PhoneProvider,
+    ExternalAuthProvider,
+    AccountClaims,
+    AccountStatus,
+)
 from models.internal import SqlValueEnum
 
 
@@ -35,6 +40,12 @@ class Account(Model):
 
     claims: Mapped[int] = mapped_column(
         SqlValueEnum(AccountClaims), default=AccountClaims.NONE
+    )
+
+    status: Mapped[AccountStatus] = mapped_column(
+        SqlValueEnum(AccountStatus),
+        default=AccountStatus.PENDING_APPROVAL,
+        server_default=AccountStatus.PENDING_APPROVAL.value,
     )
 
     __table_args__ = (UniqueConstraint("account_provider", "external_unique_id"),)

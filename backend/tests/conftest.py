@@ -14,7 +14,7 @@ from routes.shared import AUTH_SESSION_KEY
 from db import Database
 from db.functions import create_account
 
-from models import AccountClaims, ExternalAuthProvider
+from models import AccountClaims, AccountStatus, ExternalAuthProvider
 
 from . import ENV_VAR_OVERRIDES
 from collections.abc import AsyncIterator
@@ -173,6 +173,7 @@ async def authenticated_client(database: Database) -> AsyncIterator[TestClient]:
             None,
             claims=claim,
         )
+        act.status = AccountStatus.ACTIVE
         s.add(act)
         s.commit()
 
@@ -254,6 +255,7 @@ def _authenticated_client_with_claims(
             None,
             claims=claims,
         )
+        act.status = AccountStatus.ACTIVE
         s.add(act)
         s.commit()
 

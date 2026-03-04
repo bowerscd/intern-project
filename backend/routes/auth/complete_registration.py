@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from csrf import validate_csrf_token
 from db.functions import create_account
 from models import AccountClaims, ExternalAuthProvider
-from routes.shared import Database, AUTH_SESSION_KEY
+from routes.shared import Database
 from schemas.account import CompleteRegistrationRequest
 from ratelimit import limiter
 
@@ -70,11 +70,17 @@ async def complete_registration(
                 detail="Username already taken.",
             )
 
-        # Regenerate session to prevent session fixation
-        request.session.clear()
-        request.session[AUTH_SESSION_KEY] = act.id
-        oidc_email = pending.get("email")
-        if oidc_email:
-            request.session["oidc_email"] = oidc_email
+        # Capture values while the ORM object is still bound to the session.
+        act_id = act.id
+        act_username = act.username
 
-    return {"id": act.id, "username": act.username}
+        # Clear the pending registration session — account is created but
+        # awaiting admin approval.  Do NOT establish an auth session.
+        request.session.clear()
+
+    return {
+        "id": act_id,
+        "username": act_username,
+        "status": "pending_approval",
+        "message": "Your account has been created and is awaiting admin approval.",
+    }

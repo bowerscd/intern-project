@@ -6,14 +6,14 @@ persisted and returned by the profile endpoint.
 
 import httpx
 
-from helpers import oidc_register_session, complete_registration
+from helpers import oidc_register_session, complete_registration, activate_account, oidc_login
 
 
 class TestRegistrationProfile:
     """Register a new user and verify the profile endpoint returns correct data."""
 
     def test_profile_matches_registration(
-        self, backend_server, oidc_server
+        self, backend_server, oidc_server, backend_db_path
     ) -> None:
         """Profile should reflect the OIDC identity and chosen username."""
         backend_url, _ = backend_server
@@ -28,6 +28,16 @@ class TestRegistrationProfile:
 
         reg_data = complete_registration(client, "profile_roundtrip_user")
         assert reg_data["username"] == "profile_roundtrip_user"
+        client.close()
+
+        # Account is pending_approval after registration; activate and re-login
+        activate_account(backend_db_path, "profile_roundtrip_user")
+        client = oidc_login(
+            backend_url, oidc_issuer,
+            sub="profile-round-trip-user",
+            name="Profile Roundtrip",
+            email="profile-rt@test.local",
+        )
 
         # ── Verify profile ──
         resp = client.get("/api/v2/account/profile")

@@ -15,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from db import Database as _Database
-from models import AccountClaims, DBAccount as Account
+from models import AccountClaims, AccountStatus, DBAccount as Account
 
 DatabaseRaw = _Database()
 
@@ -180,6 +180,23 @@ class RequireLogin:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="account not found",
+                )
+
+            # Reject non-active accounts before checking claims
+            if act.status == AccountStatus.PENDING_APPROVAL:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Your account is pending admin approval.",
+                )
+            if act.status == AccountStatus.BANNED:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Your account is banned.",
+                )
+            if act.status == AccountStatus.DEFUNCT:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Your account has been disabled.",
                 )
 
             if act.claims & self.__required_claim != self.__required_claim:

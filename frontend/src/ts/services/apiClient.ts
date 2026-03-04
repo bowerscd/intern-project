@@ -125,7 +125,7 @@ export function registerUrl(provider: string, redirect?: string): string {
 }
 
 export type CompleteRegistrationRequest = { username: string };
-export type CompleteRegistrationResponse = { id: number; username: string };
+export type CompleteRegistrationResponse = { id: number; username: string; status?: string; message?: string };
 
 export function completeRegistration(body: CompleteRegistrationRequest): Promise<CompleteRegistrationResponse> {
   return post("/api/v2/auth/complete-registration", body);
@@ -366,4 +366,31 @@ export function getClaimRequests(includeResolved = false): Promise<ClaimRequestR
 
 export function reviewClaimRequest(claimId: number, body: ClaimReviewRequest): Promise<ClaimRequestResponse> {
   return post(`/api/v2/account/admin/claims/${claimId}/review`, body);
+}
+
+// ── Admin Account Management ──────────────────────────────────────────
+
+export type AdminAccountResponse = {
+  id: number;
+  username: string;
+  email: string | null;
+  status: string;
+  claims: number;
+  provider: string;
+};
+
+export type AdminStatusUpdateRequest = { status: string };
+export type AdminRoleUpdateRequest = { grant_admin: boolean };
+
+export function getAdminAccounts(statusFilter?: string): Promise<AdminAccountResponse[]> {
+  const q = statusFilter ? `?status_filter=${encodeURIComponent(statusFilter)}` : "";
+  return get(`/api/v2/account/admin/accounts${q}`);
+}
+
+export function updateAccountStatus(accountId: number, body: AdminStatusUpdateRequest): Promise<AdminAccountResponse> {
+  return post(`/api/v2/account/admin/accounts/${accountId}/status`, body);
+}
+
+export function updateAccountRole(accountId: number, body: AdminRoleUpdateRequest): Promise<AdminAccountResponse> {
+  return post(`/api/v2/account/admin/accounts/${accountId}/role`, body);
 }

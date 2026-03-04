@@ -209,3 +209,119 @@ describe("apiClient — fetch requests", () => {
     expect(opts.headers["Content-Type"]).toBe("application/json");
   });
 });
+
+describe("apiClient — admin account management", () => {
+  beforeEach(() => {
+    (window as any).__API_BASE = "";
+    vi.resetModules();
+    global.fetch = vi.fn();
+  });
+
+  afterEach(() => {
+    (window as any).__API_BASE = originalApiBase;
+    vi.restoreAllMocks();
+  });
+
+  it("getAdminAccounts fetches /api/v2/account/admin/accounts", async () => {
+    const mockResponse = {
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve([{ id: 1, username: "alice", status: "active" }]),
+    };
+    (global.fetch as any).mockResolvedValue(mockResponse);
+
+    const mod = await import("../services/apiClient");
+    const result = await mod.getAdminAccounts();
+
+    const [url] = (global.fetch as any).mock.calls[0];
+    expect(url).toBe("/api/v2/account/admin/accounts");
+    expect(result).toHaveLength(1);
+    expect(result[0].username).toBe("alice");
+  });
+
+  it("getAdminAccounts with status filter appends query param", async () => {
+    const mockResponse = {
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve([]),
+    };
+    (global.fetch as any).mockResolvedValue(mockResponse);
+
+    const mod = await import("../services/apiClient");
+    await mod.getAdminAccounts("pending_approval");
+
+    const [url] = (global.fetch as any).mock.calls[0];
+    expect(url).toContain("status_filter=pending_approval");
+  });
+
+  it("updateAccountStatus sends POST with status body", async () => {
+    const csrfResponse = {
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ csrf_token: "csrf-tok" }),
+    };
+    const mockResponse = {
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ id: 5, username: "bob", status: "active" }),
+    };
+    (global.fetch as any)
+      .mockResolvedValueOnce(csrfResponse)
+      .mockResolvedValueOnce(mockResponse);
+
+    const mod = await import("../services/apiClient");
+    const result = await mod.updateAccountStatus(5, { status: "active" });
+
+    expect(result.status).toBe("active");
+    const [url, opts] = (global.fetch as any).mock.calls[1];
+    expect(url).toBe("/api/v2/account/admin/accounts/5/status");
+    expect(opts.method).toBe("POST");
+    expect(JSON.parse(opts.body)).toEqual({ status: "active" });
+  });
+
+  it("updateAccountRole sends POST with grant_admin body", async () => {
+    const csrfResponse = {
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ csrf_token: "csrf-tok" }),
+    };
+    const mockResponse = {
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ id: 3, username: "carol", claims: 3 }),
+    };
+    (global.fetch as any)
+      .mockResolvedValueOnce(csrfResponse)
+      .mockResolvedValueOnce(mockResponse);
+
+    const mod = await import("../services/apiClient");
+    const result = await mod.updateAccountRole(3, { grant_admin: true });
+
+    expect(result.claims).toBe(3);
+    const [url, opts] = (global.fetch as any).mock.calls[1];
+    expect(url).toBe("/api/v2/account/admin/accounts/3/role");
+    expect(opts.method).toBe("POST");
+    expect(JSON.parse(opts.body)).toEqual({ grant_admin: true });
+  });
+
+  it("completeRegistration response includes status field", async () => {
+    const csrfResponse = {
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ csrf_token: "csrf-tok" }),
+    };
+    const mockResponse = {
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ id: 1, username: "newuser", status: "pending_approval", message: "Awaiting approval." }),
+    };
+    (global.fetch as any)
+      .mockResolvedValueOnce(csrfResponse)
+      .mockResolvedValueOnce(mockResponse);
+
+    const mod = await import("../services/apiClient");
+    const result = await mod.completeRegistration({ username: "newuser" });
+    expect(result.status).toBe("pending_approval");
+    expect(result.message).toBe("Awaiting approval.");
+  });
+});

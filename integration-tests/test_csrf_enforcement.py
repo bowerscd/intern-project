@@ -9,6 +9,7 @@ import sqlite3
 
 from helpers import oidc_register_session as _oidc_register_session
 from helpers import complete_registration as _complete_registration
+from helpers import activate_account, oidc_login
 
 
 class TestCSRFEnforcementCompleteRegistration:
@@ -106,7 +107,7 @@ class TestCSRFEnforcementLogout:
     """POST /logout must require a valid CSRF token."""
 
     def test_missing_csrf_rejected(
-        self, backend_server, oidc_server
+        self, backend_server, oidc_server, backend_db_path
     ) -> None:
         """Omitting X-CSRF-Token on logout returns 403."""
         backend_url, _ = backend_server
@@ -118,6 +119,15 @@ class TestCSRFEnforcementLogout:
             email="csrf-logout@test.local",
         )
         _complete_registration(client, "csrf_logout_user")
+        client.close()
+
+        # Account is pending_approval after registration; activate then login
+        activate_account(backend_db_path, "csrf_logout_user")
+        client = oidc_login(
+            backend_url, oidc_issuer,
+            sub="csrf-logout-user", name="CSRF Logout",
+            email="csrf-logout@test.local",
+        )
 
         resp = client.post("/api/v2/auth/logout")
         assert resp.status_code == 403, (
@@ -143,16 +153,26 @@ class TestCSRFEnforcementAdminReview:
             email="csrf-admin@test.local",
         )
         _complete_registration(admin, "csrf_admin_review_user")
+        admin.close()
 
+        # Activate account and grant admin claims
         conn = sqlite3.connect(backend_db_path)
         try:
             conn.execute(
-                "UPDATE accounts SET claims = 3 WHERE username = ?",
+                "UPDATE accounts SET status = 'active', claims = 3 "
+                "WHERE username = ?",
                 ("csrf_admin_review_user",),
             )
             conn.commit()
         finally:
             conn.close()
+
+        # Re-login to get an authenticated session
+        admin = oidc_login(
+            backend_url, oidc_issuer,
+            sub="csrf-admin-review", name="CSRF Admin",
+            email="csrf-admin@test.local",
+        )
 
         resp = admin.post(
             "/api/v2/account/admin/claims/999/review",

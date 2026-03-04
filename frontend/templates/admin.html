@@ -1,8 +1,38 @@
 {% extends "base.html" %}
 {% block content %}
 <section class="card">
-  <h2>Admin — Account Claim Requests</h2>
-  <div id="admin-claims-list"></div>
-  <div id="admin-claims-result"></div>
+  <h2>Admin Dashboard</h2>
+
+  <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+    <button type="button" class="admin-tab active" data-tab="pending">Pending Accounts</button>
+    <button type="button" class="admin-tab" data-tab="accounts">All Accounts</button>
+    <button type="button" class="admin-tab" data-tab="claims">Claim Requests</button>
+  </div>
+
+  <div id="admin-tab-pending" class="admin-panel">
+    <h3>Pending Account Approvals</h3>
+    <div id="admin-pending-list"></div>
+    <div id="admin-pending-result"></div>
+  </div>
+
+  <div id="admin-tab-accounts" class="admin-panel" style="display: none;">
+    <h3>All Accounts</h3>
+    <label for="admin-status-filter">Filter by status:</label>
+    <select id="admin-status-filter" style="margin-bottom: 12px;">
+      <option value="">All</option>
+      <option value="pending_approval">Pending Approval</option>
+      <option value="active">Active</option>
+      <option value="banned">Banned</option>
+      <option value="defunct">Defunct</option>
+    </select>
+    <div id="admin-accounts-list"></div>
+    <div id="admin-accounts-result"></div>
+  </div>
+
+  <div id="admin-tab-claims" class="admin-panel" style="display: none;">
+    <h3>Account Claim Requests</h3>
+    <div id="admin-claims-list"></div>
+    <div id="admin-claims-result"></div>
+  </div>
 </section>
 {% endblock %}

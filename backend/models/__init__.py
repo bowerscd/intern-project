@@ -3,6 +3,7 @@
 from .enums import (
     AccountClaims,
     AccountClaimStatus,
+    AccountStatus,
     PhoneProvider,
     ExternalAuthProvider,
     TyrantAssignmentStatus,
@@ -22,6 +23,7 @@ from .mealbot import Receipt as DBReceipt
 __all__ = [
     "AccountClaims",
     "AccountClaimStatus",
+    "AccountStatus",
     "DBModel",
     "DBAccount",
     "DBAccountClaimRequest",

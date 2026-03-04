@@ -47,6 +47,9 @@ def upgrade() -> None:
         sa.Column("account_provider", sa.Integer(), nullable=False),
         sa.Column("external_unique_id", sa.String(), nullable=False),
         sa.Column("claims", sa.Integer(), nullable=False),
+        sa.Column(
+            "status", sa.String(), server_default="pending_approval", nullable=False
+        ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("account_provider", "external_unique_id"),
         sa.UniqueConstraint("email"),

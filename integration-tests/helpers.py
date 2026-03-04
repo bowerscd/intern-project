@@ -6,6 +6,8 @@ modules don't duplicate the multi-step flow.
 
 from __future__ import annotations
 
+import sqlite3
+
 import httpx
 from urllib.parse import urlparse, parse_qs, urlencode
 
@@ -131,6 +133,86 @@ def complete_registration(client: httpx.Client, username: str) -> dict:
     return resp.json()
 
 
+def activate_account(db_path: str, username: str) -> None:
+    """Set an account's status to ``active`` via direct DB access.
+
+    New accounts default to ``pending_approval``; this helper activates
+    them so that subsequent OIDC login succeeds.
+
+    :param db_path: Path to the backend's SQLite database file.
+    :param username: The username of the account to activate.
+    """
+    conn = sqlite3.connect(db_path)
+    try:
+        conn.execute(
+            "UPDATE accounts SET status = 'active' WHERE username = ?",
+            (username,),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def oidc_login(
+    backend_url: str,
+    oidc_issuer: str,
+    *,
+    sub: str,
+    name: str,
+    email: str,
+) -> httpx.Client:
+    """Drive the OIDC *login* flow and return a client with a valid session.
+
+    Unlike :func:`oidc_register_session` (which hits ``/register/test``),
+    this calls ``/login/test`` to simulate a returning user.  The account
+    must already exist and be in ``active`` status.
+
+    :param backend_url: Base URL of the backend.
+    :param oidc_issuer: Base URL of the mock OIDC provider.
+    :param sub: OIDC ``sub`` claim for the user.
+    :param name: Display name for the user.
+    :param email: Email address for the user.
+    :returns: An httpx client with an authenticated session cookie.
+    """
+    client = create_backend_client(backend_url)
+
+    # 1. Initiate login
+    resp = client.get("/api/v2/auth/login/test")
+    assert resp.status_code in (302, 307)
+    authorize_url = resp.headers["location"]
+
+    # 2. Follow to OIDC authorize page
+    authorize_url = rewrite_oidc_url(authorize_url, oidc_issuer)
+    resp = httpx.get(authorize_url, follow_redirects=False, timeout=10.0)
+    assert resp.status_code == 200
+
+    # 3. Approve the OIDC request
+    parsed = urlparse(authorize_url)
+    qs = parse_qs(parsed.query)
+    approve_url = f"{oidc_issuer}/authorize/approve?" + urlencode(
+        {
+            "redirect_uri": qs["redirect_uri"][0],
+            "state": qs["state"][0],
+            "nonce": qs["nonce"][0],
+            "sub": sub,
+            "name": name,
+            "email": email,
+        }
+    )
+    resp = httpx.get(approve_url, follow_redirects=False, timeout=10.0)
+    assert resp.status_code == 302
+
+    # 4. Hit the backend callback (login mode → 302 redirect to app)
+    callback_url = resp.headers["location"]
+    cb_parsed = urlparse(callback_url)
+    resp = client.get(f"{cb_parsed.path}?{cb_parsed.query}")
+    assert resp.status_code in (302, 307), (
+        f"Login callback returned {resp.status_code}: {resp.text[:500]}"
+    )
+
+    return client
+
+
 def register_user(
     backend_url: str,
     oidc_issuer: str,
@@ -139,11 +221,17 @@ def register_user(
     name: str,
     email: str,
     username: str,
+    db_path: str,
 ) -> httpx.Client:
     """Drive OIDC registration through to a fully authenticated session.
 
-    Combines :func:`oidc_register_session` and :func:`complete_registration`
-    into a single call.  Returns an httpx client with a valid session cookie.
+    Combines :func:`oidc_register_session`, :func:`complete_registration`,
+    :func:`activate_account`, and :func:`oidc_login` into a single call.
+    Returns an httpx client with a valid session cookie.
+
+    New accounts default to ``pending_approval``, so this helper
+    activates the account via direct DB access and then performs an OIDC
+    login to obtain a real session.
 
     :param backend_url: Base URL of the backend.
     :param oidc_issuer: Base URL of the mock OIDC provider.
@@ -151,6 +239,7 @@ def register_user(
     :param name: Display name for the test user.
     :param email: Email address for the test user.
     :param username: The desired username for registration.
+    :param db_path: Path to the backend's SQLite database file.
     :returns: An httpx client with a fully authenticated session.
     """
     client = oidc_register_session(
@@ -161,4 +250,13 @@ def register_user(
         email=email,
     )
     complete_registration(client, username)
-    return client
+    client.close()
+
+    # Activate the account (it defaults to pending_approval)
+    activate_account(db_path, username)
+
+    # Login to get a real authenticated session
+    return oidc_login(
+        backend_url, oidc_issuer,
+        sub=sub, name=name, email=email,
+    )

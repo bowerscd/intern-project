@@ -13,7 +13,7 @@ class TestLogoutInvalidatesSession:
     """Logging out should prevent reuse of the same session cookie."""
 
     def test_profile_fails_after_logout(
-        self, backend_server, oidc_server
+        self, backend_server, oidc_server, backend_db_path
     ) -> None:
         """After POST /logout, GET /profile with the same cookie returns 401."""
         backend_url, _ = backend_server
@@ -23,6 +23,7 @@ class TestLogoutInvalidatesSession:
             backend_url, oidc_issuer,
             sub="logout-test-user", name="Logout User",
             email="logout@test.local", username="logout_test_user",
+            db_path=backend_db_path,
         )
 
         # Sanity: profile works before logout
@@ -46,7 +47,7 @@ class TestLogoutInvalidatesSession:
         client.close()
 
     def test_frontend_redirects_after_logout(
-        self, frontend_server, backend_server, oidc_server
+        self, frontend_server, backend_server, oidc_server, backend_db_path
     ) -> None:
         """After logout, the frontend redirects to /login (no session cookie).
 
@@ -62,6 +63,7 @@ class TestLogoutInvalidatesSession:
             backend_url, oidc_issuer,
             sub="logout-fe-user", name="Logout FE User",
             email="logout-fe@test.local", username="logout_fe_user",
+            db_path=backend_db_path,
         )
 
         # Extract the pre-logout session cookie for frontend verification

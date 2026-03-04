@@ -1,18 +1,20 @@
-"""Admin endpoints — claim review and approval.
+"""Admin endpoints — claim review, account approval, and account management.
 
 Only accounts with the ``ADMIN`` claim can access these endpoints.
 """
 
 from datetime import datetime, UTC
-from typing import Annotated, Any
+from typing import Annotated, Any, Optional
 
 from fastapi import Depends, HTTPException, status
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import select
 
 from csrf import validate_csrf_token
 from models import (
     AccountClaims,
     AccountClaimStatus,
+    AccountStatus,
     DBAccount as Account,
     DBAccountClaimRequest as AccountClaimRequest,
     ExternalAuthProvider,
@@ -200,3 +202,201 @@ async def review_claim_request(
         return _claim_response(
             claim, target_act.username if target_act else "<deleted>"
         )
+
+
+# ── Schemas for admin account management ──────────────────────────────
+
+
+class AdminAccountResponse(BaseModel):
+    """Response schema for an account in the admin view.
+
+    :cvar id: Account primary key.
+    :cvar username: Unique username.
+    :cvar email: Email address, or ``None``.
+    :cvar status: Current account status string.
+    :cvar claims: Bitmask of account claims.
+    :cvar provider: External auth provider name.
+    """
+
+    id: int
+    username: str
+    email: Optional[str]
+    status: str
+    claims: int
+    provider: str
+
+
+class AdminStatusUpdateRequest(BaseModel):
+    """Request schema for updating an account's status.
+
+    :cvar status: Target status value.
+    """
+
+    status: str = Field(
+        ...,
+        description="Target status: 'active', 'banned', or 'defunct'",
+    )
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, v: str) -> str:
+        """Ensure status is one of the allowed transition values.
+
+        :param v: Candidate status.
+        :returns: The validated status.
+        :raises ValueError: If the status is not allowed.
+        """
+        allowed = {"active", "banned", "defunct"}
+        if v.lower() not in allowed:
+            raise ValueError(f"Status must be one of: {', '.join(sorted(allowed))}")
+        return v.lower()
+
+
+class AdminRoleUpdateRequest(BaseModel):
+    """Request schema for updating an account's admin role.
+
+    :cvar grant_admin: Whether to grant or revoke the ADMIN claim.
+    """
+
+    grant_admin: bool = Field(
+        ...,
+        description="True to grant ADMIN, False to revoke it",
+    )
+
+
+def _account_response(act: Account) -> AdminAccountResponse:
+    """Build an :class:`AdminAccountResponse` from an Account ORM object."""
+    return AdminAccountResponse(
+        id=act.id,
+        username=act.username,
+        email=act.email,
+        status=_status_str(act.status),
+        claims=int(act.claims) if hasattr(act.claims, "__int__") else act.claims,
+        provider=_provider_str(act.account_provider),
+    )
+
+
+# ── Admin account list & management endpoints ─────────────────────────
+
+
+@Accounts.get(
+    "/admin/accounts",
+    summary="List all accounts",
+    description="Return all accounts with optional status filter. Requires ADMIN claim.",
+    response_model=list[AdminAccountResponse],
+)
+async def list_accounts(
+    account: Annotated[Any, Depends(RequireLogin(AccountClaims.ADMIN))],
+    db: Database,
+    status_filter: Optional[str] = None,
+) -> list[AdminAccountResponse]:
+    """Return all accounts, optionally filtered by status.
+
+    :param account: The authenticated admin account.
+    :param db: Active database session.
+    :param status_filter: Optional status string to filter by.
+    :returns: A list of :class:`AdminAccountResponse`.
+    :rtype: list[AdminAccountResponse]
+    """
+    with db:
+        query = select(Account)
+        if status_filter:
+            try:
+                target_status = AccountStatus(status_filter.lower())
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invalid status filter: {status_filter}",
+                )
+            query = query.where(Account.status == target_status)
+        query = query.order_by(Account.id)
+        accounts = list(db.scalars(query).all())
+        return [_account_response(a) for a in accounts]
+
+
+@Accounts.post(
+    "/admin/accounts/{account_id}/status",
+    summary="Update account status",
+    dependencies=[Depends(validate_csrf_token)],
+    description="Change an account's status (approve, ban, or defunct). Requires ADMIN claim.",
+    response_model=AdminAccountResponse,
+)
+async def update_account_status(
+    account_id: int,
+    body: AdminStatusUpdateRequest,
+    account: Annotated[Any, Depends(RequireLogin(AccountClaims.ADMIN))],
+    db: Database,
+) -> AdminAccountResponse:
+    """Update the status of an account.
+
+    :param account_id: Primary key of the target account.
+    :param body: The status update request.
+    :param account: The authenticated admin account.
+    :param db: Active database session.
+    :returns: The updated :class:`AdminAccountResponse`.
+    :rtype: AdminAccountResponse
+    :raises HTTPException: 404 if account not found, 400 on invalid transition.
+    """
+    with db:
+        target = db.scalars(select(Account).where(Account.id == account_id)).first()
+
+        if target is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Account not found.",
+            )
+
+        try:
+            new_status = AccountStatus(body.status)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid status: {body.status}",
+            )
+
+        target.status = new_status  # type: ignore[assignment]
+        db.commit()
+        db.refresh(target)
+        return _account_response(target)
+
+
+@Accounts.post(
+    "/admin/accounts/{account_id}/role",
+    summary="Update account admin role",
+    dependencies=[Depends(validate_csrf_token)],
+    description="Grant or revoke the ADMIN claim on an account. Requires ADMIN claim.",
+    response_model=AdminAccountResponse,
+)
+async def update_account_role(
+    account_id: int,
+    body: AdminRoleUpdateRequest,
+    account: Annotated[Any, Depends(RequireLogin(AccountClaims.ADMIN))],
+    db: Database,
+) -> AdminAccountResponse:
+    """Grant or revoke the ADMIN claim on an account.
+
+    :param account_id: Primary key of the target account.
+    :param body: The role update request.
+    :param account: The authenticated admin account.
+    :param db: Active database session.
+    :returns: The updated :class:`AdminAccountResponse`.
+    :rtype: AdminAccountResponse
+    :raises HTTPException: 404 if account not found.
+    """
+    with db:
+        target = db.scalars(select(Account).where(Account.id == account_id)).first()
+
+        if target is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Account not found.",
+            )
+
+        if body.grant_admin:
+            target.claims = target.claims | AccountClaims.ADMIN  # type: ignore[assignment]
+        else:
+            target.claims = target.claims & ~AccountClaims.ADMIN  # type: ignore[assignment]
+
+        db.commit()
+        db.refresh(target)
+        return _account_response(target)

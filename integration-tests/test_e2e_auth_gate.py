@@ -9,7 +9,7 @@ import httpx
 import pytest
 from urllib.parse import urlparse, parse_qs, urlencode
 
-from helpers import create_backend_client
+from helpers import activate_account, create_backend_client, oidc_login
 
 
 PROTECTED_PAGES = [
@@ -79,7 +79,7 @@ class TestAuthenticatedFlow:
     """Authenticated session grants access to protected pages."""
 
     def test_authenticated_page_access(
-        self, frontend_server, backend_server, oidc_server
+        self, frontend_server, backend_server, oidc_server, backend_db_path
     ) -> None:
         """After registering via OIDC, protected pages should be accessible."""
         frontend_url, _ = frontend_server
@@ -124,18 +124,28 @@ class TestAuthenticatedFlow:
             headers={"X-CSRF-Token": csrf},
         )
         assert resp.status_code == 201
+        backend_client.close()
 
-        # ── Step 2: Extract the session cookie ──
+        # ── Step 2: Activate the account and re-login ──
+        activate_account(backend_db_path, "auth_gate_test_user")
+        login_client = oidc_login(
+            backend_url, oidc_issuer,
+            sub="auth-gate-user",
+            name="Auth Gate User",
+            email="gate@test.local",
+        )
+
+        # ── Step 3: Extract the session cookie ──
         session_cookie = None
-        for cookie in backend_client.cookies.jar:
+        for cookie in login_client.cookies.jar:
             if "session" in cookie.name.lower():
                 session_cookie = (cookie.name, cookie.value)
                 break
         assert session_cookie is not None, (
-            "Backend did not set a session cookie after registration"
+            "Backend did not set a session cookie after login"
         )
 
-        # ── Step 3: Set the cookie on a frontend client and verify access ──
+        # ── Step 4: Set the cookie on a frontend client and verify access ──
         with httpx.Client(
             base_url=frontend_url, follow_redirects=False, timeout=10.0
         ) as fe_session:
@@ -148,7 +158,7 @@ class TestAuthenticatedFlow:
             resp = fe_session.get("/api/v2/account/profile")
             assert resp.status_code == 200
 
-        backend_client.close()
+        login_client.close()
 
 
 class TestStaticAssets:

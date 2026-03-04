@@ -167,6 +167,19 @@ class TyrantAssignmentStatus(Enum):
     MISSED = "missed"
 
 
+class AccountStatus(Enum):
+    """Status values for a user account.
+
+    Tracks whether an account is pending admin approval, active,
+    banned, or defunct (disabled without deletion).
+    """
+
+    PENDING_APPROVAL = "pending_approval"
+    ACTIVE = "active"
+    BANNED = "banned"
+    DEFUNCT = "defunct"
+
+
 class AccountClaimStatus(Enum):
     """Status values for an account ownership claim request.
 

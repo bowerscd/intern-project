@@ -21,6 +21,7 @@ import httpx
 import pytest
 
 from helpers import (
+    activate_account as _activate_account,
     complete_registration as _complete_registration,
     create_backend_client as _create_backend_client,
     oidc_register_session as _oidc_register_session,
@@ -86,7 +87,7 @@ class TestClaimableAccountsEndpoint:
         assert isinstance(resp.json(), list)
 
     def test_normal_account_does_not_appear(
-        self, backend_server, oidc_server
+        self, backend_server, oidc_server, backend_db_path
     ) -> None:
         """An account created via OIDC is NOT listed as claimable."""
         backend_url, _ = backend_server
@@ -98,6 +99,7 @@ class TestClaimableAccountsEndpoint:
             name="Normal Account",
             email="claimable-normal@test.local",
             username="claimable_normal_user",
+            db_path=backend_db_path,
         )
         try:
             resp = client.get("/api/v2/auth/claimable-accounts")
@@ -117,7 +119,7 @@ class TestProfileOidcEmail:
     """``oidc_email`` / notification-email separation in the profile endpoint."""
 
     def test_oidc_email_present_after_registration(
-        self, backend_server, oidc_server
+        self, backend_server, oidc_server, backend_db_path
     ) -> None:
         """Profile includes ``oidc_email`` sourced from the OIDC provider."""
         backend_url, _ = backend_server
@@ -129,6 +131,7 @@ class TestProfileOidcEmail:
             name="OIDC Email User",
             email="oidc-email@test.local",
             username="profile_oidc_email_user",
+            db_path=backend_db_path,
         )
         try:
             resp = client.get("/api/v2/account/profile")
@@ -139,7 +142,7 @@ class TestProfileOidcEmail:
             client.close()
 
     def test_initial_registration_sets_db_email(
-        self, backend_server, oidc_server
+        self, backend_server, oidc_server, backend_db_path
     ) -> None:
         """After registration the DB email (notification preference) is populated."""
         backend_url, _ = backend_server
@@ -151,6 +154,7 @@ class TestProfileOidcEmail:
             name="Initial Email User",
             email="initial-email@test.local",
             username="profile_initial_email_user",
+            db_path=backend_db_path,
         )
         try:
             resp = client.get("/api/v2/account/profile")
@@ -163,7 +167,7 @@ class TestProfileOidcEmail:
             client.close()
 
     def test_opt_out_nulls_db_email_but_preserves_oidc_email(
-        self, backend_server, oidc_server
+        self, backend_server, oidc_server, backend_db_path
     ) -> None:
         """PATCH email='' disables notifications (DB email → null) but oidc_email persists."""
         backend_url, _ = backend_server
@@ -175,6 +179,7 @@ class TestProfileOidcEmail:
             name="OptOut User",
             email="optout@test.local",
             username="profile_optout_user",
+            db_path=backend_db_path,
         )
         try:
             csrf = client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
@@ -197,7 +202,7 @@ class TestProfileOidcEmail:
             client.close()
 
     def test_opt_in_restores_db_email_without_changing_oidc_email(
-        self, backend_server, oidc_server
+        self, backend_server, oidc_server, backend_db_path
     ) -> None:
         """After opt-out, re-enabling notifications sets DB email; oidc_email unchanged."""
         backend_url, _ = backend_server
@@ -209,6 +214,7 @@ class TestProfileOidcEmail:
             name="OptIn User",
             email="optin@test.local",
             username="profile_optin_user",
+            db_path=backend_db_path,
         )
         try:
             # Opt out first
@@ -237,7 +243,7 @@ class TestProfileOidcEmail:
             client.close()
 
     def test_db_email_can_differ_from_oidc_email(
-        self, backend_server, oidc_server
+        self, backend_server, oidc_server, backend_db_path
     ) -> None:
         """oidc_email stays fixed at the OIDC provider value even when DB email differs."""
         backend_url, _ = backend_server
@@ -249,6 +255,7 @@ class TestProfileOidcEmail:
             name="DiffMail User",
             email="provider@test.local",
             username="profile_diffmail_user",
+            db_path=backend_db_path,
         )
         try:
             csrf = client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
@@ -267,7 +274,7 @@ class TestProfileOidcEmail:
             client.close()
 
     def test_profile_patch_requires_csrf(
-        self, backend_server, oidc_server
+        self, backend_server, oidc_server, backend_db_path
     ) -> None:
         """PATCH /profile without a CSRF token is rejected with 403."""
         backend_url, _ = backend_server
@@ -279,6 +286,7 @@ class TestProfileOidcEmail:
             name="CSRF Test User",
             email="csrf-test@test.local",
             username="profile_csrf_test_user",
+            db_path=backend_db_path,
         )
         try:
             # No X-CSRF-Token header
@@ -398,11 +406,16 @@ class TestCompleteRegistrationClaimCard:
         frontend_server,
         backend_server,
         oidc_server,
+        backend_db_path,
     ) -> None:
         """The account page renders oidc_email in the (disabled) email input.
 
         The email input is the second disabled input inside ``#profile-form``
         (first is username, second is email).  It has no ``id`` attribute.
+
+        After registration the account is pending approval, so we activate it
+        via DB and then log in through the browser before checking the account
+        page.
         """
         oidc_issuer, _ = oidc_server
         frontend_url, _ = frontend_server
@@ -423,6 +436,26 @@ class TestCompleteRegistrationClaimCard:
         page.wait_for_selector("#complete-registration-form", timeout=5000)
         page.fill("#username", "browser_email_display_user")
         page.click('#complete-registration-form button[type="submit"]')
+
+        # Registration now shows a pending approval message instead of
+        # redirecting to /account.
+        page.wait_for_selector("#complete-registration-result", timeout=5000)
+        result_text = page.locator("#complete-registration-result").text_content()
+        assert "pending" in (result_text or "").lower() or "approval" in (result_text or "").lower()
+
+        # Activate the account via the DB so that login succeeds.
+        _activate_account(backend_db_path, "browser_email_display_user")
+
+        # Log in through the browser
+        page.goto(f"{frontend_url}/login")
+        page.wait_for_selector("#login-actions a", timeout=5000)
+        page.locator("a", has_text="Log in with Test Provider").click()
+
+        page.wait_for_selector("button[type='submit']", timeout=10000)
+        page.fill("input[name='sub']", "browser-oidc-email-display-1")
+        page.fill("input[name='name']", "Email Display User")
+        page.fill("input[name='email']", "email-display@test.local")
+        page.click("button[type='submit']")
 
         page.wait_for_url("**/account**", timeout=10000)
 

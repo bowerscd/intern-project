@@ -28,7 +28,18 @@ export async function renderIndex() {
 
 export async function renderLogin() {
   const devMode = (window as any).__DEV_MODE === true;
-  let html = `
+
+  // Check for error message from OIDC callback redirect
+  const urlParams = new URLSearchParams(window.location.search);
+  const errorMsg = urlParams.get("error");
+  let errorHtml = "";
+  if (errorMsg) {
+    errorHtml = `<div class="card" style="background: #3a1a1a; border: 1px solid #c44; padding: 16px; margin-bottom: 16px;">
+      <p style="color: #faa; margin: 0;"><strong>Login failed:</strong> ${esc(errorMsg)}</p>
+    </div>`;
+  }
+
+  let html = errorHtml + `
     <p><a href="${esc(api.loginUrl("google", "/account"))}">Login with Google</a></p>
     <p><a href="${esc(api.registerUrl("google", "/auth/complete-registration"))}">Register with Google</a></p>
   `;
@@ -65,8 +76,12 @@ export async function renderCompleteRegistration() {
     if (!username) { result.innerHTML = status("Username is required."); return; }
     try {
       const res = await api.completeRegistration({ username });
-      result.innerHTML = status(`Registration complete! Welcome, ${res.username}.`);
-      setTimeout(() => { window.location.href = "/account"; }, 1500);
+      if (res.status === "pending_approval") {
+        result.innerHTML = status("Your account has been created and is awaiting admin approval. You will be able to log in once an admin approves your account.");
+      } else {
+        result.innerHTML = status(`Registration complete! Welcome, ${res.username}.`);
+        setTimeout(() => { window.location.href = "/account"; }, 1500);
+      }
     } catch (err: any) {
       result.innerHTML = status(`Error: ${err.message}`);
     }
@@ -539,17 +554,143 @@ export async function renderHappyHourManage() {
 }
 
 export async function renderAdmin() {
-  const result = byId("admin-claims-result");
-  const container = byId("admin-claims-list");
+  // ── Tab switching ─────────────────────────────────────────────────
+  const tabs = document.querySelectorAll<HTMLElement>(".admin-tab");
+  const panels = document.querySelectorAll<HTMLElement>(".admin-panel");
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+      const target = tab.dataset.tab!;
+      panels.forEach((p) => {
+        p.style.display = p.id === `admin-tab-${target}` ? "" : "none";
+      });
+    });
+  });
+
+  // ── Pending Accounts ──────────────────────────────────────────────
+  const pendingList = document.getElementById("admin-pending-list")!;
+  const pendingResult = document.getElementById("admin-pending-result")!;
+
+  async function loadPending() {
+    try {
+      const accounts = await api.getAdminAccounts("pending_approval");
+      if (accounts.length === 0) {
+        pendingList.innerHTML = "<p>No pending accounts.</p>";
+        return;
+      }
+      pendingList.innerHTML = accounts.map((a) => `
+        <div class="card" style="margin-bottom: 12px; padding: 16px;">
+          <p><strong>Username:</strong> ${esc(a.username)}</p>
+          <p><strong>Email:</strong> ${esc(a.email ?? "none")}</p>
+          <p><strong>Provider:</strong> ${esc(a.provider)}</p>
+          <p><strong>Status:</strong> ${esc(a.status)}</p>
+          <div style="margin-top: 8px;">
+            <button type="button" class="approve-account-btn" data-id="${a.id}" style="margin-right: 8px;">Approve</button>
+            <button type="button" class="deny-account-btn" data-id="${a.id}">Deny (Ban)</button>
+          </div>
+        </div>
+      `).join("");
+
+      pendingList.querySelectorAll(".approve-account-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = Number((btn as HTMLElement).dataset.id);
+          try {
+            await api.updateAccountStatus(id, { status: "active" });
+            pendingResult.innerHTML = status("Account approved.");
+            await loadPending();
+          } catch (err: any) { pendingResult.innerHTML = status(`Error: ${err.message}`); }
+        });
+      });
+      pendingList.querySelectorAll(".deny-account-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = Number((btn as HTMLElement).dataset.id);
+          try {
+            await api.updateAccountStatus(id, { status: "banned" });
+            pendingResult.innerHTML = status("Account denied (banned).");
+            await loadPending();
+          } catch (err: any) { pendingResult.innerHTML = status(`Error: ${err.message}`); }
+        });
+      });
+    } catch (err: any) {
+      pendingList.innerHTML = status(`Error loading pending accounts: ${err.message}`);
+    }
+  }
+
+  // ── All Accounts ──────────────────────────────────────────────────
+  const accountsList = document.getElementById("admin-accounts-list")!;
+  const accountsResult = document.getElementById("admin-accounts-result")!;
+  const statusFilter = document.getElementById("admin-status-filter") as HTMLSelectElement;
+
+  async function loadAccounts(filter?: string) {
+    try {
+      const accounts = await api.getAdminAccounts(filter || undefined);
+      if (accounts.length === 0) {
+        accountsList.innerHTML = "<p>No accounts found.</p>";
+        return;
+      }
+      accountsList.innerHTML = accounts.map((a) => `
+        <div class="card" style="margin-bottom: 12px; padding: 16px;">
+          <p><strong>ID:</strong> ${a.id} &nbsp; <strong>Username:</strong> ${esc(a.username)}</p>
+          <p><strong>Email:</strong> ${esc(a.email ?? "none")} &nbsp; <strong>Provider:</strong> ${esc(a.provider)}</p>
+          <p><strong>Status:</strong> <span class="account-status-${a.id}">${esc(a.status)}</span>
+             &nbsp; <strong>Claims:</strong> ${a.claims}</p>
+          <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
+            ${a.status !== "active" ? `<button type="button" class="set-status-btn" data-id="${a.id}" data-status="active">Activate</button>` : ""}
+            ${a.status !== "banned" ? `<button type="button" class="set-status-btn" data-id="${a.id}" data-status="banned">Ban</button>` : ""}
+            ${a.status !== "defunct" ? `<button type="button" class="set-status-btn" data-id="${a.id}" data-status="defunct">Defunct</button>` : ""}
+            <button type="button" class="toggle-admin-btn" data-id="${a.id}" data-has-admin="${(a.claims & 2) !== 0}">
+              ${(a.claims & 2) !== 0 ? "Revoke Admin" : "Grant Admin"}
+            </button>
+          </div>
+        </div>
+      `).join("");
+
+      accountsList.querySelectorAll(".set-status-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const el = btn as HTMLElement;
+          const id = Number(el.dataset.id);
+          const newStatus = el.dataset.status!;
+          try {
+            await api.updateAccountStatus(id, { status: newStatus });
+            accountsResult.innerHTML = status(`Account ${id} set to ${newStatus}.`);
+            await loadAccounts(statusFilter.value);
+          } catch (err: any) { accountsResult.innerHTML = status(`Error: ${err.message}`); }
+        });
+      });
+
+      accountsList.querySelectorAll(".toggle-admin-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const el = btn as HTMLElement;
+          const id = Number(el.dataset.id);
+          const hasAdmin = el.dataset.hasAdmin === "true";
+          try {
+            await api.updateAccountRole(id, { grant_admin: !hasAdmin });
+            accountsResult.innerHTML = status(`Admin role ${hasAdmin ? "revoked" : "granted"} for account ${id}.`);
+            await loadAccounts(statusFilter.value);
+          } catch (err: any) { accountsResult.innerHTML = status(`Error: ${err.message}`); }
+        });
+      });
+    } catch (err: any) {
+      accountsList.innerHTML = status(`Error loading accounts: ${err.message}`);
+    }
+  }
+
+  statusFilter.addEventListener("change", () => loadAccounts(statusFilter.value));
+
+  // ── Claim Requests ────────────────────────────────────────────────
+  const claimsContainer = document.getElementById("admin-claims-list")!;
+  const claimsResult = document.getElementById("admin-claims-result")!;
 
   async function loadClaims() {
     try {
       const claims = await api.getClaimRequests();
       if (claims.length === 0) {
-        container.innerHTML = "<p>No pending claim requests.</p>";
+        claimsContainer.innerHTML = "<p>No pending claim requests.</p>";
         return;
       }
-      container.innerHTML = claims.map((c) => `
+      claimsContainer.innerHTML = claims.map((c) => `
         <div class="card" style="margin-bottom: 12px; padding: 16px;">
           <p><strong>Requester:</strong> ${esc(c.requester_name)} (${esc(c.requester_email ?? "no email")})</p>
           <p><strong>Provider:</strong> ${esc(c.requester_provider)}</p>
@@ -558,42 +699,39 @@ export async function renderAdmin() {
           <p><strong>Submitted:</strong> ${c.created_at ? formatDate(c.created_at) : "unknown"}</p>
           ${c.status === "pending" ? `
             <div style="margin-top: 8px;">
-              <button type="button" class="approve-btn" data-claim-id="${c.id}" style="margin-right: 8px;">Approve</button>
-              <button type="button" class="deny-btn" data-claim-id="${c.id}">Deny</button>
+              <button type="button" class="approve-claim-btn" data-claim-id="${c.id}" style="margin-right: 8px;">Approve</button>
+              <button type="button" class="deny-claim-btn" data-claim-id="${c.id}">Deny</button>
             </div>
           ` : `<p><strong>Resolved:</strong> ${c.resolved_at ? formatDate(c.resolved_at) : ""}</p>`}
         </div>
       `).join("");
 
-      container.querySelectorAll(".approve-btn").forEach((btn) => {
+      claimsContainer.querySelectorAll(".approve-claim-btn").forEach((btn) => {
         btn.addEventListener("click", async () => {
           const id = Number((btn as HTMLElement).dataset.claimId);
           try {
             await api.reviewClaimRequest(id, { decision: "approve" });
-            result.innerHTML = status("Claim approved.");
+            claimsResult.innerHTML = status("Claim approved.");
             await loadClaims();
-          } catch (err: any) {
-            result.innerHTML = status(`Error: ${err.message}`);
-          }
+          } catch (err: any) { claimsResult.innerHTML = status(`Error: ${err.message}`); }
         });
       });
 
-      container.querySelectorAll(".deny-btn").forEach((btn) => {
+      claimsContainer.querySelectorAll(".deny-claim-btn").forEach((btn) => {
         btn.addEventListener("click", async () => {
           const id = Number((btn as HTMLElement).dataset.claimId);
           try {
             await api.reviewClaimRequest(id, { decision: "deny" });
-            result.innerHTML = status("Claim denied.");
+            claimsResult.innerHTML = status("Claim denied.");
             await loadClaims();
-          } catch (err: any) {
-            result.innerHTML = status(`Error: ${err.message}`);
-          }
+          } catch (err: any) { claimsResult.innerHTML = status(`Error: ${err.message}`); }
         });
       });
     } catch (err: any) {
-      container.innerHTML = status(`Error loading claims: ${err.message}`);
+      claimsContainer.innerHTML = status(`Error loading claims: ${err.message}`);
     }
   }
 
-  await loadClaims();
+  // Load all tabs on page load
+  await Promise.all([loadPending(), loadAccounts(), loadClaims()]);
 }
