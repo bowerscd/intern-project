@@ -53,8 +53,9 @@ run_step "lint frontend"      make -C "$ROOT" lint-frontend
 if [ "${SKIP_TESTS:-0}" = "1" ]; then
     echo "  (tests skipped — SKIP_TESTS=1)"
 else
-    run_step "test backend"   make -C "$ROOT" test-backend
-    run_step "test frontend"  make -C "$ROOT" test-frontend
+    run_step "test backend"       make -C "$ROOT" test-backend
+    run_step "test frontend"      make -C "$ROOT" test-frontend
+    run_step "test integration"   make -C "$ROOT" test-integration-local
 fi
 
 # ── Result ────────────────────────────────────────────────────────────────────
