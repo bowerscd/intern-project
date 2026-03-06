@@ -129,6 +129,8 @@ class EventResponse(BaseModel):
     when: datetime
     location_id: int
     location_name: str
+    location_url: Optional[str] = None
+    location_address: Optional[str] = None
     tyrant_username: Optional[str]
     auto_selected: bool
     current_tyrant_username: Optional[str] = None

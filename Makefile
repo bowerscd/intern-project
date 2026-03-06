@@ -20,7 +20,8 @@ INTEGRATION_VENV  := integration-tests/.venv/bin
 
 .PHONY: help setup setup-backend setup-frontend setup-integration \
         test test-backend test-frontend test-integration test-integration-local \
-        lint lint-backend lint-frontend format clean install-hooks
+        lint lint-backend lint-frontend format clean install-hooks \
+        dev dev-stop
 
 # ─── Help ─────────────────────────────────────────────────────────────────────
 
@@ -101,3 +102,45 @@ clean: ## Remove caches and build artifacts (keeps venvs)
 
 clean-all: clean ## Clean + remove all venvs
 	rm -rf backend/.venv frontend/.venv integration-tests/.venv
+
+# ─── Local Dev Servers ────────────────────────────────────────────────────────
+
+dev: ## Start backend + mock OIDC + frontend for local development
+	@# Build TypeScript first
+	cd frontend && npx tsc -p tsconfig.json
+	@# Start mock OIDC provider
+	cd integration-tests && $(CURDIR)/$(INTEGRATION_VENV)/python mock_oidc.py 9000 &
+	@sleep 0.3
+	@# Start backend (in-memory DB, dev admin auto-seeded)
+	cd backend && \
+	  DEV=true SERVER_HOSTNAME=localhost \
+	  TEST_OIDC_ISSUER=http://127.0.0.1:9000 \
+	  TEST_CLIENT_ID=client_id1 \
+	  TEST_CLIENT_SECRET=definitely_a_secret \
+	  TEST_REDIRECT_URI=http://127.0.0.1:5000/api/v2/auth/callback/test \
+	  GOOGLE_REDIRECT_URI=http://unused \
+	  GOOGLE_CLIENT_SECRET=unused \
+	  GOOGLE_CLIENT_ID=unused \
+	  RATELIMIT_ENABLED=false \
+	  $(CURDIR)/$(BACKEND_VENV)/python -m uvicorn app:app \
+	    --host 127.0.0.1 --port 8000 --log-level info &
+	@sleep 0.5
+	@# Start frontend
+	cd frontend && \
+	  SERVER_HOSTNAME=localhost DEV=true \
+	  BACKEND_HOSTNAME=127.0.0.1 BACKEND_PORT=8000 \
+	  $(CURDIR)/$(FRONTEND_VENV)/python -m flask --app app run \
+	    --host 127.0.0.1 --port 5000 &
+	@sleep 0.3
+	@printf '\n  \033[32m✔ Dev servers running:\033[0m\n'
+	@printf '    Frontend:  http://127.0.0.1:5000\n'
+	@printf '    Backend:   http://127.0.0.1:8000\n'
+	@printf '    Mock OIDC: http://127.0.0.1:9000\n'
+	@printf '    Admin:     sub=dev-admin  username=admin\n\n'
+	@printf '  Run \033[36mmake dev-stop\033[0m to shut down all servers.\n\n'
+
+dev-stop: ## Stop all dev servers started by 'make dev'
+	@pkill -f "mock_oidc.py 9000" 2>/dev/null || true
+	@pkill -f "uvicorn app:app.*--port 8000" 2>/dev/null || true
+	@pkill -f "flask --app app run.*--port 5000" 2>/dev/null || true
+	@printf '  \033[32m✔ Dev servers stopped.\033[0m\n'

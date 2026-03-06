@@ -15,10 +15,15 @@ export function esc(s: string): string {
     .replace(/'/g, "&#x27;");
 }
 
-export function table(headers: string[], rows: string[][]): string {
+export function table(
+  headers: string[],
+  rows: string[][],
+  opts: { rawColumns?: number[] } = {},
+): string {
+  const raw = new Set(opts.rawColumns ?? []);
   const headerHtml = headers.map((h) => `<th>${esc(h)}</th>`).join("");
   const bodyHtml = rows
-    .map((row) => `<tr>${row.map((c) => `<td>${esc(c)}</td>`).join("")}</tr>`)
+    .map((row) => `<tr>${row.map((c, i) => `<td>${raw.has(i) ? c : esc(c)}</td>`).join("")}</tr>`)
     .join("");
   return `<table><thead><tr>${headerHtml}</tr></thead><tbody>${bodyHtml}</tbody></table>`;
 }

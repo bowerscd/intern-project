@@ -177,6 +177,9 @@ class RequireLogin:
         with db:
             act = db.scalars(select(Account).where(Account.id == id)).first()
             if act is None:
+                # Account no longer exists (e.g. in-memory DB was reset).
+                # Clear the stale session so the browser stops retrying.
+                request.session.clear()
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="account not found",

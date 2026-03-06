@@ -392,22 +392,40 @@ export async function renderHappyHour() {
     ];
     const [upcoming, eventsPage, rotation, locations, isTurn] = await Promise.all(fetches);
 
-    // ── Upcoming event ──
-    byId("happyhour-upcoming").innerHTML = table(
-      ["When", "Location", "Chosen By"],
-      [[upcoming.when ? formatDate(upcoming.when) : "TBD", upcoming.location_name || "TBD", upcoming.tyrant_username ?? "TBD"]],
-    );
+    // ── Helper: render upcoming event card ──
+    function renderUpcoming(u: any) {
+      const nameHtml = u.location_url
+        ? `<a href="${esc(u.location_url)}" target="_blank" rel="noopener">${esc(u.location_name || "TBD")}</a>`
+        : esc(u.location_name || "TBD");
+      const addressHtml = u.location_address
+        ? `<br><span style="color:#aaa; font-size: 0.9em;">${esc(u.location_address)}</span>`
+        : "";
+      byId("happyhour-upcoming").innerHTML = `
+        <table><thead><tr><th>When</th><th>Location</th><th>Chosen By</th></tr></thead>
+        <tbody><tr>
+          <td>${u.when ? formatDate(u.when) : "TBD"}</td>
+          <td>${nameHtml}${addressHtml}</td>
+          <td>${esc(u.tyrant_username ?? "TBD")}</td>
+        </tr></tbody></table>`;
+    }
+
+    renderUpcoming(upcoming);
 
     // ── Rotation ──
     byId("happyhour-rotation").innerHTML = rotation.length > 0
       ? table(["User", "Week"], rotation.map((item: any) => [item.username, item.deadline ? formatDateShort(item.deadline) : "—"]))
       : "<p style='color:#aaa;'>No rotation yet — submit a happy hour choice to get started.</p>";
 
+    // ── Helper: render events table ──
+    function renderEventsTable(page: any) {
+      byId("happyhour-events").innerHTML = table(
+        ["When", "Location", "Chosen By"],
+        page.items.map((item: any) => [formatDate(item.when), item.location_name, item.tyrant_username ?? "TBD"]),
+      );
+    }
+
     // ── Past events (server-paginated) ──
-    byId("happyhour-events").innerHTML = table(
-      ["When", "Location", "Chosen By"],
-      eventsPage.items.map((item: any) => [formatDate(item.when), item.location_name, item.tyrant_username ?? "TBD"]),
-    );
+    renderEventsTable(eventsPage);
     setupServerPaginatedScroll({
       scrollContainerId: "events-scroll-container",
       sentinelId: "events-sentinel",
@@ -474,6 +492,11 @@ export async function renderHappyHour() {
       const locationSelect = byId("location-select") as HTMLSelectElement;
       const newLocationFields = byId("new-location-fields");
 
+      // Show new-location fields if "new" is already selected (e.g. no existing locations)
+      if (locationSelect.value === "new") {
+        newLocationFields.style.display = "block";
+      }
+
       locationSelect.addEventListener("change", () => {
         newLocationFields.style.display = locationSelect.value === "new" ? "block" : "none";
       });
@@ -509,40 +532,45 @@ export async function renderHappyHour() {
           }
           const event = await api.createEvent({ location_id: locationId, description, when: nextFriday });
           byId("happyhour-result").innerHTML = status(`Happy hour scheduled at ${event.location_name} for ${formatDate(event.when)}`);
-          // Refresh upcoming + rotation
-          const [newUpcoming, newRotation] = await Promise.all([
+          // Refresh all data sections
+          const [newUpcoming, newRotation, newEvents, newLocations] = await Promise.all([
             dataProvider.getUpcomingHappyHour(),
             dataProvider.getRotation(),
+            api.getEventsPage(1, BATCH_SIZE),
+            dataProvider.getLocations(),
           ]);
-          byId("happyhour-upcoming").innerHTML = table(
-            ["When", "Location", "Chosen By"],
-            [[formatDate(newUpcoming.when), newUpcoming.location_name, newUpcoming.tyrant_username ?? "TBD"]],
-          );
+          renderUpcoming(newUpcoming);
           byId("happyhour-rotation").innerHTML = newRotation.length > 0
             ? table(["User", "Week"], newRotation.map((item: any) => [item.username, item.deadline ? formatDateShort(item.deadline) : "—"]))
             : "<p style='color:#aaa;'>No rotation yet.</p>";
+          renderEventsTable(newEvents);
+          renderLocationsTable(newLocations);
         } catch (err: any) {
-          byId("happyhour-result").innerHTML = status(`Error: ${err.message}`);
+          const msg = err.message || String(err);
+          if (msg.includes("409") || msg.toLowerCase().includes("already exists")) {
+            byId("happyhour-result").innerHTML = status("A happy hour event has already been submitted for this week.");
+          } else {
+            byId("happyhour-result").innerHTML = status(`Error: ${msg}`);
+          }
         }
       });
 
-      // ── Locations (client-side infinite scroll) ──
-      const initialLocations = locations.slice(0, BATCH_SIZE);
-      byId("happyhour-locations").innerHTML = table(
-        ["Name", "City", "Closed"],
-        initialLocations.map((item: any) => [item.name, item.city, String(item.closed)]),
-      );
-      setupInfiniteScroll({
-        scrollContainerId: "locations-scroll-container",
-        sentinelId: "locations-sentinel",
-        statusId: "locations-status",
-        batchSize: BATCH_SIZE,
-        totalItems: locations.length,
-        onLoadMore: (start, end) => {
-          const nextBatch = locations.slice(start, end);
-          appendTableRows("happyhour-locations", nextBatch.map((item: any) => [item.name, item.city, String(item.closed)]));
-        }
-      });
+      // ── Helper: render locations table ──
+      function renderLocationsTable(locs: any[]) {
+        byId("happyhour-locations").innerHTML = table(
+          ["Name", "Address"],
+          locs.map((item: any) => {
+            const nameHtml = item.url
+              ? `<a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.name)}</a>`
+              : esc(item.name);
+            return [nameHtml, item.address_raw || `${item.city}, ${item.state}`];
+          }),
+          { rawColumns: [0] },
+        );
+      }
+
+      // ── Locations ──
+      renderLocationsTable(locations);
     }
   } catch {
     // Unauthenticated or missing claims — show login prompt
