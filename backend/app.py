@@ -32,6 +32,52 @@ logger = logging.getLogger(__name__)
 
 secret = SESSION_SECRET
 
+# Dev-mode admin account constants
+DEV_ADMIN_SUB = "dev-admin"
+DEV_ADMIN_USERNAME = "admin"
+DEV_ADMIN_EMAIL = "admin@dev.local"
+
+
+def _seed_dev_admin(db: "Database") -> None:  # noqa: F821
+    """Create a pre-activated admin account for local development.
+
+    Uses a well-known OIDC ``sub`` (``dev-admin``) so that logging in
+    via the mock OIDC provider with that sub grants admin access
+    immediately — no manual ``sqlite3`` promotion needed.
+
+    Skipped silently if the account already exists.
+    """
+    from sqlalchemy import select
+    from models import (
+        DBAccount as Account,
+        AccountClaims,
+        AccountStatus,
+        ExternalAuthProvider,
+    )
+
+    with db.session() as session:
+        existing = session.execute(
+            select(Account).where(Account.username == DEV_ADMIN_USERNAME)
+        ).scalar_one_or_none()
+        if existing is not None:
+            return
+
+        admin = Account(
+            username=DEV_ADMIN_USERNAME,
+            email=DEV_ADMIN_EMAIL,
+            account_provider=ExternalAuthProvider.test,
+            external_unique_id=DEV_ADMIN_SUB,
+            claims=AccountClaims.BASIC | AccountClaims.ADMIN,
+            status=AccountStatus.ACTIVE,
+        )
+        session.add(admin)
+        session.commit()
+        logger.info(
+            "Dev admin account seeded: username=%s, sub=%s",
+            DEV_ADMIN_USERNAME,
+            DEV_ADMIN_SUB,
+        )
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -43,6 +89,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from routes.shared import DatabaseRaw
 
     DatabaseRaw.start()  # Balanced by stop() in teardown
+
+    if DEV_MODE:
+        _seed_dev_admin(DatabaseRaw)
 
     try:
         start_scheduler()

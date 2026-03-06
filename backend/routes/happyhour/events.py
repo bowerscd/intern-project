@@ -210,7 +210,7 @@ async def create_event_endpoint(
         pending = get_current_pending_assignment(db)
 
         if pending is not None:
-            # There is an active rotation assignment
+            # There is an active rotation assignment — only the assigned tyrant may submit
             if not (
                 account.claims & AccountClaims.HAPPY_HOUR_TYRANT
                 == AccountClaims.HAPPY_HOUR_TYRANT
@@ -223,6 +223,16 @@ async def create_event_endpoint(
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="It's not your turn to pick the happy hour location",
+                )
+        else:
+            # No pending assignment — any HAPPY_HOUR_TYRANT user may submit
+            if not (
+                account.claims & AccountClaims.HAPPY_HOUR_TYRANT
+                == AccountClaims.HAPPY_HOUR_TYRANT
+            ):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You need the HAPPY_HOUR_TYRANT permission to submit happy hour events",
                 )
 
         # Guard against duplicate events in the same weekly window as the proposed event
@@ -310,11 +320,41 @@ async def get_rotation(
         list.
     :rtype: RotationScheduleResponse
     """
-    from db.functions import get_current_cycle_number, get_rotation_schedule
+    from db.functions import (
+        get_current_cycle_number,
+        get_rotation_schedule,
+        get_accounts_with_claim,
+        create_cycle_rotation,
+        activate_assignment,
+        get_next_scheduled_assignment,
+    )
 
     with db:
         cycle = get_current_cycle_number(db)
         schedule = get_rotation_schedule(db, cycle)
+
+        # Auto-seed the rotation if no schedule exists and there are
+        # eligible HAPPY_HOUR_TYRANT users
+        if not schedule:
+            tyrants = get_accounts_with_claim(db, AccountClaims.HAPPY_HOUR_TYRANT)
+            if tyrants:
+                from datetime import datetime, timedelta, UTC
+
+                now = datetime.now(UTC)
+                new_cycle = cycle + 1
+                create_cycle_rotation(db, tyrants, new_cycle, now)
+                # Activate the first person — deadline is next Wednesday noon PST
+                next_up = get_next_scheduled_assignment(db, new_cycle)
+                if next_up:
+                    # Next Wednesday at noon PST (UTC-8) = 20:00 UTC
+                    days_until_wed = (2 - now.weekday() + 7) % 7 or 7
+                    deadline = now.replace(
+                        hour=20, minute=0, second=0, microsecond=0
+                    ) + timedelta(days=days_until_wed)
+                    activate_assignment(db, next_up.id, deadline)
+                db.commit()
+                cycle = new_cycle
+                schedule = get_rotation_schedule(db, cycle)
 
         members = [
             RotationMemberResponse(

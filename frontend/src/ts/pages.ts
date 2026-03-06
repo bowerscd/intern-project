@@ -236,13 +236,36 @@ export async function renderMealbot() {
   const currentUser = profile.username;
   const otherUsers = allUsers.filter(u => u !== currentUser);
 
-  byId("mealbot-summary").innerHTML = table(
-    ["User", "Balance"],
-    summary.balances.map((entry) => {
-      const balance = entry.net > 0 ? `Owes you ${entry.net}` : entry.net < 0 ? `You owe ${-entry.net}` : "Even";
-      return [entry.user, balance];
-    }),
-  );
+  // ── Helpers to (re-)render data sections ──────────────────────────
+  function renderSummary(s: typeof summary) {
+    byId("mealbot-summary").innerHTML = table(
+      ["User", "Balance"],
+      s.balances.map((entry) => {
+        const balance = entry.net > 0 ? `Owes you ${entry.net}` : entry.net < 0 ? `You owe ${-entry.net}` : "Even";
+        return [entry.user, balance];
+      }),
+    );
+  }
+
+  function renderLedger(containerId: string, page: typeof ledgerPage) {
+    byId(containerId).innerHTML = table(
+      ["Payer", "Recipient", "Date"],
+      page.items.map((row) => [row.payer, row.recipient, formatDate(row.date)]),
+    );
+  }
+
+  async function refreshAfterRecord() {
+    const [newSummary, newLedger, newMyLedger] = await Promise.all([
+      dataProvider.getMealbotSummary(),
+      api.getMealbotLedgerPage(1, BATCH_SIZE),
+      api.getMyMealbotLedgerPage(1, BATCH_SIZE),
+    ]);
+    renderSummary(newSummary);
+    renderLedger("mealbot-ledger", newLedger);
+    renderLedger("mealbot-my-ledger", newMyLedger);
+  }
+
+  renderSummary(summary);
 
   byId("mealbot-record-form").innerHTML = `
     <label>Other person</label>
@@ -261,6 +284,7 @@ export async function renderMealbot() {
     try {
       await api.createMealbotRecord({ payer: currentUser, recipient: other, credits: 1 });
       byId("mealbot-record-result").innerHTML = status(`Recorded: ${currentUser} paid for ${other}`);
+      await refreshAfterRecord();
     } catch (err: any) {
       byId("mealbot-record-result").innerHTML = status(`Error: ${err.message}`);
     }
@@ -272,16 +296,14 @@ export async function renderMealbot() {
     try {
       await api.createMealbotRecord({ payer: other, recipient: currentUser, credits: 1 });
       byId("mealbot-record-result").innerHTML = status(`Recorded: ${other} paid for ${currentUser}`);
+      await refreshAfterRecord();
     } catch (err: any) {
       byId("mealbot-record-result").innerHTML = status(`Error: ${err.message}`);
     }
   });
 
   // Render initial page of ledger (server-paginated)
-  byId("mealbot-ledger").innerHTML = table(
-    ["Payer", "Recipient", "Date"],
-    ledgerPage.items.map((row) => [row.payer, row.recipient, formatDate(row.date)]),
-  );
+  renderLedger("mealbot-ledger", ledgerPage);
 
   setupServerPaginatedScroll({
     scrollContainerId: "ledger-scroll-container",
@@ -296,10 +318,7 @@ export async function renderMealbot() {
   });
 
   // Render initial page of my ledger (server-paginated)
-  byId("mealbot-my-ledger").innerHTML = table(
-    ["Payer", "Recipient", "Date"],
-    myLedgerPage.items.map((row) => [row.payer, row.recipient, formatDate(row.date)]),
-  );
+  renderLedger("mealbot-my-ledger", myLedgerPage);
 
   setupServerPaginatedScroll({
     scrollContainerId: "my-ledger-scroll-container",
@@ -351,206 +370,192 @@ export async function renderMealbotIndividualized() {
   });
 }
 
-export async function renderPublicHappyHour() {
+export async function renderHappyHour() {
+  const BATCH_SIZE = 20;
+  let profile: { username: string; claims: number } | null = null;
   try {
-    const BATCH_SIZE = 20;
+    profile = await api.getProfile();
+  } catch { /* not authenticated */ }
 
-    const [upcoming, eventsPage, rotation] = await Promise.all([
+  const hasTyrant = profile !== null && (profile.claims & 32) !== 0; // HAPPY_HOUR_TYRANT = 32
+
+  try {
+    const fetches: [
+      Promise<any>, Promise<any>, Promise<any>,
+      Promise<any>, Promise<any>,
+    ] = [
       dataProvider.getUpcomingHappyHour(),
       api.getEventsPage(1, BATCH_SIZE),
       dataProvider.getRotation(),
-    ]);
+      hasTyrant ? dataProvider.getLocations() : Promise.resolve([]),
+      hasTyrant ? dataProvider.isCurrentUserTurn() : Promise.resolve(false),
+    ];
+    const [upcoming, eventsPage, rotation, locations, isTurn] = await Promise.all(fetches);
 
-    byId("public-current-happyhour").innerHTML = table(
+    // ── Upcoming event ──
+    byId("happyhour-upcoming").innerHTML = table(
       ["When", "Location", "Chosen By"],
       [[upcoming.when ? formatDate(upcoming.when) : "TBD", upcoming.location_name || "TBD", upcoming.tyrant_username ?? "TBD"]],
     );
 
-    byId("public-rotation").innerHTML = table(
-      ["User", "Week"],
-      rotation.map((item) => [item.username, item.deadline ? formatDateShort(item.deadline) : "—"]),
-    );
+    // ── Rotation ──
+    byId("happyhour-rotation").innerHTML = rotation.length > 0
+      ? table(["User", "Week"], rotation.map((item: any) => [item.username, item.deadline ? formatDateShort(item.deadline) : "—"]))
+      : "<p style='color:#aaa;'>No rotation yet — submit a happy hour choice to get started.</p>";
 
-    // Render initial page of past events (server-paginated)
-    byId("public-past-happyhours").innerHTML = table(
+    // ── Past events (server-paginated) ──
+    byId("happyhour-events").innerHTML = table(
       ["When", "Location", "Chosen By"],
-      eventsPage.items.map((item) => [formatDate(item.when), item.location_name, item.tyrant_username ?? "TBD"]),
+      eventsPage.items.map((item: any) => [formatDate(item.when), item.location_name, item.tyrant_username ?? "TBD"]),
     );
-
     setupServerPaginatedScroll({
-      scrollContainerId: "past-scroll-container",
-      sentinelId: "past-sentinel",
-      statusId: "past-status",
+      scrollContainerId: "events-scroll-container",
+      sentinelId: "events-sentinel",
+      statusId: "events-status",
       pageSize: BATCH_SIZE,
       totalItems: eventsPage.total,
       fetchPage: async (page) => {
         const resp = await api.getEventsPage(page, BATCH_SIZE);
-        return resp.items.map((item) => [formatDate(item.when), item.location_name, item.tyrant_username ?? "TBD"]);
+        return resp.items.map((item: any) => [formatDate(item.when), item.location_name, item.tyrant_username ?? "TBD"]);
       },
     });
+
+    // ── Management sections (HAPPY_HOUR_TYRANT only) ──
+    if (hasTyrant) {
+      // Show the submit and locations sections
+      const submitSection = document.getElementById("happyhour-submit-section");
+      if (submitSection) submitSection.style.display = "";
+      const locationsSection = document.getElementById("happyhour-locations-section");
+      if (locationsSection) locationsSection.style.display = "";
+
+      // Turn status
+      if (isTurn) {
+        byId("happyhour-turn-status").innerHTML = status("It is your turn to pick the next happy hour location.");
+      } else {
+        byId("happyhour-turn-status").innerHTML = status("It is not your turn, but you can still submit early if you'd like.");
+      }
+
+      // Always render the form for tyrants (backend enforces rotation rules)
+      const nextFriday = (() => {
+        const now = new Date();
+        const day = now.getUTCDay();
+        const daysUntilFriday = (5 - day + 7) % 7 || 7;
+        const fri = new Date(now);
+        fri.setUTCDate(fri.getUTCDate() + daysUntilFriday);
+        const testDate = new Date(fri.toISOString().split("T")[0] + "T12:00:00-08:00");
+        const pacificHour = new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", hour12: false }).format(testDate);
+        const isPDT = parseInt(pacificHour) === 13;
+        const utcHour = isPDT ? 23 : 24;
+        fri.setUTCHours(utcHour % 24, 0, 0, 0);
+        if (utcHour === 24) fri.setUTCDate(fri.getUTCDate() + 1);
+        return fri.toISOString();
+      })();
+
+      byId("happyhour-create-form").innerHTML = `
+        <p style="font-size: 0.9em; color: #aaa; margin-bottom: 12px;">Happy hour is always scheduled for Friday at 4:00 PM Pacific.</p>
+        <label>Location</label>
+        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
+          <select id="location-select" style="flex: 1;">
+            ${locations.filter((l: any) => !l.closed).map((l: any) => `<option value="${l.id}">${esc(l.name)}</option>`).join("")}
+            <option value="new">➕ Add New Location...</option>
+          </select>
+          <button type="button" id="random-location-btn">🎲 Random</button>
+        </div>
+        <div id="new-location-fields" style="display: none; margin-top: 12px; padding: 12px; border: 1px solid #444; border-radius: 6px;">
+          <label>Location Name</label><input id="new-location-name" placeholder="New Venue" />
+          <label>URL (optional)</label><input id="new-location-url" placeholder="https://example.com" />
+          <label>Address</label><textarea id="new-location-address" rows="2" placeholder="123 Main St, Austin, TX 78701"></textarea>
+        </div>
+        <label>Description (optional)</label>
+        <input id="event-description" placeholder="Weekly happy hour" />
+        <button type="button" id="submit-happyhour-btn" style="margin-top: 12px;">Submit Happy Hour</button>
+      `;
+
+      const locationSelect = byId("location-select") as HTMLSelectElement;
+      const newLocationFields = byId("new-location-fields");
+
+      locationSelect.addEventListener("change", () => {
+        newLocationFields.style.display = locationSelect.value === "new" ? "block" : "none";
+      });
+
+      byId("random-location-btn")?.addEventListener("click", () => {
+        const openLocations = locations.filter((l: any) => !l.closed);
+        if (openLocations.length > 0) {
+          const randomLocation = openLocations[Math.floor(Math.random() * openLocations.length)];
+          locationSelect.value = String(randomLocation.id);
+          newLocationFields.style.display = "none";
+        }
+      });
+
+      byId("submit-happyhour-btn")?.addEventListener("click", async () => {
+        const description = (byId("event-description") as HTMLInputElement).value.trim() || undefined;
+        try {
+          let locationId: number;
+          if (locationSelect.value === "new") {
+            const name = (byId("new-location-name") as HTMLInputElement).value.trim();
+            const url = (byId("new-location-url") as HTMLInputElement).value.trim() || undefined;
+            const address = (byId("new-location-address") as HTMLTextAreaElement).value.trim();
+            if (!name || !address) {
+              byId("happyhour-result").innerHTML = status("Name and address are required for new locations.");
+              return;
+            }
+            const newLoc = await api.createLocation({
+              name, url, address_raw: address,
+              ...parseAddress(address),
+            });
+            locationId = newLoc.id;
+          } else {
+            locationId = Number(locationSelect.value);
+          }
+          const event = await api.createEvent({ location_id: locationId, description, when: nextFriday });
+          byId("happyhour-result").innerHTML = status(`Happy hour scheduled at ${event.location_name} for ${formatDate(event.when)}`);
+          // Refresh upcoming + rotation
+          const [newUpcoming, newRotation] = await Promise.all([
+            dataProvider.getUpcomingHappyHour(),
+            dataProvider.getRotation(),
+          ]);
+          byId("happyhour-upcoming").innerHTML = table(
+            ["When", "Location", "Chosen By"],
+            [[formatDate(newUpcoming.when), newUpcoming.location_name, newUpcoming.tyrant_username ?? "TBD"]],
+          );
+          byId("happyhour-rotation").innerHTML = newRotation.length > 0
+            ? table(["User", "Week"], newRotation.map((item: any) => [item.username, item.deadline ? formatDateShort(item.deadline) : "—"]))
+            : "<p style='color:#aaa;'>No rotation yet.</p>";
+        } catch (err: any) {
+          byId("happyhour-result").innerHTML = status(`Error: ${err.message}`);
+        }
+      });
+
+      // ── Locations (client-side infinite scroll) ──
+      const initialLocations = locations.slice(0, BATCH_SIZE);
+      byId("happyhour-locations").innerHTML = table(
+        ["Name", "City", "Closed"],
+        initialLocations.map((item: any) => [item.name, item.city, String(item.closed)]),
+      );
+      setupInfiniteScroll({
+        scrollContainerId: "locations-scroll-container",
+        sentinelId: "locations-sentinel",
+        statusId: "locations-status",
+        batchSize: BATCH_SIZE,
+        totalItems: locations.length,
+        onLoadMore: (start, end) => {
+          const nextBatch = locations.slice(start, end);
+          appendTableRows("happyhour-locations", nextBatch.map((item: any) => [item.name, item.city, String(item.closed)]));
+        }
+      });
+    }
   } catch {
-    // Unauthenticated or missing claims – show login prompt
+    // Unauthenticated or missing claims — show login prompt
     const loginLink = esc(api.loginUrl("google", "/happyhour"));
-    byId("public-current-happyhour").innerHTML = status(
+    byId("happyhour-upcoming").innerHTML = status(
       `<a href="${loginLink}">Log in with a Happy Hour account</a> to view live happy hour data.`,
       { safe: true },
     );
-    const rotEl = document.getElementById("public-rotation");
+    const rotEl = document.getElementById("happyhour-rotation");
     if (rotEl) rotEl.innerHTML = "";
-    const pastEl = document.getElementById("public-past-happyhours");
-    if (pastEl) pastEl.innerHTML = "";
+    const evtEl = document.getElementById("happyhour-events");
+    if (evtEl) evtEl.innerHTML = "";
   }
-}
-
-export async function renderHappyHourManage() {
-  const BATCH_SIZE = 20;
-
-  const [upcoming, rotation, locations, eventsPage, isTurn] = await Promise.all([
-    dataProvider.getUpcomingHappyHour(),
-    dataProvider.getRotation(),
-    dataProvider.getLocations(),
-    api.getEventsPage(1, BATCH_SIZE),
-    dataProvider.isCurrentUserTurn(),
-  ]);
-
-  byId("upcoming-event").innerHTML = table(
-    ["When", "Location", "Chosen By"],
-    [[formatDate(upcoming.when), upcoming.location_name, upcoming.tyrant_username ?? "TBD"]],
-  );
-
-  byId("rotation-schedule").innerHTML = table(
-    ["User", "Week"],
-    rotation.map((item) => [item.username, item.deadline ? formatDateShort(item.deadline) : "—"]),
-  );
-
-  byId("turn-status").innerHTML = status(
-    isTurn ? "It is your turn to pick and submit the next happy hour location." : "It is not currently your turn.",
-  );
-
-  if (isTurn) {
-    // Compute next Friday at 4 PM Pacific.
-    // Pacific offset: PST = UTC-8, PDT = UTC-7.
-    // Detect DST by checking the offset of that specific Friday.
-    const nextFriday = (() => {
-      const now = new Date();
-      const day = now.getUTCDay();
-      const daysUntilFriday = (5 - day + 7) % 7 || 7;
-      const fri = new Date(now);
-      fri.setUTCDate(fri.getUTCDate() + daysUntilFriday);
-      // Create a date at noon Pacific on that Friday to determine DST offset
-      const testDate = new Date(fri.toISOString().split("T")[0] + "T12:00:00-08:00");
-      // getTimezoneOffset is in minutes; we use Intl to detect America/Los_Angeles offset
-      const pacificHour = new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", hour12: false }).format(testDate);
-      const isPDT = parseInt(pacificHour) === 13; // noon PST = 12, noon PDT = 13 (since we fed -08:00)
-      const utcHour = isPDT ? 23 : 24; // 4 PM PDT = 23:00 UTC, 4 PM PST = 00:00 UTC (next day)
-      fri.setUTCHours(utcHour % 24, 0, 0, 0);
-      if (utcHour === 24) fri.setUTCDate(fri.getUTCDate() + 1);
-      return fri.toISOString();
-    })();
-
-    byId("create-event-form").innerHTML = `
-      <p style="font-size: 0.9em; color: #aaa; margin-bottom: 12px;">Happy hour is always scheduled for Friday at 4:00 PM Pacific.</p>
-      <label>Location</label>
-      <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
-        <select id="location-select" style="flex: 1;">
-          ${locations.filter(l => !l.closed).map((l) => `<option value="${l.id}">${esc(l.name)}</option>`).join("")}
-          <option value="new">➕ Add New Location...</option>
-        </select>
-        <button type="button" id="random-location-btn">🎲 Random</button>
-      </div>
-      <div id="new-location-fields" style="display: none; margin-top: 12px; padding: 12px; border: 1px solid #444; border-radius: 6px;">
-        <label>Location Name</label><input id="new-location-name" placeholder="New Venue" />
-        <label>URL (optional)</label><input id="new-location-url" placeholder="https://example.com" />
-        <label>Address</label><textarea id="new-location-address" rows="2" placeholder="123 Main St, Austin, TX 78701"></textarea>
-      </div>
-      <label>Description (optional)</label>
-      <input id="event-description" placeholder="Weekly happy hour" />
-      <button type="button" id="submit-happyhour-btn" style="margin-top: 12px;">Submit Happy Hour</button>
-    `;
-    
-    const locationSelect = byId("location-select") as HTMLSelectElement;
-    const newLocationFields = byId("new-location-fields");
-    
-    locationSelect.addEventListener("change", () => {
-      newLocationFields.style.display = locationSelect.value === "new" ? "block" : "none";
-    });
-    
-    byId("random-location-btn")?.addEventListener("click", () => {
-      const openLocations = locations.filter(l => !l.closed);
-      if (openLocations.length > 0) {
-        const randomLocation = openLocations[Math.floor(Math.random() * openLocations.length)];
-        locationSelect.value = String(randomLocation.id);
-        newLocationFields.style.display = "none";
-      }
-    });
-    
-    byId("submit-happyhour-btn")?.addEventListener("click", async () => {
-      const description = (byId("event-description") as HTMLInputElement).value.trim() || undefined;
-      try {
-        let locationId: number;
-        if (locationSelect.value === "new") {
-          const name = (byId("new-location-name") as HTMLInputElement).value.trim();
-          const url = (byId("new-location-url") as HTMLInputElement).value.trim() || undefined;
-          const address = (byId("new-location-address") as HTMLTextAreaElement).value.trim();
-          if (!name || !address) {
-            byId("happyhour-result").innerHTML = status("Name and address are required for new locations.");
-            return;
-          }
-          const newLoc = await api.createLocation({
-            name, url, address_raw: address,
-            // Parse address string into structured fields (best-effort)
-            ...parseAddress(address),
-          });
-          locationId = newLoc.id;
-        } else {
-          locationId = Number(locationSelect.value);
-        }
-        const event = await api.createEvent({ location_id: locationId, description, when: nextFriday });
-        byId("happyhour-result").innerHTML = status(`Happy hour scheduled at ${event.location_name} for ${formatDate(event.when)}`);
-      } catch (err: any) {
-        byId("happyhour-result").innerHTML = status(`Error: ${err.message}`);
-      }
-    });
-  } else {
-    byId("create-event-form").innerHTML = "";
-  }
-
-  // Render initial batch of locations (client-side — locations are needed in full for the dropdown)
-  const initialLocations = locations.slice(0, BATCH_SIZE);
-  byId("locations-list").innerHTML = table(
-    ["Name", "City", "Closed"],
-    initialLocations.map((item) => [item.name, item.city, String(item.closed)]),
-  );
-
-  setupInfiniteScroll({
-    scrollContainerId: "locations-scroll-container",
-    sentinelId: "locations-sentinel",
-    statusId: "locations-status",
-    batchSize: BATCH_SIZE,
-    totalItems: locations.length,
-    onLoadMore: (start, end) => {
-      const nextBatch = locations.slice(start, end);
-      appendTableRows("locations-list", nextBatch.map((item) => [item.name, item.city, String(item.closed)]));
-    }
-  });
-
-  // Render initial page of events (server-paginated)
-  byId("events-list").innerHTML = table(
-    ["When", "Location", "Chosen By"],
-    eventsPage.items.map((item) => [formatDate(item.when), item.location_name, item.tyrant_username ?? "TBD"]),
-  );
-
-  setupServerPaginatedScroll({
-    scrollContainerId: "events-scroll-container",
-    sentinelId: "events-sentinel",
-    statusId: "events-status",
-    pageSize: BATCH_SIZE,
-    totalItems: eventsPage.total,
-    fetchPage: async (page) => {
-      const resp = await api.getEventsPage(page, BATCH_SIZE);
-      return resp.items.map((item) => [formatDate(item.when), item.location_name, item.tyrant_username ?? "TBD"]);
-    },
-  });
 }
 
 export async function renderAdmin() {

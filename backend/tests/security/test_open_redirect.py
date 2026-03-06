@@ -44,7 +44,7 @@ class TestValidateRedirectFunction:
             _validate_redirect(redirect)
         assert exc_info.value.status_code == 400
 
-    @pytest.mark.parametrize("redirect", ["/account", "/mealbot", "/happyhour/manage"])
+    @pytest.mark.parametrize("redirect", ["/account", "/mealbot", "/happyhour"])
     def test_relative_redirect_passes(self, redirect: str) -> None:
         result = _validate_redirect(redirect)
         assert result == redirect

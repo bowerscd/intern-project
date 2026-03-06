@@ -132,8 +132,8 @@ def index():
 
 
 @app.route("/happyhour")
-def public_happyhour():
-    return render_page("public_happyhour.html", "Happy Hour")
+def happyhour():
+    return render_page("happyhour.html", "Happy Hour")
 
 
 @app.route("/login")
@@ -169,11 +169,6 @@ def mealbot():
 @app.route("/mealbot/individualized")
 def mealbot_individualized():
     return render_page("mealbot_individualized.html", "My Mealbot Summary")
-
-
-@app.route("/happyhour/manage")
-def happyhour_manage():
-    return render_page("happyhour_manage.html", "Happy Hour Management")
 
 
 @app.route("/admin")

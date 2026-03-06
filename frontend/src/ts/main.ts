@@ -4,11 +4,10 @@ import {
   renderAuthCallback,
   renderClaimAccount,
   renderCompleteRegistration,
-  renderHappyHourManage,
+  renderHappyHour,
   renderLogin,
   renderMealbot,
   renderMealbotIndividualized,
-  renderPublicHappyHour,
   renderIndex,
 } from "./pages.js";
 import { ClaimFlags } from "./types.js";
@@ -23,8 +22,7 @@ const pageMap: Record<string, () => Promise<void>> = {
   account: renderAccount,
   mealbot: renderMealbot,
   mealbotIndividualized: renderMealbotIndividualized,
-  publicHappyHour: renderPublicHappyHour,
-  happyHourManage: renderHappyHourManage,
+  happyHour: renderHappyHour,
   admin: renderAdmin,
 };
 
@@ -90,7 +88,7 @@ async function bootstrap() {
   const path = window.location.pathname;
   const routeToPage: Record<string, string> = {
     "/": "index",
-    "/happyhour": "publicHappyHour",
+    "/happyhour": "happyHour",
     "/login": "login",
     "/auth/callback": "authCallback",
     "/auth/complete-registration": "completeRegistration",
@@ -98,7 +96,7 @@ async function bootstrap() {
     "/account": "account",
     "/mealbot": "mealbot",
     "/mealbot/individualized": "mealbotIndividualized",
-    "/happyhour/manage": "happyHourManage",
+
     "/admin": "admin",
   };
 

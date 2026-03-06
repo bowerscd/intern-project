@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card prominent-card">
+  <h2>Upcoming Happy Hour</h2>
+  <div id="happyhour-upcoming"></div>
+</section>
+<section class="card">
+  <h2>Rotation</h2>
+  <div class="scrollable-content" id="rotation-scroll-container">
+    <div id="happyhour-rotation"></div>
+  </div>
+</section>
+<section class="card" id="happyhour-submit-section" style="display: none;">
+  <h2>Submit Your Happy Hour Choice</h2>
+  <div id="happyhour-turn-status"></div>
+  <form id="happyhour-create-form"></form>
+  <div id="happyhour-result"></div>
+</section>
+<section class="card">
+  <h2>Past Happy Hours</h2>
+  <div class="scrollable-content" id="events-scroll-container">
+    <div id="happyhour-events"></div>
+    <div id="events-sentinel" class="scroll-sentinel"></div>
+    <div id="events-status" class="scroll-status"></div>
+  </div>
+</section>
+<section class="card" id="happyhour-locations-section" style="display: none;">
+  <h2>Locations</h2>
+  <div class="scrollable-content" id="locations-scroll-container">
+    <div id="happyhour-locations"></div>
+    <div id="locations-sentinel" class="scroll-sentinel"></div>
+    <div id="locations-status" class="scroll-status"></div>
+  </div>
+</section>
+{% endblock %}

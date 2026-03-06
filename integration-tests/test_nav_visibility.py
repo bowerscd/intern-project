@@ -125,7 +125,6 @@ EXPECTED_NAV_LINKS = [
     ("/happyhour", None, False),               # public
     ("/mealbot", "MEALBOT", True),
     ("/mealbot/individualized", "MEALBOT", True),
-    ("/happyhour/manage", "HAPPY_HOUR_TYRANT", True),
     ("/admin", "ADMIN", True),
     ("/account", "auth", True),
     ("/login", "guest", False),                # visible by default for guests

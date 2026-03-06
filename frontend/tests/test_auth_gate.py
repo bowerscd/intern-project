@@ -16,7 +16,6 @@ GATED_PATHS = [
     "/account",
     "/mealbot",
     "/mealbot/individualized",
-    "/happyhour/manage",
 ]
 
 # Paths that should NOT be gated

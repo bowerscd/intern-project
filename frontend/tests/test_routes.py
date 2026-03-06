@@ -18,7 +18,6 @@ PROTECTED_ROUTES = [
     ("/account", "Account"),
     ("/mealbot", "Mealbot"),
     ("/mealbot/individualized", "My Mealbot Summary"),
-    ("/happyhour/manage", "Happy Hour Management"),
 ]
 
 

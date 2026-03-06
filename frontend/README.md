@@ -17,7 +17,6 @@ No React, Angular, or jQuery — the UI is built with plain TypeScript compiled 
 | `/mealbot` | Dashboard — balance summary, record meals, global + personal ledger |
 | `/mealbot/individualized` | Per-user debt breakdown and recent activity |
 | `/happyhour` | Public view — upcoming event, rotation schedule, past events |
-| `/happyhour/manage` | Tyrant tools — submit events, manage locations, view rotation |
 
 ## Architecture
 
