@@ -35,12 +35,12 @@ describe("apiClient error resilience", () => {
     const mockResponse = {
       ok: false,
       status: 500,
-      text: () => Promise.resolve("Internal Server Error"),
+      text: () => Promise.resolve(JSON.stringify({ detail: "Internal Server Error" })),
     };
     (global.fetch as any).mockResolvedValue(mockResponse);
 
     const mod = await import("../services/apiClient");
-    await expect(mod.getProfile()).rejects.toThrow("500");
+    await expect(mod.getProfile()).rejects.toThrow("Internal Server Error");
   });
 
   it("handles text() failure gracefully in error path", async () => {
@@ -52,8 +52,8 @@ describe("apiClient error resilience", () => {
     (global.fetch as any).mockResolvedValue(mockResponse);
 
     const mod = await import("../services/apiClient");
-    // Should still throw with status code even if body is unreadable
-    await expect(mod.getProfile()).rejects.toThrow("502");
+    // Should still throw with a user-friendly message even if body is unreadable
+    await expect(mod.getProfile()).rejects.toThrow("Request failed (502)");
   });
 
   it("handles empty JSON body on 200", async () => {

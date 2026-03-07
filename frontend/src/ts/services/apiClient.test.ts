@@ -140,12 +140,12 @@ describe("apiClient — fetch requests", () => {
     const mockResponse = {
       ok: false,
       status: 401,
-      text: () => Promise.resolve("Unauthorized"),
+      text: () => Promise.resolve(JSON.stringify({ detail: "not authenticated" })),
     };
     (global.fetch as any).mockResolvedValue(mockResponse);
 
     const mod = await import("../services/apiClient");
-    await expect(mod.getProfile()).rejects.toThrow("401");
+    await expect(mod.getProfile()).rejects.toThrow("not authenticated");
   });
 
   it("returns undefined for 204 No Content", async () => {

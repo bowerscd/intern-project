@@ -626,7 +626,7 @@ export async function renderHappyHour() {
           renderLocationsTable(newLocations);
         } catch (err: any) {
           const msg = err.message || String(err);
-          if (msg.includes("409") || msg.toLowerCase().includes("already exists")) {
+          if (msg.toLowerCase().includes("already exists") || msg.toLowerCase().includes("already")) {
             byId("happyhour-result").innerHTML = status("A happy hour event has already been submitted for this week.");
           } else {
             byId("happyhour-result").innerHTML = status(`Error: ${msg}`);

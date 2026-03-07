@@ -63,7 +63,26 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     if (res.status === 403 && text.includes("CSRF")) {
       _csrfToken = null;
     }
-    throw new Error(`${method} ${path} → ${res.status}: ${text}`);
+    // Extract a user-friendly message from the backend JSON error response.
+    // Never expose raw JSON bodies (which may contain tracebacks, internal
+    // paths, or validation internals) to the end user.
+    let userMessage: string;
+    try {
+      const parsed = JSON.parse(text);
+      if (typeof parsed.detail === "string") {
+        userMessage = parsed.detail;
+      } else if (Array.isArray(parsed.detail)) {
+        // Pydantic validation errors — show only the human-readable messages
+        userMessage = parsed.detail
+          .map((e: { msg?: string }) => e.msg ?? "Validation error")
+          .join("; ");
+      } else {
+        userMessage = `Request failed (${res.status})`;
+      }
+    } catch {
+      userMessage = text.slice(0, 200) || `Request failed (${res.status})`;
+    }
+    throw new Error(userMessage);
   }
   if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
