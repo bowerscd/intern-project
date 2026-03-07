@@ -283,33 +283,92 @@ class TestVisualApproval:
         self, page, frontend_server, backend_server, oidc_server,
         backend_db_path, request,
     ):
-        """Screenshot the full OIDC registration → activation → login."""
+        """Screenshot the full browser-driven OIDC registration flow.
+
+        Login page → click Register → Mock OIDC authorize page → fill
+        form → click Authorize → complete-registration page → fill
+        username → pending approval message.
+        """
         frontend_url, _ = frontend_server
-        backend_url, _ = backend_server
-        oidc_issuer, _ = oidc_server
+        frontend_port = frontend_server[1]
 
-        sub, name, email = "visual-reg-user", "Visual Tester", "visual@test.local"
-
-        # Screenshot registration page before submit
-        page.goto(f"{frontend_url}/auth/complete-registration")
+        # ── Step 1: Login page ──
+        page.goto(f"{frontend_url}/login")
         page.wait_for_load_state("networkidle")
-        _snap(page, "registration_before_submit", request)
+        _snap(page, "oidc_01_login_page", request)
 
-        # Register, activate, login
-        _register_and_activate(
-            backend_url, oidc_issuer, backend_db_path,
-            sub=sub, username="vis_reg", name=name, email=email,
-        )
-        cookies = _oidc_login_cookies(
-            backend_url, oidc_issuer, sub=sub, name=name, email=email,
-        )
-        _inject_cookies(page, cookies, frontend_url)
+        # ── Step 2: Click "Register with Test Provider" ──
+        page.wait_for_selector("#login-actions a", timeout=5000)
+        register_link = page.locator("a", has_text="Register with Test Provider")
+        _snap(page, "oidc_02_register_link_visible", request)
+        register_link.click()
 
-        # Authenticated account page (fresh account, BASIC only)
+        # ── Step 3: Mock OIDC authorize page ──
+        page.wait_for_selector("button[type='submit']", timeout=10000)
+        _snap(page, "oidc_03_mock_oidc_authorize_page", request)
+
+        # Fill in the identity fields
+        page.fill("input[name='sub']", "vis-oidc-reg-user")
+        page.fill("input[name='name']", "Visual OIDC User")
+        page.fill("input[name='email']", "vis-oidc@test.local")
+        _snap(page, "oidc_04_mock_oidc_form_filled", request)
+
+        # ── Step 4: Click Authorize ──
+        page.click("button[type='submit']")
+
+        # ── Step 5: Complete Registration page ──
+        # The OIDC callback lands on the backend's port; the backend redirects
+        # to /auth/complete-registration.  If we landed on the backend's port
+        # instead of the frontend, navigate to the frontend (cookies are
+        # port-agnostic per RFC 6265).
+        page.wait_for_url("**/complete-registration**", timeout=10000)
+        current = page.url
+        if f":{frontend_port}" not in current:
+            page.goto(f"{frontend_url}/auth/complete-registration")
+
+        page.wait_for_selector("#complete-registration-form", timeout=5000)
+        _snap(page, "oidc_05_complete_registration_form", request)
+
+        # Fill in username and submit
+        page.fill("#username", "vis_oidc_user")
+        _snap(page, "oidc_06_username_filled", request)
+        page.click('#complete-registration-form button[type="submit"]')
+
+        # ── Step 6: Pending approval message ──
+        result = page.locator("#complete-registration-result")
+        result.wait_for(state="visible", timeout=5000)
+        _snap(page, "oidc_07_pending_approval_message", request)
+
+        # ── Step 7: Activate and login via browser ──
+        activate_account(backend_db_path, "vis_oidc_user")
+
+        # Now drive the LOGIN flow through the browser
+        page.goto(f"{frontend_url}/login")
+        page.wait_for_selector("#login-actions a", timeout=5000)
+        login_link = page.locator("a", has_text="Login with Test Provider")
+        _snap(page, "oidc_08_login_link_visible", request)
+        login_link.click()
+
+        # Mock OIDC page again (login mode)
+        page.wait_for_selector("button[type='submit']", timeout=10000)
+        _snap(page, "oidc_09_mock_oidc_login_page", request)
+
+        page.fill("input[name='sub']", "vis-oidc-reg-user")
+        page.fill("input[name='name']", "Visual OIDC User")
+        page.fill("input[name='email']", "vis-oidc@test.local")
+        page.click("button[type='submit']")
+
+        # After login callback, backend redirects to /api/v2/account/profile
+        # or the configured redirect. Wait for navigation to settle.
+        page.wait_for_load_state("networkidle", timeout=10000)
+        time.sleep(1)
+        _snap(page, "oidc_10_post_login_landing", request)
+
+        # Navigate to account page to confirm we're authenticated
         page.goto(f"{frontend_url}/account")
         page.wait_for_load_state("networkidle")
         time.sleep(1)
-        _snap(page, "account_fresh_user", request)
+        _snap(page, "oidc_11_account_page_after_login", request)
 
     # ── 03  Account page — profile & claims ──────────────────────────
 
@@ -679,3 +738,134 @@ class TestVisualApproval:
         page.wait_for_load_state("networkidle")
         time.sleep(0.5)
         _snap(page, "login_redirect_from_account", request)
+
+    # ── 11  OIDC login for banned / defunct user via browser ─────────
+
+    def test_11_oidc_rejected_login(
+        self, page, frontend_server, backend_server, oidc_server,
+        backend_db_path, request,
+    ):
+        """Screenshot what happens when a banned user tries to login via OIDC.
+
+        Full browser flow: login page → OIDC → callback → redirect back
+        to /login?error=... with the error banner visible.
+        """
+        frontend_url, _ = frontend_server
+        frontend_port = frontend_server[1]
+        backend_url, _ = backend_server
+        oidc_issuer, _ = oidc_server
+
+        # Create a banned user
+        sub = "banned-oidc-user"
+        _register_and_activate(
+            backend_url, oidc_issuer, backend_db_path,
+            sub=sub, username="banned_oidc",
+            name="Banned OIDC", email="banned-oidc@test.local",
+        )
+        conn = sqlite3.connect(backend_db_path)
+        conn.execute(
+            "UPDATE accounts SET status = 'banned' "
+            "WHERE username = 'banned_oidc'"
+        )
+        conn.commit()
+        conn.close()
+
+        # Clear cookies from prior tests
+        page.context.clear_cookies()
+
+        # ── Drive the login flow through the browser ──
+        page.goto(f"{frontend_url}/login")
+        page.wait_for_selector("#login-actions a", timeout=5000)
+        _snap(page, "banned_01_login_page", request)
+
+        page.locator("a", has_text="Login with Test Provider").click()
+        page.wait_for_selector("button[type='submit']", timeout=10000)
+        _snap(page, "banned_02_oidc_authorize", request)
+
+        page.fill("input[name='sub']", sub)
+        page.fill("input[name='name']", "Banned OIDC")
+        page.fill("input[name='email']", "banned-oidc@test.local")
+        page.click("button[type='submit']")
+
+        # The backend redirects to /login?error=Your+account+is+banned.
+        page.wait_for_url("**/login**", timeout=10000)
+
+        # If we landed on the backend's port, navigate to the frontend
+        current = page.url
+        if f":{frontend_port}" not in current:
+            from urllib.parse import urlparse as _up, parse_qs as _pq
+            _parsed = _up(current)
+            _qs = _pq(_parsed.query)
+            error_msg = _qs.get("error", [""])[0]
+            if error_msg:
+                page.goto(
+                    f"{frontend_url}/login?error={error_msg}"
+                )
+            else:
+                page.goto(f"{frontend_url}/login")
+
+        page.wait_for_load_state("networkidle")
+        time.sleep(0.5)
+        _snap(page, "banned_03_login_error_after_oidc", request)
+
+    # ── 12  Claim existing account flow via browser ──────────────────
+
+    def test_12_claim_account_flow(
+        self, page, frontend_server, backend_server, oidc_server,
+        backend_db_path, request,
+    ):
+        """Screenshot the claim-account flow from registration page.
+
+        A new OIDC user sees the claim section on complete-registration
+        when legacy accounts exist, fills in the claim form, and sees
+        the submission confirmation.
+        """
+        frontend_url, _ = frontend_server
+        frontend_port = frontend_server[1]
+
+        # First, create a legacy account that can be claimed
+        # (account with no external_unique_id matching, created via DB)
+        conn = sqlite3.connect(backend_db_path)
+        conn.execute(
+            "INSERT OR IGNORE INTO accounts "
+            "(username, email, phone_provider, account_provider, "
+            " external_unique_id, claims, status) "
+            "VALUES ('legacy_claimable', NULL, 1, 1, 'legacy-no-match', 1, 'active')"
+        )
+        conn.commit()
+        conn.close()
+
+        # Clear cookies
+        page.context.clear_cookies()
+
+        # Drive OIDC register flow
+        page.goto(f"{frontend_url}/login")
+        page.wait_for_selector("#login-actions a", timeout=5000)
+        page.locator("a", has_text="Register with Test Provider").click()
+
+        page.wait_for_selector("button[type='submit']", timeout=10000)
+        page.fill("input[name='sub']", "claim-flow-user")
+        page.fill("input[name='name']", "Claim Flow User")
+        page.fill("input[name='email']", "claim-flow@test.local")
+        page.click("button[type='submit']")
+
+        page.wait_for_url("**/complete-registration**", timeout=10000)
+        current = page.url
+        if f":{frontend_port}" not in current:
+            page.goto(f"{frontend_url}/auth/complete-registration")
+
+        page.wait_for_selector("#complete-registration-form", timeout=5000)
+        time.sleep(1.5)  # Wait for claim section to load dynamically
+        _snap(page, "claim_01_registration_with_claim_section", request)
+
+        # Check if the claim section appeared
+        claim_form = page.query_selector("#claim-account-form")
+        if claim_form:
+            page.fill("#claim-username", "legacy_claimable")
+            _snap(page, "claim_02_claim_form_filled", request)
+            page.click('#claim-account-form button[type="submit"]')
+            time.sleep(1)
+            _snap(page, "claim_03_claim_submitted", request)
+        else:
+            # Claim section may not appear if no claimable accounts found
+            _snap(page, "claim_02_no_claimable_accounts", request)
