@@ -55,28 +55,33 @@ class AuthConfig:
 
         :returns: The provider's OpenID Connect configuration dict.
         :rtype: Any
-        :raises Exception: If the well-known endpoint returns a non-200
-            status.
+        :raises Exception: If the well-known endpoint is unreachable or
+            returns a non-200 status.
         """
         from http import HTTPStatus
-        from aiohttp import ClientSession, ClientTimeout
+        from aiohttp import ClientSession, ClientTimeout, ClientConnectorError
         from datetime import datetime, UTC
 
         async with self.__config_lock:
             if datetime.now(UTC).timestamp() < self.__next_update:
                 return self.__config
 
-            async with ClientSession(timeout=ClientTimeout(total=10)) as c:
-                result = await c.get(self.__config_url)
-                if result.status != HTTPStatus.OK:
-                    raise Exception(f"wellknown config returned: {result.status}")
+            try:
+                async with ClientSession(timeout=ClientTimeout(total=10)) as c:
+                    result = await c.get(self.__config_url)
+                    if result.status != HTTPStatus.OK:
+                        raise Exception(f"wellknown config returned: {result.status}")
 
-                self.__next_update = (
-                    datetime.now(UTC) + self.__update_interval
-                ).timestamp()
-                self.__config = await result.json()
+                    self.__next_update = (
+                        datetime.now(UTC) + self.__update_interval
+                    ).timestamp()
+                    self.__config = await result.json()
 
-                return self.__config
+                    return self.__config
+            except (ClientConnectorError, OSError, TimeoutError) as exc:
+                raise Exception(
+                    f"OIDC provider unreachable at {self.__config_url}: {exc}"
+                ) from exc
 
     @property
     def secret(self) -> str:

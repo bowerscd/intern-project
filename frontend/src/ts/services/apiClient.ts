@@ -155,6 +155,7 @@ export type ProfileResponse = {
 };
 
 export type ProfileUpdate = {
+  username?: string;
   email?: string;
   phone?: string;
   phone_provider?: string;

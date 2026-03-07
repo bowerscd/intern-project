@@ -24,6 +24,7 @@ from ratelimit import limiter
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
+from middleware import RequestLoggingMiddleware
 from routes import SESSION_COOKIE_NAME, Mealbot, Accounts, HappyHour, Authentication
 from routes.health import Health
 
@@ -144,8 +145,18 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 
     In dev mode, the traceback is included in the response body.
     """
-    logger.exception("Unhandled exception on %s %s", request.method, request.url.path)
+    from middleware import request_id_var
+
+    rid = request_id_var.get()
+    logger.exception(
+        "Unhandled exception on %s %s [rid=%s]",
+        request.method,
+        request.url.path,
+        rid,
+    )
     content: dict = {"detail": "Internal server error"}
+    if rid:
+        content["request_id"] = rid
     if DEV_MODE:
         import traceback
 
@@ -180,6 +191,9 @@ app.add_middleware(
 )
 
 app.add_middleware(GZipMiddleware, minimum_size=500)
+
+# Request logging — outermost so it captures the full request lifecycle
+app.add_middleware(RequestLoggingMiddleware)
 
 # In production, restrict trusted proxy hosts; in dev, trust all.
 if DEV_MODE:

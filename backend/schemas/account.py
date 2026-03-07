@@ -55,13 +55,20 @@ class ProfileResponse(BaseModel):
 class ProfileUpdate(BaseModel):
     """Request schema for updating a user's profile.
 
-    Used to set the email address, phone number, and carrier for notifications.
+    Used to set the username, email address, phone number, and carrier.
 
+    :cvar username: New username, or ``None`` to leave unchanged.
     :cvar email: New email address, or ``None`` to leave unchanged.
     :cvar phone: New phone number, or ``None`` to leave unchanged.
     :cvar phone_provider: New carrier name, or ``None`` to leave unchanged.
     """
 
+    username: Optional[str] = Field(
+        None,
+        description="Unique username (1-36 word characters)",
+        min_length=1,
+        max_length=36,
+    )
     email: Optional[str] = Field(None, description="Email address for notifications")
     phone: Optional[str] = Field(
         None, description="Phone number for SMS notifications", pattern=r"^\d{10,15}$"
@@ -69,6 +76,16 @@ class ProfileUpdate(BaseModel):
     phone_provider: Optional[str] = Field(
         None, description="Phone carrier name (e.g. VERIZON, AT_T)"
     )
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, v: Optional[str]) -> Optional[str]:
+        """Validate that the username matches the allowed pattern."""
+        if v is not None and not USERNAME_PATTERN.match(v):
+            raise ValueError(
+                "Username must be 1-36 characters using only letters, numbers, and underscores."
+            )
+        return v
 
 
 class ClaimsUpdate(BaseModel):

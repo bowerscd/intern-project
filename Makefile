@@ -21,7 +21,7 @@ INTEGRATION_VENV  := integration-tests/.venv/bin
 .PHONY: help setup setup-backend setup-frontend setup-integration \
         test test-backend test-frontend test-integration test-integration-local \
         lint lint-backend lint-frontend format clean install-hooks \
-        dev dev-stop
+        dev dev-stop dev-logs
 
 # ─── Help ─────────────────────────────────────────────────────────────────────
 
@@ -105,12 +105,21 @@ clean-all: clean ## Clean + remove all venvs
 
 # ─── Local Dev Servers ────────────────────────────────────────────────────────
 
+DEV_LOGS := .dev-logs
+
 dev: ## Start backend + mock OIDC + frontend for local development
+	@mkdir -p $(DEV_LOGS)
 	@# Build TypeScript first
 	cd frontend && npx tsc -p tsconfig.json
-	@# Start mock OIDC provider
-	cd integration-tests && $(CURDIR)/$(INTEGRATION_VENV)/python mock_oidc.py 9000 &
-	@sleep 0.3
+	@# Start mock OIDC provider and wait until it's reachable
+	cd integration-tests && nohup $(CURDIR)/$(INTEGRATION_VENV)/python mock_oidc.py 9000 \
+	  > $(CURDIR)/$(DEV_LOGS)/oidc.log 2>&1 &
+	@for i in 1 2 3 4 5 6 7 8 9 10; do \
+	  curl -sf http://127.0.0.1:9000/.well-known/openid-configuration > /dev/null 2>&1 && break; \
+	  sleep 0.5; \
+	done
+	@curl -sf http://127.0.0.1:9000/.well-known/openid-configuration > /dev/null 2>&1 \
+	  || { printf '  \033[31m✘ Mock OIDC failed to start on :9000\033[0m\n'; exit 1; }
 	@# Start backend (in-memory DB, dev admin auto-seeded)
 	cd backend && \
 	  DEV=true SERVER_HOSTNAME=localhost \
@@ -122,25 +131,32 @@ dev: ## Start backend + mock OIDC + frontend for local development
 	  GOOGLE_CLIENT_SECRET=unused \
 	  GOOGLE_CLIENT_ID=unused \
 	  RATELIMIT_ENABLED=false \
-	  $(CURDIR)/$(BACKEND_VENV)/python -m uvicorn app:app \
-	    --host 127.0.0.1 --port 8000 --log-level info &
+	  nohup $(CURDIR)/$(BACKEND_VENV)/python -m uvicorn app:app \
+	    --host 127.0.0.1 --port 8000 --log-level info \
+	  > $(CURDIR)/$(DEV_LOGS)/backend.log 2>&1 &
 	@sleep 0.5
 	@# Start frontend
 	cd frontend && \
 	  SERVER_HOSTNAME=localhost DEV=true \
 	  BACKEND_HOSTNAME=127.0.0.1 BACKEND_PORT=8000 \
-	  $(CURDIR)/$(FRONTEND_VENV)/python -m flask --app app run \
-	    --host 127.0.0.1 --port 5000 &
+	  nohup $(CURDIR)/$(FRONTEND_VENV)/python -m flask --app app run \
+	    --host 127.0.0.1 --port 5000 \
+	  > $(CURDIR)/$(DEV_LOGS)/frontend.log 2>&1 &
 	@sleep 0.3
 	@printf '\n  \033[32m✔ Dev servers running:\033[0m\n'
 	@printf '    Frontend:  http://127.0.0.1:5000\n'
 	@printf '    Backend:   http://127.0.0.1:8000\n'
 	@printf '    Mock OIDC: http://127.0.0.1:9000\n'
-	@printf '    Admin:     sub=dev-admin  username=admin\n\n'
+	@printf '    Admin:     sub=dev-admin  username=admin\n'
+	@printf '    Logs:      $(DEV_LOGS)/  (use \033[36mmake dev-logs\033[0m to tail)\n\n'
 	@printf '  Run \033[36mmake dev-stop\033[0m to shut down all servers.\n\n'
 
+dev-logs: ## Tail all dev server logs
+	@tail -f $(DEV_LOGS)/backend.log $(DEV_LOGS)/frontend.log $(DEV_LOGS)/oidc.log
+
 dev-stop: ## Stop all dev servers started by 'make dev'
-	@pkill -f "mock_oidc.py 9000" 2>/dev/null || true
-	@pkill -f "uvicorn app:app.*--port 8000" 2>/dev/null || true
-	@pkill -f "flask --app app run.*--port 5000" 2>/dev/null || true
+	@pkill -f "python.*mock_oidc.py 9000" 2>/dev/null || true
+	@pkill -f "python.*uvicorn app:app.*--port 8000" 2>/dev/null || true
+	@pkill -f "python.*flask --app app run.*--port 5000" 2>/dev/null || true
 	@printf '  \033[32m✔ Dev servers stopped.\033[0m\n'
+	@printf '  Logs preserved in $(DEV_LOGS)/\n'

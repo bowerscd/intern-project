@@ -155,7 +155,7 @@ export async function renderAccount() {
   const emailStored = profile.email !== null && profile.email !== "";
   byId("profile-form").innerHTML = `
     <label>Username</label>
-    <input value="${esc(profile.username)}" disabled />
+    <input id="username-input" value="${esc(profile.username)}" maxlength="36" />
     <label>Email</label>
     <input value="${esc(oidcEmail)}" disabled style="background: #2a2a2a; color: #888;" />
     <p style="font-size: 0.85em; color: #aaa; margin: 4px 0 12px 0;">Tied to your login provider — cannot be changed here.</p>
@@ -171,15 +171,24 @@ export async function renderAccount() {
   `;
   
   byId("save-profile-btn")?.addEventListener("click", async () => {
+    const newUsername = (byId("username-input") as HTMLInputElement).value.trim();
     const saveEmail = (byId("email-notify-toggle") as HTMLInputElement).checked;
     const rawPhone = (byId("phone-input") as HTMLInputElement).value.trim();
     const phone = rawPhone.replace(/[\s().+-]/g, "");  // strip formatting chars
     const phone_provider = (byId("provider-select") as HTMLSelectElement).value.trim();
-    // Always send email: set to oidc_email when opting in, empty string to opt out.
-    // This ensures the DB is always correct regardless of prior state.
     const emailPatch: { email: string } = { email: saveEmail ? oidcEmail : "" };
+    const update: Record<string, any> = {
+      ...emailPatch,
+      phone: phone || undefined,
+      phone_provider: phone_provider || undefined,
+    };
+    // Only send username if it changed
+    if (newUsername && newUsername !== profile.username) {
+      update.username = newUsername;
+    }
     try {
-      await api.updateProfile({ ...emailPatch, phone: phone || undefined, phone_provider: phone_provider || undefined });
+      const updated = await api.updateProfile(update);
+      profile.username = updated.username;  // keep local state in sync
       byId("account-result").innerHTML = status("Profile saved.");
     } catch (err: any) {
       byId("account-result").innerHTML = status(`Error: ${err.message}`);

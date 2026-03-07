@@ -463,9 +463,9 @@ class TestCompleteRegistrationClaimCard:
         # Wait for the profile form to render — JS populates it asynchronously.
         page.wait_for_selector("#profile-form input[disabled]", timeout=8000)
 
-        # The email input is the second disabled input inside #profile-form.
-        # (First is username, second is the OIDC email display.)
-        email_input = page.locator("#profile-form input[disabled]").nth(1)
+        # The email input is the first disabled input inside #profile-form
+        # (username is editable, email is disabled/tied to OIDC provider).
+        email_input = page.locator("#profile-form input[disabled]").nth(0)
         email_value = email_input.input_value()
         assert email_value == "email-display@test.local", (
             f"Expected OIDC email 'email-display@test.local' in disabled input, "

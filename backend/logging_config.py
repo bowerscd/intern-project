@@ -25,6 +25,8 @@ class _JSONFormatter(logging.Formatter):
         :returns: A JSON-encoded log line.
         :rtype: str
         """
+        from middleware import request_id_var
+
         log_entry: dict[str, Any] = {
             "timestamp": datetime.fromtimestamp(record.created, tz=UTC).isoformat(),
             "level": record.levelname,
@@ -33,8 +35,8 @@ class _JSONFormatter(logging.Formatter):
         }
         if record.exc_info and record.exc_info[1] is not None:
             log_entry["exception"] = self.formatException(record.exc_info)
-        # Include request_id when attached by middleware
-        request_id = getattr(record, "request_id", None)
+        # Include request_id from context var or record attribute
+        request_id = request_id_var.get() or getattr(record, "request_id", None)
         if request_id:
             log_entry["request_id"] = request_id
         return json.dumps(log_entry, default=str)

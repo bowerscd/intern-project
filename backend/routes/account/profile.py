@@ -93,6 +93,9 @@ async def update_profile(
                 detail="Account not found",
             )
 
+        if body.username is not None:
+            act.username = body.username
+
         if body.email is not None:
             act.email = body.email or None  # empty string → NULL
 
@@ -113,6 +116,21 @@ async def update_profile(
             db.commit()
         except IntegrityError:
             db.rollback()
+            # Determine which unique constraint was violated
+            if body.username is not None:
+                from sqlalchemy import select as sa_select
+
+                existing = db.scalars(
+                    sa_select(Account).where(
+                        Account.username == body.username,
+                        Account.id != account.id,
+                    )
+                ).first()
+                if existing:
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail="Username is already taken.",
+                    )
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Email address is already in use.",
