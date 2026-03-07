@@ -1,8 +1,11 @@
 import logging
+import os
+import secrets
 import uuid
 
 from flask import Flask, render_template, request, Response, redirect, jsonify
 import requests as http_requests
+from requests.exceptions import ConnectionError, Timeout, ReadTimeout
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config import DEV_MODE, USE_MOCK, USE_PROXY
@@ -10,6 +13,12 @@ from server import api_base, backend_url, session_cookie_name
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=2, x_proto=1, x_host=1)  # type: ignore[assignment]
+
+# Flask secret key for flash/session support (defence-in-depth)
+app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
+
+# Limit request body size to 10 MB
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
 # Configuration (now pulled from config and server modules)
 BACKEND_URL = backend_url()
@@ -212,21 +221,46 @@ def api_proxy(path):
     fwd["X-Forwarded-Proto"] = request.scheme
 
     # Forward only the backend session cookie and OIDC anti-CSRF cookies,
-    # not all cookies.
-    FORWARDED_COOKIES = {SESSION_COOKIE_NAME, "auth_state", "auth_nonce"}
+    # not all cookies.  Include both plain and __Host- prefixed variants.
+    FORWARDED_COOKIES = {
+        SESSION_COOKIE_NAME,
+        "auth_state",
+        "auth_nonce",
+        "__Host-auth_state",
+        "__Host-auth_nonce",
+    }
     cookies_to_forward = {
         k: v for k, v in request.cookies.items() if k in FORWARDED_COOKIES
     }
 
-    resp = http_requests.request(
-        method=request.method,
-        url=target,
-        headers=fwd,
-        cookies=cookies_to_forward,
-        data=request.get_data(),
-        allow_redirects=False,
-        timeout=30,
-    )
+    try:
+        resp = http_requests.request(
+            method=request.method,
+            url=target,
+            headers=fwd,
+            cookies=cookies_to_forward,
+            data=request.get_data(),
+            allow_redirects=False,
+            timeout=30,
+            stream=True,
+        )
+    except (ConnectionError, Timeout, ReadTimeout) as exc:
+        logger.error("Backend proxy connection failed: %s", exc)
+        return Response(
+            jsonify(detail="Backend unavailable").get_data(),
+            status=502,
+            content_type="application/json",
+        )
+
+    # Guard against oversized responses from upstream (max 50 MB)
+    MAX_RESPONSE_SIZE = 50 * 1024 * 1024
+    content_len = resp.headers.get("content-length")
+    if content_len and int(content_len) > MAX_RESPONSE_SIZE:
+        resp.close()
+        return Response("Upstream response too large", status=502)
+    body = resp.content
+    if len(body) > MAX_RESPONSE_SIZE:
+        return Response("Upstream response too large", status=502)
 
     # Build Flask response, relaying status + body + selected headers.
     # Use resp.raw.headers (urllib3 HTTPHeaderDict) to preserve duplicate
@@ -245,7 +279,9 @@ def api_proxy(path):
         for k, v in raw_headers.items()
         if k.lower() not in excluded and k.lower() in allowed
     ]
-    return Response(resp.content, status=resp.status_code, headers=headers)
+    # Ensure caches respect varying by cookie/origin
+    headers.append(("Vary", "Cookie, Origin"))
+    return Response(body, status=resp.status_code, headers=headers)
 
 
 if __name__ == "__main__":

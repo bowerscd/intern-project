@@ -280,7 +280,7 @@ class TestCallbackRoute:
         assert response.status_code == 422
 
     def test_callback_missing_cookies(self, client: TestClient) -> None:
-        """Missing cookies should return 422.
+        """Missing cookies should return 401.
 
         :param client: Unauthenticated HTTP test client.
         :type client: TestClient
@@ -290,7 +290,7 @@ class TestCallbackRoute:
             params={"code": "x", "state": "y"},
             follow_redirects=False,
         )
-        assert response.status_code == 422
+        assert response.status_code == 401
 
     def test_callback_register_existing_account_returns_409(
         self, client: TestClient, database: Database

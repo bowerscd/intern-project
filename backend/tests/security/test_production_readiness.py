@@ -146,7 +146,11 @@ class TestStartupConfigValidation:
         import config
 
         monkeypatch.setattr(config, "DEV_MODE", False)
-        monkeypatch.setattr(config, "SESSION_SECRET", "some-secret")
+        monkeypatch.setattr(
+            config,
+            "SESSION_SECRET",
+            "a-production-secret-that-is-at-least-32-characters-long",
+        )
         monkeypatch.setattr(config, "DATABASE_URI", "sqlite:///:memory:")
         monkeypatch.setattr(config, "CORS_ALLOW_ORIGINS", ["https://example.com"])
 

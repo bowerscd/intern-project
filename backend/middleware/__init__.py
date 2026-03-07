@@ -102,6 +102,16 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         # Attach request ID to the response
         response.headers["X-Request-ID"] = rid
 
+        # Ensure caches respect varying by cookie and origin
+        existing_vary = response.headers.get("vary", "")
+        needed = {"Cookie", "Origin"}
+        present = {v.strip() for v in existing_vary.split(",") if v.strip()}
+        missing = needed - present
+        if missing:
+            parts = [existing_vary] if existing_vary else []
+            parts.extend(missing)
+            response.headers["Vary"] = ", ".join(parts)
+
         # Choose log level based on status code
         status_code = response.status_code
         if status_code >= 500:

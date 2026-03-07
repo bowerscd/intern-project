@@ -15,6 +15,7 @@ from pytest_httpserver import HTTPServer
 
 from auth.config import AuthConfig
 from auth.base import AuthenticationHandler
+from fastapi import HTTPException
 
 from tests import TEST_ENV_VAR_PREFIX
 from collections.abc import Generator
@@ -281,7 +282,6 @@ class TestVerifyTokenExchange:
         }
 
         id_token = _sign_jwt(rsa_keypair, payload)
-        from fastapi import HTTPException
 
         with pytest.raises(HTTPException):
             await handler._AuthenticationHandler__verify_token_exchange(
@@ -368,7 +368,7 @@ class TestExchangeCode:
             "Unauthorized", status=401
         )
 
-        with pytest.raises(Exception, match="Non-Zero HTTP Status: 401"):
+        with pytest.raises(HTTPException):
             await handler._AuthenticationHandler__exchange_code("bad_code")
 
 
@@ -504,8 +504,6 @@ class TestFullAuthenticateFlow:
             "state": state,
             "code": "replay_code",
         }
-
-        from fastapi import HTTPException
 
         with pytest.raises(HTTPException):
             await handler.authenticate(cookies, query_params)

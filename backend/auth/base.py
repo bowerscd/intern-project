@@ -14,6 +14,9 @@ def _make_auth_cookie(
 ) -> None:
     """Create a secure cookie with correct RFC attributes on a redirect response.
 
+    In production uses the ``__Host-`` prefix to prevent subdomain
+    cookie override attacks (enforces ``Secure``, ``Path=/``, no ``Domain``).
+
     :param response: The redirect response to attach the cookie to.
     :param key: Cookie name.
     :param val: Cookie value.
@@ -21,8 +24,11 @@ def _make_auth_cookie(
     """
     from config import DEV_MODE
 
+    # __Host- prefix: Secure, Path=/, no Domain — prevents subdomain overrides
+    cookie_name = key if DEV_MODE else f"__Host-{key}"
+
     response.set_cookie(
-        key,
+        cookie_name,
         val,
         max_age=duration_in_seconds,
         path="/",
@@ -48,9 +54,13 @@ class AuthenticationHandler:
         :param config: The :class:`AuthConfig` instance providing client
             credentials and well-known endpoint discovery.
         """
+        from config import DEV_MODE
+
         self._config_mgr: AuthConfig = config
-        self._state_cookie_key = "auth_state"
-        self._nonce_cookie_key = "auth_nonce"
+        # In production, cookies use the __Host- prefix for subdomain safety
+        prefix = "" if DEV_MODE else "__Host-"
+        self._state_cookie_key = f"{prefix}auth_state"
+        self._nonce_cookie_key = f"{prefix}auth_nonce"
 
     async def __verify_token_exchange(
         self, config: Dict[str, str], id_token: str, access_token: str
@@ -162,7 +172,17 @@ class AuthenticationHandler:
         async with ClientSession(timeout=ClientTimeout(total=10)) as s:
             r = await s.post(config["token_endpoint"], data=request_data)
             if r.status != HTTPStatus.OK:
-                raise Exception(f"Non-Zero HTTP Status: {r.status}")
+                import logging
+
+                logging.getLogger(__name__).error(
+                    "OIDC token exchange failed: status=%d endpoint=%s",
+                    r.status,
+                    config["token_endpoint"],
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="authentication failed",
+                )
 
             response = await r.json()
 
@@ -234,8 +254,6 @@ class AuthenticationHandler:
             )
 
         id_token, access_token, expiry = await self.__exchange_code(exchange_code)
-
-        import hmac
 
         id_token_nonce = id_token.get("nonce")
         if id_token_nonce is None:

@@ -188,11 +188,31 @@ class Database(AbstractContextManager[Any]):
             pool_kwargs = {
                 "pool_pre_ping": True,
                 "pool_recycle": 1800,
+                "pool_size": 10,
+                "max_overflow": 20,
+                "pool_timeout": 30,
             }
 
         self._engine = create_engine(
             self._cnx_uri, echo=False, connect_args=self._cnx_args, **pool_kwargs
         )
+
+        # Register a listener to dispose connections on fork so that child
+        # workers (gunicorn/uvicorn preforking) do not share sockets.
+        from sqlalchemy import event
+
+        @event.listens_for(self._engine, "connect")
+        def _on_connect(dbapi_connection, connection_record):
+            connection_record.info["pid"] = __import__("os").getpid()
+
+        @event.listens_for(self._engine, "checkout")
+        def _on_checkout(dbapi_connection, connection_record, connection_proxy):
+            pid = __import__("os").getpid()
+            if connection_record.info.get("pid") != pid:
+                connection_record.dbapi_connection = None
+                raise __import__("sqlalchemy").exc.DisconnectionError(
+                    "Connection was created in a different process"
+                )
 
         self._sessionmaker = sessionmaker(self._engine)
 

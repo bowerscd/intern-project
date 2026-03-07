@@ -4,7 +4,7 @@ import logging
 from typing import Annotated, Tuple
 from urllib.parse import urlencode
 
-from fastapi import Cookie, HTTPException, Query, Request, status
+from fastapi import HTTPException, Query, Request, status
 from starlette.responses import RedirectResponse
 from pydantic import BaseModel
 
@@ -25,13 +25,6 @@ logger = logging.getLogger(__name__)
 PENDING_REGISTRATION_KEY = "pending_registration"
 
 
-class AuthenticateCookies(BaseModel):
-    """Expected cookies on an OIDC callback request."""
-
-    auth_state: str
-    auth_nonce: str
-
-
 class AuthenticationQuery(BaseModel):
     """Expected query parameters on an OIDC callback request."""
 
@@ -50,7 +43,6 @@ class AuthenticationQuery(BaseModel):
 async def authenticate(
     request: Request,
     provider: ExternalAuthProvider,
-    cookies: Annotated[AuthenticateCookies, Cookie()],
     query: Annotated[AuthenticationQuery, Query()],
     db: Database,
 ) -> RedirectResponse:
@@ -70,7 +62,6 @@ async def authenticate(
 
     :param request: The incoming :class:`Request`.
     :param provider: The external auth provider that issued the callback.
-    :param cookies: Anti-CSRF cookies attached to the request.
     :param query: Query parameters including the authorisation code.
     :param db: Active database session.
     :returns: A redirect response to the post-authentication target.
@@ -79,9 +70,13 @@ async def authenticate(
         provider (register).
     """
     auth = AuthMgrs[provider.name]
-    redirect, identity = await auth.authenticate(
-        cookies.model_dump(), query.model_dump()
-    )
+
+    # Read anti-CSRF cookies by configured key name (includes __Host- in prod)
+    cookie_data = {
+        auth._nonce_cookie_key: request.cookies.get(auth._nonce_cookie_key, ""),
+        auth._state_cookie_key: request.cookies.get(auth._state_cookie_key, ""),
+    }
+    redirect, identity = await auth.authenticate(cookie_data, query.model_dump())
 
     if not isinstance(identity.get("id"), dict):
         raise HTTPException(

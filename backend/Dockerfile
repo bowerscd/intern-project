@@ -32,5 +32,10 @@ HEALTHCHECK --interval=10s --timeout=5s --start-period=15s --retries=3 \
 CMD alembic upgrade head && exec uvicorn app:app \
     --host 0.0.0.0 \
     --port "${PORT:-80}" \
+    --workers "${UVICORN_WORKERS:-2}" \
     --proxy-headers \
-    --forwarded-allow-ips "${FORWARDED_ALLOW_IPS:-127.0.0.1}"
+    --forwarded-allow-ips "${FORWARDED_ALLOW_IPS:-127.0.0.1}" \
+    --timeout-graceful-shutdown 15 \
+    --timeout-keep-alive 5 \
+    --limit-concurrency 200 \
+    --limit-max-requests 10000

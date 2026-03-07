@@ -41,6 +41,7 @@ class AuthConfig:
         self.__config_lock = Lock()
         self.__config_url = f"{site_root}/.well-known/openid-configuration"
         self.__config: Any = None
+        self.__expected_issuer: str = site_root
 
         self.__update_interval = update_interval
 
@@ -76,6 +77,22 @@ class AuthConfig:
                         datetime.now(UTC) + self.__update_interval
                     ).timestamp()
                     self.__config = await result.json()
+
+                    # Validate that the issuer field matches what we expect
+                    # to prevent MITM/DNS-poisoning attacks redirecting JWKS
+                    discovered_issuer = self.__config.get("issuer", "")
+                    if discovered_issuer != self.__expected_issuer:
+                        import logging
+
+                        logging.getLogger(__name__).error(
+                            "OIDC issuer mismatch: expected %s, got %s",
+                            self.__expected_issuer,
+                            discovered_issuer,
+                        )
+                        raise Exception(
+                            f"OIDC issuer mismatch: expected "
+                            f"{self.__expected_issuer}, got {discovered_issuer}"
+                        )
 
                     return self.__config
             except (ClientConnectorError, OSError, TimeoutError) as exc:

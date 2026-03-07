@@ -111,7 +111,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     try:
         stop_scheduler()
     except Exception:
-        pass
+        logger.warning("Scheduler shutdown error", exc_info=True)
 
     try:
         DatabaseRaw.stop()
@@ -213,6 +213,7 @@ app.add_middleware(
         "X-Request-ID",
         "X-CSRF-Token",
     ],
+    max_age=3600,
 )
 
 app.add_middleware(GZipMiddleware, minimum_size=500)

@@ -177,6 +177,10 @@ def _validate_config() -> None:
     errors: List[str] = []
     if SESSION_SECRET is None:
         errors.append("SESSION_SECRET must be set in production")
+    elif len(SESSION_SECRET) < 32:
+        errors.append(
+            f"SESSION_SECRET must be at least 32 characters (got {len(SESSION_SECRET)})"
+        )
     if DATABASE_URI is None:
         errors.append("DATABASE_URI must be set in production")
     if not CORS_ALLOW_ORIGINS:
