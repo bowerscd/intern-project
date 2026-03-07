@@ -48,6 +48,12 @@ class Account(Model):
         server_default=AccountStatus.PENDING_APPROVAL.value,
     )
 
+    theme: Mapped[str] = mapped_column(
+        String(32),
+        default="default",
+        server_default="default",
+    )
+
     __table_args__ = (UniqueConstraint("account_provider", "external_unique_id"),)
 
     def __repr__(self) -> str:

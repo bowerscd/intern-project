@@ -17,6 +17,7 @@ from models import (
     ExternalAuthProvider,
     PhoneProvider,
     AccountClaims,
+    AccountStatus,
     TyrantAssignmentStatus,
 )
 
@@ -160,10 +161,14 @@ def create_receipt(
     payer = get_account_by_username(s, payer_username)
     if payer is None:
         raise ValueError(f"Payer '{payer_username}' does not exist")
+    if payer.status == AccountStatus.DEFUNCT:
+        raise ValueError(f"Payer '{payer_username}' has a disabled account")
 
     recipient = get_account_by_username(s, recipient_username)
     if recipient is None:
         raise ValueError(f"Recipient '{recipient_username}' does not exist")
+    if recipient.status == AccountStatus.DEFUNCT:
+        raise ValueError(f"Recipient '{recipient_username}' has a disabled account")
 
     if payer.id == recipient.id:
         raise ValueError("Payer and recipient cannot be the same person")
@@ -827,18 +832,22 @@ def get_random_previous_location(s: Session) -> Location | None:
 
 
 def get_accounts_with_claim(s: Session, claim: AccountClaims) -> list[Account]:
-    """Get all accounts that have a specific claim set in their bitmask.
+    """Get all active accounts that have a specific claim set in their bitmask.
 
-    Uses a SQL bitwise filter to avoid loading all accounts.
+    Excludes defunct (disabled) accounts so they are not targeted for
+    mealbot or tyrant rotation.
 
     :param s: Active database session.
     :param claim: The claim flag to test for.
-    :returns: A list of accounts whose claims include *claim*.
+    :returns: A list of active accounts whose claims include *claim*.
     :rtype: list[Account]
     """
     claim_val = literal(claim.value)
     return s.scalars(
-        select(Account).where(Account.claims.bitwise_and(claim_val) == claim_val)
+        select(Account).where(
+            Account.claims.bitwise_and(claim_val) == claim_val,
+            Account.status == AccountStatus.ACTIVE,
+        )
     ).all()
 
 

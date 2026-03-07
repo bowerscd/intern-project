@@ -141,11 +141,19 @@ export async function renderClaimAccount() {
 }
 
 export async function renderAccount() {
-  const [profile, phoneProviders] = await Promise.all([
+  const [profile, phoneProviders, themes] = await Promise.all([
     dataProvider.getProfile(),
     api.getPhoneProviders(),
+    api.getThemes(),
   ]);
   const claims = decodeClaims(profile.claims);
+  const isDefunct = profile.status === "defunct";
+
+  // Show defunct banner if account is read-only
+  const bannerArea = document.getElementById("defunct-banner-area");
+  if (isDefunct && bannerArea) {
+    bannerArea.innerHTML = `<div class="defunct-banner">Your account is disabled (read-only). Contact an admin to re-activate.</div>`;
+  }
 
   const currentProvider = profile.phone_provider ?? "";
   const providerOptions = phoneProviders
@@ -167,7 +175,7 @@ export async function renderAccount() {
     <input id="phone-input" value="${esc(profile.phone ?? "")}" placeholder="555-123-4567" />
     <label>Carrier</label>
     <select id="provider-select"><option value="">-- none --</option>${providerOptions}</select>
-    <button type="button" id="save-profile-btn" style="margin-top: 12px;">Save Profile</button>
+    <button type="button" id="save-profile-btn" style="margin-top: 12px;" ${isDefunct ? "disabled" : ""}>Save Profile</button>
   `;
   
   byId("save-profile-btn")?.addEventListener("click", async () => {
@@ -209,7 +217,8 @@ export async function renderAccount() {
     .map((claim) => {
       const label = claimLabels[claim] || claim;
       const checked = claims.includes(claim) ? "checked" : "";
-      return `<label style="display: flex; align-items: center; margin: 12px 0; padding: 8px; cursor: pointer;"><input type="checkbox" class="claim-checkbox" data-claim="${claim}" ${checked} style="margin-right: 10px;" /><span>${label}</span></label>`;
+      const disabled = isDefunct ? "disabled" : "";
+      return `<label style="display: flex; align-items: center; margin: 12px 0; padding: 8px; cursor: pointer;"><input type="checkbox" class="claim-checkbox" data-claim="${claim}" ${checked} ${disabled} style="margin-right: 10px;" /><span>${label}</span></label>`;
     })
     .join("");
   
@@ -230,6 +239,67 @@ export async function renderAccount() {
       }
     });
   });
+
+  // ── Theme Picker ──────────────────────────────────────────────────
+  const themePicker = document.getElementById("theme-picker");
+  if (themePicker) {
+    const themeLabels: Record<string, string> = {
+      "default": "Default Dark",
+      "light": "Light",
+      "solarized-dark": "Solarized Dark",
+      "solarized-light": "Solarized Light",
+      "nord": "Nord",
+      "dracula": "Dracula",
+      "monokai": "Monokai",
+      "cyberpunk": "Cyberpunk",
+      "ocean": "Ocean",
+      "forest": "Forest",
+      "sunset": "Sunset",
+      "midnight-purple": "Midnight Purple",
+      "cherry-blossom": "Cherry Blossom",
+      "retro-terminal": "Retro Terminal",
+      "high-contrast": "High Contrast",
+      "warm-earth": "Warm Earth",
+      "arctic": "Arctic",
+      "neon": "Neon",
+      "paper": "Paper",
+      "slate": "Slate",
+      "rose-gold": "Rose Gold",
+      "emerald": "Emerald",
+      "coffee": "Coffee",
+    };
+    const currentTheme = profile.theme || "default";
+    themePicker.innerHTML = `<div class="theme-picker">${
+      themes.map((t) => {
+        const label = themeLabels[t] || t;
+        const active = t === currentTheme ? "active" : "";
+        return `<div class="theme-swatch ${active}" data-theme-name="${esc(t)}">${esc(label)}</div>`;
+      }).join("")
+    }</div>`;
+
+    themePicker.querySelectorAll(".theme-swatch").forEach((swatch) => {
+      swatch.addEventListener("click", async () => {
+        const themeName = (swatch as HTMLElement).dataset.themeName!;
+        // Apply immediately for instant feedback
+        if (themeName === "default") {
+          document.documentElement.removeAttribute("data-theme");
+          localStorage.removeItem("vibe-theme");
+        } else {
+          document.documentElement.setAttribute("data-theme", themeName);
+          localStorage.setItem("vibe-theme", themeName);
+        }
+        // Update active state
+        themePicker.querySelectorAll(".theme-swatch").forEach(s => s.classList.remove("active"));
+        swatch.classList.add("active");
+        // Persist to server
+        try {
+          await api.setTheme(themeName);
+        } catch (err: any) {
+          byId("account-result").innerHTML = status(`Error saving theme: ${err.message}`);
+        }
+      });
+    });
+  }
 }
 
 export async function renderMealbot() {

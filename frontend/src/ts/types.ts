@@ -6,6 +6,8 @@ export type Profile = {
   phone: string | null;
   phone_provider: string;
   claims: number;
+  theme: string;
+  status: string;
 };
 
 /** Bitmask values matching backend AccountClaims IntFlag. */

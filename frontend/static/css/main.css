@@ -1,10 +1,48 @@
 :root {
   color-scheme: light dark;
   font-family: Arial, sans-serif;
+
+  /* ── Theme variables (default = dark) ─────── */
+  --bg-body: #121212;
+  --fg-body: #f0f0f0;
+  --bg-sidebar: #1a1a1a;
+  --border-sidebar: #333;
+  --fg-brand: #f0f0f0;
+  --fg-brand-hover: #90caf9;
+  --fg-nav: #b0b0b0;
+  --fg-nav-hover: #e0e0e0;
+  --bg-nav-hover: rgba(144, 202, 249, 0.08);
+  --bg-nav-active: rgba(144, 202, 249, 0.15);
+  --bg-card: #1e1e1e;
+  --border-card: #444;
+  --bg-prominent: linear-gradient(135deg, #1e2837 0%, #1e1e1e 100%);
+  --border-prominent: #64b5f6;
+  --shadow-prominent: rgba(100, 181, 246, 0.2);
+  --fg-accent: #90caf9;
+  --fg-accent-alt: #64b5f6;
+  --bg-input: transparent;
+  --fg-input: inherit;
+  --border-input: #666;
+  --bg-button: #2a2a2a;
+  --fg-button: #f0f0f0;
+  --border-button: #555;
+  --bg-button-hover: #353535;
+  --bg-button-active: #1f1f1f;
+  --bg-thead: #1e1e1e;
+  --border-table: #444;
+  --bg-status: #1b2635;
+  --border-status: #64b5f6;
+  --fg-muted: #aaa;
+  --bg-mobile-header: #1a1a1a;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+  --tap-highlight: rgba(100, 181, 246, 0.3);
+  --bg-checkbox-label: rgba(144, 202, 249, 0.05);
+  --bg-checkbox-label-mobile: rgba(42, 42, 42, 0.3);
+  --bg-menu-toggle-hover: rgba(144, 202, 249, 0.1);
 }
 
 * {
-  -webkit-tap-highlight-color: rgba(100, 181, 246, 0.3);
+  -webkit-tap-highlight-color: var(--tap-highlight);
 }
 
 html {
@@ -19,8 +57,8 @@ html {
 
 body {
   margin: 0;
-  background: #121212;
-  color: #f0f0f0;
+  background: var(--bg-body);
+  color: var(--fg-body);
   overflow-x: hidden;
 }
 
@@ -34,8 +72,8 @@ body {
 .sidebar {
   width: 200px;
   flex-shrink: 0;
-  background: #1a1a1a;
-  border-left: 1px solid #333;
+  background: var(--bg-sidebar);
+  border-left: 1px solid var(--border-sidebar);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -47,19 +85,19 @@ body {
 
 .sidebar-header {
   padding: 18px 16px 14px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--border-sidebar);
 }
 
 .sidebar-header .brand {
   font-weight: 700;
   font-size: 1.15em;
-  color: #f0f0f0;
+  color: var(--fg-brand);
   text-decoration: none;
   display: block;
 }
 
 .sidebar-header .brand:hover {
-  color: #90caf9;
+  color: var(--fg-brand-hover);
 }
 
 .sidebar-nav {
@@ -71,7 +109,7 @@ body {
 }
 
 .sidebar-nav a {
-  color: #b0b0b0;
+  color: var(--fg-nav);
   text-decoration: none;
   padding: 10px 16px;
   font-size: 0.95em;
@@ -84,12 +122,12 @@ body {
 }
 
 .sidebar-nav a:hover {
-  background: rgba(144, 202, 249, 0.08);
-  color: #e0e0e0;
+  background: var(--bg-nav-hover);
+  color: var(--fg-nav-hover);
 }
 
 .sidebar-nav a:active {
-  background: rgba(144, 202, 249, 0.15);
+  background: var(--bg-nav-active);
 }
 
 .sidebar-overlay {
@@ -103,8 +141,8 @@ body {
 
 .menu-toggle {
   background: transparent;
-  border: 1px solid #555;
-  color: #90caf9;
+  border: 1px solid var(--border-button);
+  color: var(--fg-accent);
   font-size: 1.5em;
   padding: 4px 12px;
   cursor: pointer;
@@ -116,7 +154,7 @@ body {
 }
 
 .menu-toggle:hover {
-  background: rgba(144, 202, 249, 0.1);
+  background: var(--bg-menu-toggle-hover);
 }
 
 /* ── Main content area ───────────────────────── */
@@ -141,8 +179,8 @@ body {
 }
 
 .card {
-  background: #1e1e1e;
-  border: 1px solid #444;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 12px;
@@ -151,13 +189,13 @@ body {
 }
 
 .prominent-card {
-  background: linear-gradient(135deg, #1e2837 0%, #1e1e1e 100%);
-  border: 2px solid #64b5f6;
-  box-shadow: 0 4px 12px rgba(100, 181, 246, 0.2);
+  background: var(--bg-prominent);
+  border: 2px solid var(--border-prominent);
+  box-shadow: 0 4px 12px var(--shadow-prominent);
 }
 
 .prominent-card h2 {
-  color: #90caf9;
+  color: var(--fg-accent);
   font-size: 1.5em;
   margin-top: 0;
 }
@@ -201,16 +239,18 @@ label:has(input[type="checkbox"]) {
 }
 
 label:has(input[type="checkbox"]):hover {
-  background: rgba(144, 202, 249, 0.05);
+  background: var(--bg-checkbox-label);
 }
 
 input, select, button, textarea {
   font: inherit;
   padding: 8px;
   border-radius: 6px;
-  border: 1px solid #666;
+  border: 1px solid var(--border-input);
   margin-right: 6px;
   box-sizing: border-box;
+  background: var(--bg-input);
+  color: var(--fg-input);
 }
 
 input, select {
@@ -226,19 +266,19 @@ textarea {
 
 button {
   cursor: pointer;
-  background: #2a2a2a;
-  color: #f0f0f0;
-  border: 1px solid #555;
+  background: var(--bg-button);
+  color: var(--fg-button);
+  border: 1px solid var(--border-button);
   transition: background 0.2s;
   width: auto;
 }
 
 button:hover {
-  background: #353535;
+  background: var(--bg-button-hover);
 }
 
 button:active {
-  background: #1f1f1f;
+  background: var(--bg-button-active);
 }
 
 button:disabled {
@@ -255,25 +295,25 @@ table {
 thead {
   position: sticky;
   top: 0;
-  background: #1e1e1e;
+  background: var(--bg-thead);
   z-index: 10;
 }
 
 th, td {
   text-align: left;
   padding: 6px;
-  border-bottom: 1px solid #444;
+  border-bottom: 1px solid var(--border-table);
 }
 
 th {
   font-weight: 600;
-  color: #90caf9;
+  color: var(--fg-accent);
 }
 
 .status {
   padding: 8px;
-  border-left: 4px solid #64b5f6;
-  background: #1b2635;
+  border-left: 4px solid var(--border-status);
+  background: var(--bg-status);
 }
 
 .scrollable-content {
@@ -292,7 +332,7 @@ th {
 .scroll-status {
   text-align: center;
   padding: 8px;
-  color: #aaa;
+  color: var(--fg-muted);
   font-size: 0.9em;
   min-height: 24px;
 }
@@ -329,6 +369,10 @@ th {
     z-index: 150;
   }
   
+  .sidebar-overlay {
+    background: var(--bg-overlay);
+  }
+  
   .sidebar-overlay.open {
     display: block;
   }
@@ -343,8 +387,8 @@ th {
     justify-content: space-between;
     gap: 12px;
     padding: 10px 12px;
-    background: #1a1a1a;
-    border-bottom: 1px solid #333;
+    background: var(--bg-mobile-header);
+    border-bottom: 1px solid var(--border-sidebar);
     position: sticky;
     top: 0;
     z-index: 50;
@@ -354,7 +398,7 @@ th {
   .mobile-title {
     font-weight: 600;
     font-size: 1.1em;
-    color: #f0f0f0;
+    color: var(--fg-body);
   }
   
   .sidebar-nav a {
@@ -437,9 +481,9 @@ th {
   label:has(input[type="checkbox"]) {
     padding: 12px 10px;
     margin: 8px 0;
-    border: 1px solid #444;
+    border: 1px solid var(--border-card);
     border-radius: 6px;
-    background: rgba(42, 42, 42, 0.3);
+    background: var(--bg-checkbox-label-mobile);
   }
   
   input[type="checkbox"] {

@@ -10,7 +10,7 @@ from typing import Annotated, Any
 from fastapi import Depends, HTTPException, status, Query
 from sqlalchemy.exc import IntegrityError
 
-from routes.shared import Database, RequireLogin
+from routes.shared import Database, RequireLogin, require_write_access
 from models import AccountClaims
 from csrf import validate_csrf_token
 
@@ -199,6 +199,8 @@ async def create_event_endpoint(
     :raises HTTPException: If the user is not the assigned tyrant, the
         location is not found, or the location is closed.
     """
+    require_write_access(account)
+
     from db.functions import (
         create_event,
         get_location_by_id,

@@ -21,7 +21,7 @@ from db.functions import (
 from typing import Any
 from models.happyhour.location import Location
 from sqlalchemy.orm import Session
-from models import ExternalAuthProvider, AccountClaims
+from models import ExternalAuthProvider, AccountClaims, AccountStatus
 
 
 def _make_users(s: Session, names: list[str]) -> None:
@@ -368,6 +368,7 @@ class TestGetAccountsWithClaim:
             "hh1",
             claims=AccountClaims.HAPPY_HOUR,
         )
+        act1.status = AccountStatus.ACTIVE
         act2 = create_account(
             "nohh1",
             "nohh1@test.com",
@@ -375,6 +376,7 @@ class TestGetAccountsWithClaim:
             "nohh1",
             claims=AccountClaims.MEALBOT,
         )
+        act2.status = AccountStatus.ACTIVE
         db_session.add(act1)
         db_session.add(act2)
         db_session.commit()

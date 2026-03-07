@@ -4,6 +4,11 @@ Attaches a unique ``X-Request-ID`` to every request (or honours one sent
 by a reverse proxy), logs the request and response on completion, and
 makes the request ID available to all downstream log calls via
 :class:`contextvars.ContextVar`.
+
+In production JSON mode, every log record includes structured fields
+(http_method, http_path, http_status, duration_ms, account_id, username,
+client_ip, user_agent, content_type, content_length) to support
+post-mortem debugging without reproduction.
 """
 
 from __future__ import annotations
@@ -24,7 +29,12 @@ request_id_var: ContextVar[str | None] = ContextVar("request_id", default=None)
 
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
-    """Log every request with method, path, status, duration, and user context."""
+    """Log every request with method, path, status, duration, and identity context.
+
+    Captures enough structured context per request so that a single log
+    line can answer "who did what, when, and how long did it take" for
+    post-mortem debugging.
+    """
 
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
@@ -43,23 +53,47 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
         # Extract user context from session (best-effort, session may not exist yet)
         account_id: int | None = None
+        username: str | None = None
         try:
             account_id = request.session.get("account_id")
+            username = request.session.get("username")
         except Exception:
             pass
+
+        # Capture request metadata for structured logs
+        content_length = request.headers.get("content-length", "0")
+        content_type = request.headers.get("content-type", "")
+        user_agent = request.headers.get("user-agent", "")
+        client_ip = request.client.host if request.client else None
+        forwarded_for = request.headers.get("x-forwarded-for")
+        effective_ip = forwarded_for or client_ip
 
         try:
             response = await call_next(request)
         except Exception:
             duration_ms = (time.monotonic() - start) * 1000
             logger.error(
-                "%s %s → crashed (%.1fms) [rid=%s user=%s]",
+                "%s %s → crashed (%.1fms) [rid=%s user=%s/%s ip=%s]",
                 request.method,
                 request.url.path,
                 duration_ms,
                 rid,
                 account_id,
+                username,
+                effective_ip,
                 exc_info=True,
+                extra={
+                    "http_method": request.method,
+                    "http_path": request.url.path,
+                    "http_query": str(request.url.query) if request.url.query else None,
+                    "duration_ms": round(duration_ms, 1),
+                    "account_id": account_id,
+                    "username": username,
+                    "client_ip": effective_ip,
+                    "user_agent": user_agent,
+                    "content_type": content_type,
+                    "content_length": content_length,
+                },
             )
             raise
 
@@ -78,13 +112,27 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             log = logger.info
 
         log(
-            "%s %s → %d (%.1fms) [rid=%s user=%s]",
+            "%s %s → %d (%.1fms) [rid=%s user=%s/%s]",
             request.method,
             request.url.path,
             status_code,
             duration_ms,
             rid,
             account_id,
+            username,
+            extra={
+                "http_method": request.method,
+                "http_path": request.url.path,
+                "http_query": str(request.url.query) if request.url.query else None,
+                "http_status": status_code,
+                "duration_ms": round(duration_ms, 1),
+                "account_id": account_id,
+                "username": username,
+                "client_ip": effective_ip,
+                "user_agent": user_agent,
+                "content_type": content_type,
+                "content_length": content_length,
+            },
         )
 
         return response

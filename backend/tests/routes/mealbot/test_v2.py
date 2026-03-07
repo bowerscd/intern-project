@@ -4,7 +4,7 @@ from starlette.testclient import TestClient
 
 from db import Database
 from db.functions import create_account
-from models import AccountClaims, ExternalAuthProvider
+from models import AccountClaims, AccountStatus, ExternalAuthProvider
 
 
 def _add_user(database: Database, username: str) -> None:
@@ -21,6 +21,7 @@ def _add_user(database: Database, username: str) -> None:
             external_unique_id=username,
             claims=AccountClaims.MEALBOT,
         )
+        act.status = AccountStatus.ACTIVE
         s.add(act)
         s.commit()
 

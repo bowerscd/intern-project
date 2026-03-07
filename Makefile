@@ -68,6 +68,18 @@ test-integration: ## Run integration tests (Docker/Podman stack)
 test-integration-local: ## Run integration tests against local processes (no Docker)
 	PYTHON=$(CURDIR)/$(INTEGRATION_VENV)/python $(MAKE) -C integration-tests test-local
 
+test-visual: ## Run visual approval tests (screenshots for human review)
+	cd integration-tests && RUN_VISUAL_TESTS=1 $(CURDIR)/$(INTEGRATION_VENV)/python -m pytest \
+		test_visual_approval.py -v --screenshots-dir=./screenshots/$$(date +%Y%m%d_%H%M%S)
+
+test-stress: ## Run stress/load tests (requires running backend — use make dev first)
+	cd integration-tests && $(CURDIR)/$(INTEGRATION_VENV)/python -m locust \
+		-f test_stress.py --headless -u 50 -r 10 -t 60s --host http://127.0.0.1:8000
+
+test-stress-ui: ## Run stress tests with Locust web UI on http://localhost:8089
+	cd integration-tests && $(CURDIR)/$(INTEGRATION_VENV)/python -m locust \
+		-f test_stress.py --host http://127.0.0.1:8000
+
 # ─── Lint / Format ───────────────────────────────────────────────────────────
 
 lint: lint-backend lint-frontend ## Lint all projects

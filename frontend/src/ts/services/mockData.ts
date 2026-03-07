@@ -9,6 +9,8 @@ export const mockProfile: Profile = {
   phone: "5551112233",
   phone_provider: "verizon",
   claims: ClaimFlags.BASIC | ClaimFlags.MEALBOT | ClaimFlags.HAPPY_HOUR | ClaimFlags.HAPPY_HOUR_TYRANT,
+  theme: "default",
+  status: "active",
 };
 
 // Generate 120 meal records

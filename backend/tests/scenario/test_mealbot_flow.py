@@ -22,7 +22,7 @@ class TestAuthenticatedMealbotFlow:
         :type database: Database
         """
         from db.functions import create_account
-        from models import AccountClaims, ExternalAuthProvider
+        from models import AccountClaims, AccountStatus, ExternalAuthProvider
 
         c = authenticated_client
 
@@ -36,6 +36,7 @@ class TestAuthenticatedMealbotFlow:
                     external_unique_id=username,
                     claims=AccountClaims.MEALBOT,
                 )
+                act.status = AccountStatus.ACTIVE
                 s.add(act)
                 s.commit()
 

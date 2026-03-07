@@ -7,7 +7,7 @@ from typing import Annotated, Any
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.exc import IntegrityError
 
-from routes.shared import Database, RequireLogin
+from routes.shared import Database, RequireLogin, require_write_access
 from models import AccountClaims
 from csrf import validate_csrf_token
 from models.enums import PhoneProvider
@@ -82,6 +82,7 @@ async def update_profile(
     :raises HTTPException: If the account is not found or the phone
         provider is invalid.
     """
+    require_write_access(account)
     with db:
         from sqlalchemy import select
         from models import DBAccount as Account
@@ -140,3 +141,100 @@ async def update_profile(
         return ProfileResponse.from_account(
             act, oidc_email=request.session.get("oidc_email")
         )
+
+
+# ── Valid themes ──────────────────────────────────────────────────────
+
+VALID_THEMES = frozenset(
+    {
+        "default",
+        "light",
+        "solarized-dark",
+        "solarized-light",
+        "nord",
+        "dracula",
+        "monokai",
+        "cyberpunk",
+        "ocean",
+        "forest",
+        "sunset",
+        "midnight-purple",
+        "cherry-blossom",
+        "retro-terminal",
+        "high-contrast",
+        "warm-earth",
+        "arctic",
+        "neon",
+        "paper",
+        "slate",
+        "rose-gold",
+        "emerald",
+        "coffee",
+    }
+)
+
+
+@Accounts.get(
+    "/themes",
+    summary="List available themes",
+    description="Returns the names of all available CSS themes.",
+    response_model=list[str],
+)
+async def list_themes() -> list[str]:
+    """Return all valid theme names.
+
+    :returns: Sorted list of theme name strings.
+    :rtype: list[str]
+    """
+    return sorted(VALID_THEMES)
+
+
+@Accounts.put(
+    "/theme",
+    summary="Set user theme",
+    dependencies=[Depends(validate_csrf_token)],
+    description="Update the authenticated user's CSS theme preference.",
+)
+async def set_theme(
+    request: Request,
+    account: Annotated[Any, Depends(RequireLogin(AccountClaims.BASIC))],
+    db: Database,
+) -> dict[str, str]:
+    """Update the authenticated user's theme preference.
+
+    Theme changes are allowed even for defunct (read-only) accounts.
+
+    :param request: The incoming request.
+    :param account: The authenticated account.
+    :param db: Active database session.
+    :returns: A status dict with the applied theme.
+    :rtype: dict[str, str]
+    :raises HTTPException: If the theme is invalid.
+    """
+    try:
+        body = await request.json()
+        theme = body.get("theme", "")
+    except Exception:
+        theme = ""
+
+    if theme not in VALID_THEMES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid theme '{theme}'. Valid themes: {', '.join(sorted(VALID_THEMES))}",
+        )
+
+    with db:
+        from sqlalchemy import select
+        from models import DBAccount as Account
+
+        act = db.scalars(select(Account).where(Account.id == account.id)).first()
+        if act is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Account not found",
+            )
+
+        act.theme = theme
+        db.commit()
+
+    return {"status": "ok", "theme": theme}

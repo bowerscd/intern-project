@@ -1,5 +1,6 @@
 """OIDC callback endpoint — token exchange and session establishment."""
 
+import logging
 from typing import Annotated, Tuple
 from urllib.parse import urlencode
 
@@ -18,6 +19,8 @@ from models import (
 from routes.shared import Database, AUTH_SESSION_KEY
 from ratelimit import limiter
 from .router import Authentication, AuthMgrs
+
+logger = logging.getLogger(__name__)
 
 PENDING_REGISTRATION_KEY = "pending_registration"
 
@@ -111,6 +114,18 @@ async def authenticate(
                 "name": identity["id"].get("name", ""),
                 "email": identity["id"].get("email"),
             }
+            logger.info(
+                "OIDC register callback: provider=%s sub=%s name=%s",
+                provider.name,
+                uuid,
+                identity["id"].get("name", ""),
+                extra={
+                    "action": "oidc_register",
+                    "provider": provider.name,
+                    "oidc_sub": uuid,
+                    "oidc_name": identity["id"].get("name", ""),
+                },
+            )
             return redirect
         else:
             # mode == "login" (default)
@@ -135,6 +150,20 @@ async def authenticate(
                 return RedirectResponse(f"/login?{qs}", status_code=302)
 
             if act.status == AccountStatus.DEFUNCT:
+                logger.warning(
+                    "Login attempt by defunct account: provider=%s sub=%s account=#%d (%s)",
+                    provider.name,
+                    uuid,
+                    act.id,
+                    act.username,
+                    extra={
+                        "action": "oidc_login_defunct",
+                        "provider": provider.name,
+                        "oidc_sub": uuid,
+                        "account_id": act.id,
+                        "username": act.username,
+                    },
+                )
                 qs = urlencode({"error": "Your account has been disabled."})
                 return RedirectResponse(f"/login?{qs}", status_code=302)
 
@@ -151,7 +180,23 @@ async def authenticate(
             # Regenerate session to prevent session fixation
             request.session.clear()
             request.session[AUTH_SESSION_KEY] = act.id
+            request.session["account_id"] = act.id
+            request.session["username"] = act.username
             if oidc_email:
                 request.session["oidc_email"] = oidc_email
+            logger.info(
+                "OIDC login: provider=%s sub=%s account=#%d (%s)",
+                provider.name,
+                uuid,
+                act.id,
+                act.username,
+                extra={
+                    "action": "oidc_login",
+                    "provider": provider.name,
+                    "oidc_sub": uuid,
+                    "account_id": act.id,
+                    "username": act.username,
+                },
+            )
 
     return redirect

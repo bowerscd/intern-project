@@ -18,6 +18,8 @@ export const liveDataProvider = {
       phone: raw.phone,
       phone_provider: raw.phone_provider,
       claims: raw.claims,
+      theme: raw.theme,
+      status: raw.status,
     };
   },
 

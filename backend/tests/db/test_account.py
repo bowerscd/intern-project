@@ -13,7 +13,7 @@ from db.functions import (
     get_accounts_with_claim,
 )
 from sqlalchemy.orm import Session
-from models import ExternalAuthProvider, PhoneProvider, AccountClaims
+from models import ExternalAuthProvider, PhoneProvider, AccountClaims, AccountStatus
 
 
 class TestCreateAccount:
@@ -260,6 +260,7 @@ class TestAccountClaims:
             "cl1",
             claims=AccountClaims.MEALBOT,
         )
+        a1.status = AccountStatus.ACTIVE
         a2 = create_account(
             "clm2",
             "clm2@test.com",
@@ -267,6 +268,7 @@ class TestAccountClaims:
             "cl2",
             claims=AccountClaims.HAPPY_HOUR,
         )
+        a2.status = AccountStatus.ACTIVE
         a3 = create_account(
             "clm3",
             "clm3@test.com",
@@ -274,6 +276,7 @@ class TestAccountClaims:
             "cl3",
             claims=AccountClaims.MEALBOT | AccountClaims.HAPPY_HOUR,
         )
+        a3.status = AccountStatus.ACTIVE
         db_session.add_all([a1, a2, a3])
         db_session.commit()
 

@@ -488,7 +488,7 @@ class TestRequireLoginStatusGate:
     def test_defunct_account_rejected_by_require_login(
         self, database: Database
     ) -> None:
-        """A defunct account session is rejected by RequireLogin."""
+        """A defunct account can read profile (read-only) but not mutate."""
         from ratelimit import limiter
         from app import secret
 
@@ -509,9 +509,21 @@ class TestRequireLoginStatusGate:
 
         with TestClient(app) as client:
             client.cookies.jar.set_cookie(_mk_auth_cookie(secret, act_id))
+            # Read-only access should work for defunct accounts
             r = client.get("/api/v2/account/profile")
+            assert r.status_code == 200
+            assert r.json()["status"] == "defunct"
+
+            # Mutations should be rejected for defunct accounts
+            csrf_resp = client.get("/api/v2/auth/csrf-token")
+            csrf = csrf_resp.json()["csrf_token"]
+            r = client.patch(
+                "/api/v2/account/profile",
+                json={"username": "new_name"},
+                headers={"X-CSRF-Token": csrf},
+            )
             assert r.status_code == 403
-            assert "disabled" in r.json()["detail"].lower()
+            assert "read-only" in r.json()["detail"].lower()
 
 
 class TestCompleteRegistrationPendingStatus:

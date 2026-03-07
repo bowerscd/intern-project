@@ -3,22 +3,24 @@ v2 Mealbot API endpoints — authenticated.
 Requires MEALBOT claim for most operations.
 """
 
+import logging
 from typing import Annotated, Any, Optional
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from routes.tags import ApiTags
-from routes.shared import Database, RequireLogin
+from routes.shared import Database, RequireLogin, require_write_access
 from csrf import validate_csrf_token
 
 from models import AccountClaims
-
 from schemas.mealbot import (
     RecordResponse,
     PaginatedRecordResponse,
     CreateRecordRequest,
 )
+
+logger = logging.getLogger(__name__)
 
 MealbotV2 = APIRouter(
     prefix="/v2/mealbot",
@@ -152,6 +154,12 @@ async def record(
     """
     from db.functions import create_receipt
 
+    require_write_access(account)
+
+    # Capture values before the session closes (lesson #034)
+    recorder_id = account.id
+    recorder_username = account.username
+
     if body.payer == body.recipient:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -171,7 +179,7 @@ async def record(
                 body.payer,
                 body.recipient,
                 body.credits,
-                recorder_id=account.id,
+                recorder_id=recorder_id,
             )
             db.commit()
         except ValueError as e:
@@ -180,4 +188,20 @@ async def record(
                 detail=str(e),
             )
 
+    logger.info(
+        "Mealbot record: %s paid for %s (%d credits), recorded by %s (#%d)",
+        body.payer,
+        body.recipient,
+        body.credits,
+        recorder_username,
+        recorder_id,
+        extra={
+            "action": "mealbot_record",
+            "payer": body.payer,
+            "recipient": body.recipient,
+            "credits": body.credits,
+            "recorder_id": recorder_id,
+            "recorder_username": recorder_username,
+        },
+    )
     return {"status": "ok"}

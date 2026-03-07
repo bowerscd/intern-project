@@ -1,5 +1,7 @@
 """POST /complete-registration — finish OIDC registration with chosen username."""
 
+import logging
+
 from fastapi import Depends, HTTPException, Request, status
 
 from sqlalchemy.exc import IntegrityError
@@ -13,6 +15,8 @@ from ratelimit import limiter
 
 from .authenticate import PENDING_REGISTRATION_KEY
 from .router import Authentication
+
+logger = logging.getLogger(__name__)
 
 
 @Authentication.post(
@@ -77,6 +81,21 @@ async def complete_registration(
         # Clear the pending registration session — account is created but
         # awaiting admin approval.  Do NOT establish an auth session.
         request.session.clear()
+
+    logger.info(
+        "Registration completed: username=%s provider=%s sub=%s account=#%d",
+        act_username,
+        pending["provider"],
+        pending["sub"],
+        act_id,
+        extra={
+            "action": "registration_complete",
+            "account_id": act_id,
+            "username": act_username,
+            "provider": pending["provider"],
+            "oidc_sub": pending["sub"],
+        },
+    )
 
     return {
         "id": act_id,

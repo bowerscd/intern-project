@@ -196,11 +196,8 @@ class RequireLogin:
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Your account is banned.",
                 )
-            if act.status == AccountStatus.DEFUNCT:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Your account has been disabled.",
-                )
+            # Defunct accounts are allowed through in read-only mode;
+            # mutation endpoints must additionally call require_write_access().
 
             if act.claims & self.__required_claim != self.__required_claim:
                 raise HTTPException(
@@ -209,3 +206,20 @@ class RequireLogin:
                 )
 
             yield act
+
+
+def require_write_access(account: Account) -> None:
+    """Raise 403 if the account is defunct (read-only).
+
+    Call this at the top of every state-changing endpoint to enforce
+    the read-only restriction for disabled accounts.
+
+    :param account: The authenticated account.
+    :raises HTTPException: If the account status is
+        :attr:`AccountStatus.DEFUNCT`.
+    """
+    if account.status == AccountStatus.DEFUNCT:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account is disabled (read-only). Contact an admin to re-activate.",
+        )

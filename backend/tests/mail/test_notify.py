@@ -14,7 +14,7 @@ from db.functions import (
 from models.happyhour.location import Location
 from pytest_localserver.smtp import Server as SMTPServer
 from sqlalchemy.orm import Session
-from models import ExternalAuthProvider, AccountClaims, PhoneProvider
+from models import ExternalAuthProvider, AccountClaims, AccountStatus, PhoneProvider
 
 
 class TestSmtpConfig:
@@ -166,6 +166,7 @@ class TestNotifyHappyHourUsers:
             "eu1",
             claims=AccountClaims.HAPPY_HOUR,
         )
+        act.status = AccountStatus.ACTIVE
         db_session.add(act)
         db_session.commit()
 
@@ -203,6 +204,7 @@ class TestNotifyHappyHourUsers:
             phone_provider=PhoneProvider.TMOBILE,
             claims=AccountClaims.HAPPY_HOUR,
         )
+        act.status = AccountStatus.ACTIVE
         db_session.add(act)
         db_session.commit()
 
@@ -243,6 +245,7 @@ class TestNotifyHappyHourUsers:
             phone_provider=PhoneProvider.VERIZON,
             claims=AccountClaims.HAPPY_HOUR,
         )
+        act.status = AccountStatus.ACTIVE
         db_session.add(act)
         db_session.commit()
 
@@ -313,6 +316,7 @@ class TestNotifyHappyHourUsers:
             phone_provider=PhoneProvider.NONE,
             claims=AccountClaims.HAPPY_HOUR,
         )
+        act.status = AccountStatus.ACTIVE
         db_session.add(act)
         db_session.commit()
 

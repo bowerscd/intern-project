@@ -6,7 +6,7 @@ from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, status, Query
 
-from routes.shared import Database, RequireLogin
+from routes.shared import Database, RequireLogin, require_write_access
 from models import AccountClaims
 from csrf import validate_csrf_token
 
@@ -77,6 +77,8 @@ async def create_location(
     :returns: The newly created :class:`LocationResponse`.
     :rtype: LocationResponse
     """
+    require_write_access(account)
+
     from db.functions import create_location as db_create_location
 
     with db:
@@ -156,6 +158,8 @@ async def update_location(
     :rtype: LocationResponse
     :raises HTTPException: If the location is not found.
     """
+    require_write_access(account)
+
     from db.functions import get_location_by_id
 
     with db:

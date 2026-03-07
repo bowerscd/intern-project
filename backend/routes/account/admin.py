@@ -3,6 +3,7 @@
 Only accounts with the ``ADMIN`` claim can access these endpoints.
 """
 
+import logging
 from datetime import datetime, UTC
 from typing import Annotated, Any, Optional
 
@@ -23,6 +24,8 @@ from routes.shared import Database, RequireLogin
 from schemas.account import ClaimRequestResponse, ClaimReviewRequest
 
 from .router import Accounts
+
+logger = logging.getLogger(__name__)
 
 
 def _status_str(raw: Any) -> str:
@@ -198,10 +201,30 @@ async def review_claim_request(
         target_act = db.scalars(
             select(Account).where(Account.id == claim.target_account_id)
         ).first()
+        target_username = target_act.username if target_act else "<deleted>"
 
-        return _claim_response(
-            claim, target_act.username if target_act else "<deleted>"
+        logger.info(
+            "Admin %s (#%d) %s claim #%d (requester=%s, target=%s #%d)",
+            account.username,
+            account.id,
+            decision,
+            claim.id,
+            claim.requester_name,
+            target_username,
+            claim.target_account_id,
+            extra={
+                "action": "claim_review",
+                "admin_id": account.id,
+                "admin_username": account.username,
+                "claim_id": claim.id,
+                "decision": decision,
+                "requester_name": claim.requester_name,
+                "target_account_id": claim.target_account_id,
+                "target_username": target_username,
+            },
         )
+
+        return _claim_response(claim, target_username)
 
 
 # ── Schemas for admin account management ──────────────────────────────
@@ -354,9 +377,28 @@ async def update_account_status(
                 detail=f"Invalid status: {body.status}",
             )
 
+        old_status = _status_str(target.status)
         target.status = new_status  # type: ignore[assignment]
         db.commit()
         db.refresh(target)
+        logger.info(
+            "Admin %s (#%d) changed account #%d (%s) status: %s → %s",
+            account.username,
+            account.id,
+            target.id,
+            target.username,
+            old_status,
+            body.status,
+            extra={
+                "action": "admin_status_change",
+                "admin_id": account.id,
+                "admin_username": account.username,
+                "target_id": target.id,
+                "target_username": target.username,
+                "old_status": old_status,
+                "new_status": body.status,
+            },
+        )
         return _account_response(target)
 
 
@@ -392,6 +434,9 @@ async def update_account_role(
                 detail="Account not found.",
             )
 
+        old_claims = (
+            int(target.claims) if hasattr(target.claims, "__int__") else target.claims
+        )
         if body.grant_admin:
             target.claims = target.claims | AccountClaims.ADMIN  # type: ignore[assignment]
         else:
@@ -399,4 +444,27 @@ async def update_account_role(
 
         db.commit()
         db.refresh(target)
+        new_claims = (
+            int(target.claims) if hasattr(target.claims, "__int__") else target.claims
+        )
+        logger.info(
+            "Admin %s (#%d) %s ADMIN role on account #%d (%s): claims %d → %d",
+            account.username,
+            account.id,
+            "granted" if body.grant_admin else "revoked",
+            target.id,
+            target.username,
+            old_claims,
+            new_claims,
+            extra={
+                "action": "admin_role_change",
+                "admin_id": account.id,
+                "admin_username": account.username,
+                "target_id": target.id,
+                "target_username": target.username,
+                "grant_admin": body.grant_admin,
+                "old_claims": old_claims,
+                "new_claims": new_claims,
+            },
+        )
         return _account_response(target)

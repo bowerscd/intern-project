@@ -12,3 +12,6 @@ psutil ~= 7.0
 # After pip install, run:  playwright install --with-deps chromium
 pytest-playwright ~= 0.6
 playwright ~= 1.49
+
+# Load/stress testing
+locust ~= 2.32

@@ -152,6 +152,8 @@ export type ProfileResponse = {
   phone: string | null;
   phone_provider: string;
   claims: number;
+  theme: string;
+  status: string;
 };
 
 export type ProfileUpdate = {
@@ -394,4 +396,14 @@ export function updateAccountStatus(accountId: number, body: AdminStatusUpdateRe
 
 export function updateAccountRole(accountId: number, body: AdminRoleUpdateRequest): Promise<AdminAccountResponse> {
   return post(`/api/v2/account/admin/accounts/${accountId}/role`, body);
+}
+
+// ── Theme ─────────────────────────────────────────────────────────────
+
+export function getThemes(): Promise<string[]> {
+  return get("/api/v2/account/themes");
+}
+
+export function setTheme(theme: string): Promise<{ status: string; theme: string }> {
+  return request<{ status: string; theme: string }>("PUT", "/api/v2/account/theme", { theme });
 }

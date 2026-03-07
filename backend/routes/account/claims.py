@@ -8,7 +8,7 @@ from fastapi import Depends, HTTPException, status
 
 from sqlalchemy import select
 
-from routes.shared import Database, RequireLogin
+from routes.shared import Database, RequireLogin, require_write_access
 from models import AccountClaims, DBAccount as Account
 from csrf import validate_csrf_token
 
@@ -45,6 +45,8 @@ async def update_claims(
     :raises HTTPException: If blocked or invalid claim names are
         requested, or the account is not found.
     """
+    require_write_access(account)
+
     # Validate that no blocked claims are requested
     all_requested = set(body.add) | set(body.remove)
     blocked = all_requested & BLOCKED_CLAIMS

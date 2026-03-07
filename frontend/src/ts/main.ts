@@ -80,6 +80,14 @@ async function bootstrap() {
   try {
     const profile = await api.getProfile();
     claims = profile.claims;
+    // Apply server-side theme preference and sync to localStorage
+    if (profile.theme && profile.theme !== "default") {
+      document.documentElement.setAttribute("data-theme", profile.theme);
+      localStorage.setItem("vibe-theme", profile.theme);
+    } else if (profile.theme === "default") {
+      document.documentElement.removeAttribute("data-theme");
+      localStorage.removeItem("vibe-theme");
+    }
   } catch { /* not authenticated — leave claims null */ }
 
   updateNavVisibility(claims);

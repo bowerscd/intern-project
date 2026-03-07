@@ -20,6 +20,8 @@ class ProfileResponse(BaseModel):
     :cvar phone: Phone number, or ``None``.
     :cvar phone_provider: Name of the phone carrier.
     :cvar claims: Bitmask of account claims.
+    :cvar theme: The user's selected CSS theme.
+    :cvar status: Current account status string.
     """
 
     id: int
@@ -29,6 +31,8 @@ class ProfileResponse(BaseModel):
     phone: Optional[str]
     phone_provider: str
     claims: int
+    theme: str
+    status: str
 
     @staticmethod
     def from_account(act: Any, oidc_email: Optional[str] = None) -> "ProfileResponse":
@@ -39,6 +43,9 @@ class ProfileResponse(BaseModel):
         :returns: A populated response model.
         :rtype: ProfileResponse
         """
+        status_val = act.status
+        if hasattr(status_val, "value"):
+            status_val = status_val.value
         return ProfileResponse(
             id=act.id,
             username=act.username,
@@ -49,6 +56,8 @@ class ProfileResponse(BaseModel):
             if hasattr(act.phone_provider, "name")
             else str(act.phone_provider),
             claims=int(act.claims) if hasattr(act.claims, "__int__") else act.claims,
+            theme=getattr(act, "theme", "default") or "default",
+            status=str(status_val),
         )
 
 

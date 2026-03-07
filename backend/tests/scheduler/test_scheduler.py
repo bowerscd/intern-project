@@ -19,7 +19,7 @@ from models.account import Account
 from typing import Any
 from models.happyhour.location import Location
 from sqlalchemy.orm import Session
-from models import ExternalAuthProvider, AccountClaims, PhoneProvider
+from models import ExternalAuthProvider, AccountClaims, PhoneProvider, AccountStatus
 from models.enums import TyrantAssignmentStatus
 
 
@@ -82,6 +82,7 @@ def _make_user(
         phone=phone,
         phone_provider=phone_provider,
     )
+    act.status = AccountStatus.ACTIVE
     s.add(act)
     s.commit()
     return act

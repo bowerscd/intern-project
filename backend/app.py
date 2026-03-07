@@ -148,11 +148,36 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
     from middleware import request_id_var
 
     rid = request_id_var.get()
+
+    # Extract as much context as possible for post-mortem debugging
+    account_id: int | None = None
+    try:
+        account_id = request.session.get("account_id")
+    except Exception:
+        pass
+
+    client_ip = request.client.host if request.client else None
+    forwarded_for = request.headers.get("x-forwarded-for")
+    user_agent = request.headers.get("user-agent", "")
+
     logger.exception(
-        "Unhandled exception on %s %s [rid=%s]",
+        "Unhandled exception on %s %s [rid=%s user=%s ip=%s]: %s",
         request.method,
         request.url.path,
         rid,
+        account_id,
+        forwarded_for or client_ip,
+        type(exc).__qualname__,
+        extra={
+            "action": "unhandled_exception",
+            "http_method": request.method,
+            "http_path": request.url.path,
+            "http_query": str(request.url.query) if request.url.query else None,
+            "account_id": account_id,
+            "client_ip": forwarded_for or client_ip,
+            "user_agent": user_agent,
+            "exception_type": type(exc).__qualname__,
+        },
     )
     content: dict = {"detail": "Internal server error"}
     if rid:

@@ -16,7 +16,43 @@ from typing import Any
 
 
 class _JSONFormatter(logging.Formatter):
-    """Format log records as single-line JSON objects."""
+    """Format log records as single-line JSON objects.
+
+    Includes structured fields for post-mortem debugging:
+    - request_id: correlation ID for tracing
+    - module/function/line: source location
+    - extra fields: any additional key-value pairs attached via LogRecord
+    """
+
+    # Fields that are standard LogRecord attributes and should not be
+    # emitted as "extra" context.
+    _STANDARD_ATTRS = frozenset(
+        {
+            "name",
+            "msg",
+            "args",
+            "created",
+            "relativeCreated",
+            "exc_info",
+            "exc_text",
+            "stack_info",
+            "lineno",
+            "funcName",
+            "pathname",
+            "filename",
+            "module",
+            "thread",
+            "threadName",
+            "process",
+            "processName",
+            "levelname",
+            "levelno",
+            "message",
+            "msecs",
+            "taskName",
+            "request_id",
+        }
+    )
 
     def format(self, record: logging.LogRecord) -> str:  # noqa: D401
         """Return the log record serialised as a JSON string.
@@ -32,13 +68,23 @@ class _JSONFormatter(logging.Formatter):
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
+            "module": record.module,
+            "function": record.funcName,
+            "line": record.lineno,
         }
         if record.exc_info and record.exc_info[1] is not None:
             log_entry["exception"] = self.formatException(record.exc_info)
+            log_entry["exception_type"] = type(record.exc_info[1]).__qualname__
+        if record.stack_info:
+            log_entry["stack_info"] = record.stack_info
         # Include request_id from context var or record attribute
         request_id = request_id_var.get() or getattr(record, "request_id", None)
         if request_id:
             log_entry["request_id"] = request_id
+        # Include any extra fields attached to the record
+        for key, value in record.__dict__.items():
+            if key not in self._STANDARD_ATTRS and not key.startswith("_"):
+                log_entry[key] = value
         return json.dumps(log_entry, default=str)
 
 
