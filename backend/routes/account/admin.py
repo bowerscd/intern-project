@@ -180,6 +180,18 @@ async def review_claim_request(
                     detail="Target account no longer exists.",
                 )
 
+            # Safety guard: only allow approving claims against legacy accounts.
+            # This is defence-in-depth — the claim endpoint already enforces
+            # this, but a direct DB manipulation or future code path could
+            # bypass it.
+            LEGACY_PLACEHOLDER_SUB = "legacy-placeholder"
+            if target.external_unique_id != LEGACY_PLACEHOLDER_SUB:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Cannot approve: target account is already linked "
+                    "to an OIDC identity.",
+                )
+
             target.account_provider = ExternalAuthProvider[
                 claim.requester_provider.name
             ]  # type: ignore[union-attr]

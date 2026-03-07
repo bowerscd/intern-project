@@ -27,7 +27,8 @@ LEGACY_PLACEHOLDER_SUB = "legacy-placeholder"
     description="Returns usernames of legacy accounts not yet linked to an OIDC identity.",
     response_model=list[str],
 )
-async def list_claimable_accounts(db: Database) -> list[str]:
+@limiter.limit("10/minute")
+async def list_claimable_accounts(request: Request, db: Database) -> list[str]:
     """Return usernames of unlinked legacy accounts available to claim.
 
     An account is claimable if its ``external_unique_id`` is still the
@@ -93,6 +94,14 @@ async def claim_account(
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Claim request could not be processed.",
+            )
+
+        # Only legacy (unlinked) accounts may be claimed — reject attempts
+        # to claim active OIDC-linked accounts to prevent account takeover.
+        if target.external_unique_id != LEGACY_PLACEHOLDER_SUB:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This account cannot be claimed.",
             )
 
         # Check for an existing pending claim by the same requester
