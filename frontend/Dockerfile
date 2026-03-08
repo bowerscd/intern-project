@@ -5,6 +5,10 @@ COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts
 COPY tsconfig.json ./
 COPY src/ts/ src/ts/
+# Replace mockData with a runtime-throwing stub for production builds.
+# The dynamic import() in dataProvider.ts still resolves at compile time
+# but the stub throws so mock data can never be served in production.
+RUN printf 'import type { DataProvider } from "./dataProvider.js";\nexport const mockDataProvider: DataProvider = new Proxy({} as DataProvider, { get() { throw new Error("mock data is not available in production"); } });\n' > src/ts/services/mockData.ts
 RUN npx tsc -p tsconfig.json
 
 # Stage 2: Python application

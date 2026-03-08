@@ -27,7 +27,7 @@ const generateMealRecords = (): MealRecord[] => {
     }
     const credits = Math.floor(Math.random() * 5) + 1;
     const d = new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000 + Math.random() * 12 * 60 * 60 * 1000);
-    records.push({ payer, recipient, credits, date: d.toISOString() });
+    records.push({ id: i + 1, payer, recipient, credits, date: d.toISOString() });
   }
   
   return records.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

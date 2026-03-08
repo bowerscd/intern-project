@@ -1,8 +1,9 @@
 /**
  * Data provider facade — selects mock or live backend based on config.
  *
- * Set window.__USE_MOCK = true (or omit __USE_MOCK) to use mock data.
- * Set window.__USE_MOCK = false to use the live API.
+ * Mock mode is only available in dev mode (both __USE_MOCK and __DEV_MODE
+ * must be true).  In production builds, mockData.ts is replaced with a
+ * stub that throws at runtime.
  */
 import type { Profile, MealRecord, MealSummary, IndividualizedSummary, HappyHourEvent, RotationMember, HappyHourLocation } from "../types.js";
 
@@ -21,7 +22,7 @@ export interface DataProvider {
   getAllUsers(): Promise<string[]>;
 }
 
-const useMock = (window as any).__USE_MOCK !== false;
+const useMock = (window as any).__USE_MOCK === true && (window as any).__DEV_MODE === true;
 
 async function loadProvider(): Promise<DataProvider> {
   if (useMock) {

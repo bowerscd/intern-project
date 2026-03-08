@@ -170,3 +170,104 @@ async def notify_tyrant_on_deck(account: Any, current_tyrant_name: str) -> None:
     sms_msg = MIMEText(body, "plain", "utf-8")
 
     await _notify_user(account, email_msg, sms_msg)
+
+
+async def notify_happy_hour_updated(event: Any, db_session: Any) -> None:
+    """Send update notifications when a happy hour event is changed.
+
+    Notifies all users with the ``HAPPY_HOUR`` claim that the event
+    details (location, time, or description) have been updated.
+
+    :param event: An :class:`Event` instance with the updated fields.
+    :param db_session: An active database session.
+    """
+    from models.enums import AccountClaims
+    from db.functions import get_accounts_with_claim
+
+    users = get_accounts_with_claim(db_session, AccountClaims.HAPPY_HOUR)
+
+    date = event.When.date().strftime("%d-%m-%y")
+    location_name = event.Location.Name if event.Location else "TBD"
+    location_address = event.Location.AddressRaw if event.Location else ""
+
+    subject = f"Happy Hour UPDATED - {date}"
+    body = (
+        f"Hello,\n\n"
+        f"The happy hour event has been updated!\n\n"
+        f"New details:\n"
+        f"  When: {date}\n"
+        f"  Location: {location_name}\n"
+        f"  Address: {location_address}\n\n"
+        f"Please update your plans accordingly.\n\n"
+        f"Cheers,\nHappy Hour Bot"
+    )
+
+    import asyncio
+
+    async def _notify(user: Any) -> None:
+        email_msg = MIMEText(body, "plain", "utf-8")
+        email_msg["Subject"] = subject
+        sms_body = (
+            f"Happy Hour UPDATED: {location_name} on {date}. "
+            f"Address: {location_address}"
+        )
+        sms_msg = MIMEText(sms_body, "plain", "utf-8")
+        await _notify_user(user, email_msg, sms_msg)
+
+    results = await asyncio.gather(
+        *[_notify(user) for user in users],
+        return_exceptions=True,
+    )
+    for i, result in enumerate(results):
+        if isinstance(result, Exception):
+            logger.error(
+                f"Failed to notify user {users[i].username} of update: {result}"
+            )
+
+
+async def notify_happy_hour_cancelled(event_info: dict, db_session: Any) -> None:
+    """Send cancellation notifications when a happy hour event is cancelled.
+
+    Notifies all users with the ``HAPPY_HOUR`` claim that the event
+    has been cancelled and the weekly slot is now open.
+
+    :param event_info: A dict with ``location_name``, ``location_address``,
+        and ``when`` keys captured before the event was deleted.
+    :param db_session: An active database session.
+    """
+    from models.enums import AccountClaims
+    from db.functions import get_accounts_with_claim
+
+    users = get_accounts_with_claim(db_session, AccountClaims.HAPPY_HOUR)
+
+    when = event_info.get("when")
+    date = when.date().strftime("%d-%m-%y") if when else "TBD"
+    location_name = event_info.get("location_name", "Unknown")
+
+    subject = f"Happy Hour CANCELLED - {date}"
+    body = (
+        f"Hello,\n\n"
+        f"The happy hour at {location_name} scheduled for {date} "
+        f"has been cancelled.\n\n"
+        f"A new event may be submitted for this week. Stay tuned!\n\n"
+        f"Cheers,\nHappy Hour Bot"
+    )
+
+    import asyncio
+
+    async def _notify(user: Any) -> None:
+        email_msg = MIMEText(body, "plain", "utf-8")
+        email_msg["Subject"] = subject
+        sms_body = f"Happy Hour CANCELLED: {location_name} on {date} is cancelled."
+        sms_msg = MIMEText(sms_body, "plain", "utf-8")
+        await _notify_user(user, email_msg, sms_msg)
+
+    results = await asyncio.gather(
+        *[_notify(user) for user in users],
+        return_exceptions=True,
+    )
+    for i, result in enumerate(results):
+        if isinstance(result, Exception):
+            logger.error(
+                f"Failed to notify user {users[i].username} of cancellation: {result}"
+            )

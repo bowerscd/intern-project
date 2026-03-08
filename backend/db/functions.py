@@ -831,6 +831,72 @@ def get_random_previous_location(s: Session) -> Location | None:
     return choice(open_locations)
 
 
+def get_weighted_random_location(s: Session) -> Location | None:
+    """Select a random open location using inverse-frequency weighting.
+
+    Locations that have been visited fewer times are more likely to be
+    selected.  Locations that have never hosted an event get the highest
+    weight.  Closed or illegal locations are excluded.
+
+    The weight for each location is ``1 / (visit_count + 1)``, so a
+    location with 0 visits gets weight 1.0, one with 1 visit gets 0.5,
+    two visits gets 0.33, etc.
+
+    :param s: Active database session.
+    :returns: A weighted-randomly chosen location, or ``None`` if no open
+        locations exist.
+    :rtype: Location | None
+    """
+    from random import choices
+
+    open_locations = s.scalars(
+        select(Location).where(
+            Location.Closed == False,  # noqa: E712
+            Location.Illegal == False,  # noqa: E712
+        )
+    ).all()
+
+    if not open_locations:
+        return None
+
+    # Count visits per location
+    visit_rows = s.execute(
+        select(Event.LocationID, func.count().label("cnt")).group_by(Event.LocationID)
+    ).all()
+    visit_counts: dict[int, int] = {row[0]: row[1] for row in visit_rows}
+
+    # Inverse-frequency weights: fewer visits → higher weight
+    weights = [1.0 / (visit_counts.get(loc.id, 0) + 1) for loc in open_locations]
+
+    return choices(open_locations, weights=weights, k=1)[0]
+
+
+def get_true_random_location(s: Session) -> Location | None:
+    """Select a uniformly random open location (no weighting).
+
+    All open, legal locations have an equal chance regardless of visit
+    history.
+
+    :param s: Active database session.
+    :returns: A randomly chosen location, or ``None`` if no open
+        locations exist.
+    :rtype: Location | None
+    """
+    from random import choice
+
+    open_locations = s.scalars(
+        select(Location).where(
+            Location.Closed == False,  # noqa: E712
+            Location.Illegal == False,  # noqa: E712
+        )
+    ).all()
+
+    if not open_locations:
+        return None
+
+    return choice(open_locations)
+
+
 def get_accounts_with_claim(s: Session, claim: AccountClaims) -> list[Account]:
     """Get all active accounts that have a specific claim set in their bitmask.
 
@@ -1040,6 +1106,8 @@ def get_current_cycle_number(s: Session) -> int:
 def get_consecutive_misses(s: Session, account_id: int) -> int:
     """Count the most recent unbroken streak of MISSED assignments for an account.
 
+    SKIPPED assignments are ignored (not counted as misses or streak-breakers).
+
     :param s: Active database session.
     :param account_id: The account ID to check.
     :returns: Number of consecutive MISSED assignments starting from the most
@@ -1054,6 +1122,8 @@ def get_consecutive_misses(s: Session, account_id: int) -> int:
 
     count = 0
     for rotation in rotations:
+        if rotation.status == TyrantAssignmentStatus.SKIPPED:
+            continue  # skip voluntary skips — don't count or break streak
         if rotation.status == TyrantAssignmentStatus.MISSED:
             count += 1
         else:
@@ -1124,3 +1194,115 @@ def update_account_claims(
     if account is not None:
         account.claims = new_claims
         s.flush()
+
+
+# --- Disaster Recovery functions ---
+
+
+def get_receipt_by_id(s: Session, receipt_id: int) -> Receipt | None:
+    """Fetch a receipt by its primary key.
+
+    :param s: Active database session.
+    :param receipt_id: The receipt's integer ID.
+    :returns: The matching receipt or ``None``.
+    """
+    return s.scalars(
+        select(Receipt)
+        .options(joinedload(Receipt.Payer), joinedload(Receipt.Recipient))
+        .where(Receipt.id == receipt_id)
+    ).first()
+
+
+def delete_receipt(s: Session, receipt_id: int) -> None:
+    """Delete a receipt by its primary key.
+
+    :param s: Active database session.
+    :param receipt_id: The receipt's integer ID.
+    :raises ValueError: If the receipt does not exist.
+    """
+    receipt = s.scalars(select(Receipt).where(Receipt.id == receipt_id)).first()
+    if receipt is None:
+        raise ValueError(f"Receipt {receipt_id} does not exist")
+    s.delete(receipt)
+    s.flush()
+
+
+def update_event_fields(
+    s: Session,
+    event_id: int,
+    location_id: int | None = None,
+    when: datetime | None = None,
+    description: str | None = ...,
+) -> Event | None:
+    """Update mutable fields on a happy hour event.
+
+    Only provided (non-sentinel) values are applied.  If ``when`` is
+    changed, the ``week_of`` field is recomputed.
+
+    :param s: Active database session.
+    :param event_id: The event's integer ID.
+    :param location_id: New location foreign key (optional).
+    :param when: New event datetime (optional).
+    :param description: New description (optional; pass ``None`` to clear).
+    :returns: The updated event, or ``None`` if not found.
+    """
+    event = s.scalars(
+        select(Event)
+        .options(joinedload(Event.Location), joinedload(Event.Tyrant))
+        .where(Event.id == event_id)
+    ).first()
+    if event is None:
+        return None
+    if location_id is not None:
+        event.LocationID = location_id
+    if when is not None:
+        event.When = when
+        event.week_of = _compute_week_of(when)
+    if description is not ...:
+        event.Description = description
+    s.flush()
+    s.refresh(event)
+    return event
+
+
+def delete_event(s: Session, event_id: int) -> None:
+    """Delete a happy hour event by its primary key.
+
+    Freeing the ``week_of`` unique constraint allows a replacement
+    event to be created for the same week.
+
+    :param s: Active database session.
+    :param event_id: The event's integer ID.
+    :raises ValueError: If the event does not exist.
+    """
+    event = s.scalars(select(Event).where(Event.id == event_id)).first()
+    if event is None:
+        raise ValueError(f"Event {event_id} does not exist")
+    s.delete(event)
+    s.flush()
+
+
+def skip_assignment(s: Session, assignment_id: int) -> None:
+    """Mark a tyrant rotation assignment as SKIPPED.
+
+    Unlike MISSED, a SKIPPED assignment does not count toward
+    the consecutive miss limit.
+
+    :param s: Active database session.
+    :param assignment_id: The assignment's integer ID.
+    """
+    _update_assignment_status(s, assignment_id, TyrantAssignmentStatus.SKIPPED)
+
+
+def get_assignment_by_id(s: Session, assignment_id: int) -> TyrantRotation | None:
+    """Fetch a tyrant rotation assignment by its primary key.
+
+    :param s: Active database session.
+    :param assignment_id: The assignment's integer ID.
+    :returns: The matching rotation assignment or ``None``.
+    """
+    return s.scalars(
+        select(TyrantRotation)
+        .options(joinedload(TyrantRotation.Account))
+        .where(TyrantRotation.id == assignment_id)
+    ).first()

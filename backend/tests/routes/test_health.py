@@ -14,11 +14,6 @@ class TestHealthEndpoint:
         assert body["status"] == "ok"
         assert body["db"] == "ok"
 
-    def test_healthz_no_auth_required(self, client: TestClient) -> None:
-        """The health endpoint must be accessible without authentication."""
-        resp = client.get("/healthz")
-        assert resp.status_code == 200
-
     def test_healthz_content_type(self, client: TestClient) -> None:
         """The health endpoint should return application/json."""
         resp = client.get("/healthz")

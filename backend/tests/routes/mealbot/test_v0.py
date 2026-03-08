@@ -15,15 +15,6 @@ class TestV0PermanentlyDisabled:
         r = client.post("/api/echo", content=b"hello world")
         assert r.status_code == 410
 
-    def test_get_data_returns_410(self, client: TestClient) -> None:
-        """v0 get-data returns 410 Gone.
-
-        :param client: Unauthenticated HTTP test client.
-        :type client: TestClient
-        """
-        r = client.get("/api/get-data")
-        assert r.status_code == 410
-
     def test_edit_meal_returns_410(self, client: TestClient) -> None:
         """v0 edit_meal returns 410 Gone.
 

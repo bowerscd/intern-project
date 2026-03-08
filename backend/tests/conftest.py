@@ -251,7 +251,7 @@ def _authenticated_client_with_claims(
             username,
             f"{username}@test.com",
             ExternalAuthProvider.test,
-            "1",
+            username,
             None,
             claims=claims,
         )
@@ -286,6 +286,36 @@ async def happyhour_only_client(database: Database) -> AsyncIterator[TestClient]
     """
     for c in _authenticated_client_with_claims(
         database, AccountClaims.HAPPY_HOUR, "hh_user"
+    ):
+        yield c
+
+
+@pytest_asyncio.fixture(scope="function")
+async def admin_happyhour_client(database: Database) -> AsyncIterator[TestClient]:
+    """Authenticated client with ADMIN + HAPPY_HOUR claims (but no TYRANT).
+
+    Use this fixture to verify that admins can perform recovery actions
+    on happy hour resources without needing the HAPPY_HOUR_TYRANT claim.
+    """
+    for c in _authenticated_client_with_claims(
+        database,
+        AccountClaims.ADMIN | AccountClaims.HAPPY_HOUR,
+        "admin_hh_user",
+    ):
+        yield c
+
+
+@pytest_asyncio.fixture(scope="function")
+async def admin_mealbot_client(database: Database) -> AsyncIterator[TestClient]:
+    """Authenticated client with ADMIN + MEALBOT claims.
+
+    Use this fixture to verify that admins can void any mealbot record
+    regardless of involvement.
+    """
+    for c in _authenticated_client_with_claims(
+        database,
+        AccountClaims.ADMIN | AccountClaims.MEALBOT,
+        "admin_mb_user",
     ):
         yield c
 

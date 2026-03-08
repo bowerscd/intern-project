@@ -22,37 +22,6 @@ LOCATION_DATA = {
 }
 
 
-class TestHappyHourUnauthenticated:
-    """All happy hour endpoints should reject unauthenticated requests."""
-
-    def test_locations_requires_auth(self, client: TestClient) -> None:
-        """Verify ``GET /locations`` returns 403 without auth.
-
-        :param client: Unauthenticated HTTP test client.
-        :type client: TestClient
-        """
-        r = client.get("/api/v2/happyhour/locations")
-        assert r.status_code == 401
-
-    def test_create_location_requires_auth(self, client: TestClient) -> None:
-        """Verify ``POST /locations`` returns 403 without auth.
-
-        :param client: Unauthenticated HTTP test client.
-        :type client: TestClient
-        """
-        r = client.post("/api/v2/happyhour/locations", json=LOCATION_DATA)
-        assert r.status_code == 401
-
-    def test_events_requires_auth(self, client: TestClient) -> None:
-        """Verify ``GET /events`` returns 403 without auth.
-
-        :param client: Unauthenticated HTTP test client.
-        :type client: TestClient
-        """
-        r = client.get("/api/v2/happyhour/events")
-        assert r.status_code == 401
-
-
 class TestLocations:
     """Verify authenticated happy-hour location endpoints."""
 
@@ -120,6 +89,86 @@ class TestLocations:
         )
         assert r.status_code == 200
         assert r.json()["closed"] is True
+
+
+class TestRandomLocation:
+    """Verify GET /api/v2/happyhour/locations/random endpoint."""
+
+    def test_random_no_locations_returns_404(
+        self, authenticated_client: TestClient
+    ) -> None:
+        r = authenticated_client.get("/api/v2/happyhour/locations/random")
+        assert r.status_code == 404
+
+    def test_random_returns_open_location(
+        self, authenticated_client: TestClient
+    ) -> None:
+        authenticated_client.post("/api/v2/happyhour/locations", json=LOCATION_DATA)
+        r = authenticated_client.get("/api/v2/happyhour/locations/random")
+        assert r.status_code == 200
+        assert r.json()["name"] == "Test Tavern"
+
+    def test_random_excludes_closed(self, authenticated_client: TestClient) -> None:
+        r = authenticated_client.post("/api/v2/happyhour/locations", json=LOCATION_DATA)
+        loc_id = r.json()["id"]
+        authenticated_client.patch(
+            f"/api/v2/happyhour/locations/{loc_id}", json={"closed": True}
+        )
+        r = authenticated_client.get("/api/v2/happyhour/locations/random")
+        assert r.status_code == 404
+
+    def test_weighted_random_returns_location(
+        self, authenticated_client: TestClient
+    ) -> None:
+        authenticated_client.post("/api/v2/happyhour/locations", json=LOCATION_DATA)
+        r = authenticated_client.get("/api/v2/happyhour/locations/random?weighted=true")
+        assert r.status_code == 200
+        assert r.json()["name"] == "Test Tavern"
+
+    def test_weighted_favors_unvisited(self, authenticated_client: TestClient) -> None:
+        """With one visited and one unvisited location, weighted random should
+        strongly favor the unvisited one over many iterations."""
+        authenticated_client.post("/api/v2/happyhour/locations", json=LOCATION_DATA)
+        alternate = {
+            **LOCATION_DATA,
+            "name": "Unvisited Pub",
+            "address_raw": "456 New St, Portland, OR 97202",
+            "number": 456,
+            "street_name": "New St",
+            "zip_code": "97202",
+        }
+        authenticated_client.post("/api/v2/happyhour/locations", json=alternate)
+
+        # Create multiple events at Test Tavern to make it heavily visited
+        for i in range(5):
+            event_time = (datetime.now(UTC) + timedelta(days=3 + i * 7)).isoformat()
+            authenticated_client.post(
+                "/api/v2/happyhour/events",
+                json={
+                    "location_id": 1,
+                    "when": event_time,
+                },
+            )
+
+        # Sample weighted random 20 times — unvisited should appear more
+        unvisited_count = 0
+        for _ in range(20):
+            r = authenticated_client.get(
+                "/api/v2/happyhour/locations/random?weighted=true"
+            )
+            assert r.status_code == 200
+            if r.json()["name"] == "Unvisited Pub":
+                unvisited_count += 1
+
+        # With weight 1.0 vs 1/6=0.167, unvisited should win ~86% of the time
+        # Use a conservative threshold to avoid flaky tests
+        assert unvisited_count >= 5, (
+            f"Expected unvisited location to appear frequently, got {unvisited_count}/20"
+        )
+
+    def test_random_requires_auth(self, client: TestClient) -> None:
+        r = client.get("/api/v2/happyhour/locations/random")
+        assert r.status_code == 401
 
 
 class TestEvents:

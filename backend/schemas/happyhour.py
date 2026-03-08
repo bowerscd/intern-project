@@ -121,6 +121,34 @@ class EventCreate(BaseModel):
         return v
 
 
+class EventUpdate(BaseModel):
+    """Request schema for updating an existing happy hour event.
+
+    Only fields explicitly set in the request body are applied.
+    Used for disaster recovery when the wrong venue or time was chosen.
+    """
+
+    location_id: Optional[int] = Field(
+        None, description="New location ID for the event"
+    )
+    description: Optional[str] = Field(
+        None, description="Updated description", max_length=1000
+    )
+    when: Optional[datetime] = Field(None, description="Updated date/time")
+
+    @field_validator("when")
+    @classmethod
+    def when_must_be_in_future(cls, v: datetime | None) -> datetime | None:
+        """Reject event dates that are in the past."""
+        if v is None:
+            return v
+        now = datetime.now(UTC)
+        compare = v if v.tzinfo is not None else v.replace(tzinfo=UTC)
+        if compare < now:
+            raise ValueError("Event date must be in the future")
+        return v
+
+
 class EventResponse(BaseModel):
     """Response schema representing a happy hour event."""
 

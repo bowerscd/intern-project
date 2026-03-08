@@ -33,6 +33,7 @@ export function encodeClaims(names: string[]): number {
 }
 
 export type MealRecord = {
+  id: number;
   payer: string;
   recipient: string;
   credits: number;

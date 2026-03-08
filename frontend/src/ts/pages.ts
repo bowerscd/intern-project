@@ -327,10 +327,33 @@ export async function renderMealbot() {
   }
 
   function renderLedger(containerId: string, page: typeof ledgerPage) {
+    const rows = page.items.map((row) => {
+      const isInvolved = row.payer === currentUser || row.recipient === currentUser;
+      const voidBtn = isInvolved
+        ? `<button type="button" class="void-record-btn" data-record-id="${row.id}" style="font-size: 0.8em; padding: 2px 8px;">Void</button>`
+        : "";
+      return [row.payer, row.recipient, formatDate(row.date), voidBtn];
+    });
     byId(containerId).innerHTML = table(
-      ["Payer", "Recipient", "Date"],
-      page.items.map((row) => [row.payer, row.recipient, formatDate(row.date)]),
+      ["Payer", "Recipient", "Date", ""],
+      rows,
+      { rawColumns: [3] },
     );
+
+    // Wire up void buttons
+    byId(containerId).querySelectorAll(".void-record-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const recordId = Number((btn as HTMLElement).dataset.recordId);
+        if (!confirm("Void this record? This cannot be undone.")) return;
+        try {
+          await api.voidMealbotRecord(recordId);
+          byId("mealbot-record-result").innerHTML = status("Record voided.");
+          await refreshAfterRecord();
+        } catch (err: any) {
+          byId("mealbot-record-result").innerHTML = status(`Error: ${err.message}`);
+        }
+      });
+    });
   }
 
   async function refreshAfterRecord() {
@@ -479,13 +502,48 @@ export async function renderHappyHour() {
       const addressHtml = u.location_address
         ? `<br><span style="color:#aaa; font-size: 0.9em;">${esc(u.location_address)}</span>`
         : "";
+      const isRealEvent = u.id && u.id > 0;
+      const recoveryButtons = hasTyrant && isRealEvent
+        ? `<td>
+            <button type="button" class="cancel-event-btn" data-event-id="${u.id}" style="margin-right: 6px;">Cancel</button>
+          </td>`
+        : "";
+      const recoveryHeader = hasTyrant && isRealEvent ? "<th></th>" : "";
       byId("happyhour-upcoming").innerHTML = `
-        <table><thead><tr><th>When</th><th>Location</th><th>Chosen By</th></tr></thead>
+        <table><thead><tr><th>When</th><th>Location</th><th>Chosen By</th>${recoveryHeader}</tr></thead>
         <tbody><tr>
           <td>${u.when ? formatDate(u.when) : "TBD"}</td>
           <td>${nameHtml}${addressHtml}</td>
           <td>${esc(u.tyrant_username ?? "TBD")}</td>
+          ${recoveryButtons}
         </tr></tbody></table>`;
+
+      // Wire up cancel button
+      if (hasTyrant && isRealEvent) {
+        const cancelBtn = document.querySelector(".cancel-event-btn") as HTMLElement | null;
+        if (cancelBtn) {
+          cancelBtn.addEventListener("click", async () => {
+            if (!confirm("Are you sure you want to cancel this happy hour? This will notify everyone.")) return;
+            try {
+              await api.cancelEvent(u.id);
+              byId("happyhour-result").innerHTML = status("Happy hour cancelled. You can now submit a new one for this week.");
+              // Refresh all data
+              const [newUpcoming, newRotation, newEvents] = await Promise.all([
+                dataProvider.getUpcomingHappyHour(),
+                dataProvider.getRotation(),
+                api.getEventsPage(1, BATCH_SIZE),
+              ]);
+              renderUpcoming(newUpcoming);
+              byId("happyhour-rotation").innerHTML = newRotation.length > 0
+                ? table(["User", "Week"], newRotation.map((item: any) => [item.username, item.deadline ? formatDateShort(item.deadline) : "—"]))
+                : "<p style='color:#aaa;'>No rotation yet.</p>";
+              renderEventsTable(newEvents);
+            } catch (err: any) {
+              byId("happyhour-result").innerHTML = status(`Error: ${err.message}`);
+            }
+          });
+        }
+      }
     }
 
     renderUpcoming(upcoming);
@@ -527,10 +585,33 @@ export async function renderHappyHour() {
 
       // Turn status
       if (isTurn) {
-        byId("happyhour-turn-status").innerHTML = status("It is your turn to pick the next happy hour location.");
+        byId("happyhour-turn-status").innerHTML = status("It is your turn to pick the next happy hour location.") +
+          `<button type="button" id="skip-turn-btn" style="margin-top: 8px;">Skip My Turn</button>`;
       } else {
         byId("happyhour-turn-status").innerHTML = status("It is not your turn, but you can still submit early if you'd like.");
       }
+
+      // Wire up skip turn button
+      document.getElementById("skip-turn-btn")?.addEventListener("click", async () => {
+        if (!confirm("Are you sure you want to skip your turn? The next person in rotation will be activated.")) return;
+        try {
+          const result = await api.skipRotationTurn();
+          const nextMsg = result.next_user ? ` ${result.next_user} is now up.` : "";
+          byId("happyhour-result").innerHTML = status(`Turn skipped.${nextMsg}`);
+          // Refresh rotation and upcoming
+          const [newUpcoming, newRotation] = await Promise.all([
+            dataProvider.getUpcomingHappyHour(),
+            dataProvider.getRotation(),
+          ]);
+          renderUpcoming(newUpcoming);
+          byId("happyhour-rotation").innerHTML = newRotation.length > 0
+            ? table(["User", "Week"], newRotation.map((item: any) => [item.username, item.deadline ? formatDateShort(item.deadline) : "—"]))
+            : "<p style='color:#aaa;'>No rotation yet.</p>";
+          byId("happyhour-turn-status").innerHTML = status("You have skipped your turn.");
+        } catch (err: any) {
+          byId("happyhour-result").innerHTML = status(`Error: ${err.message}`);
+        }
+      });
 
       // Always render the form for tyrants (backend enforces rotation rules)
       const nextFriday = (() => {
@@ -556,7 +637,8 @@ export async function renderHappyHour() {
             ${locations.filter((l: any) => !l.closed).map((l: any) => `<option value="${l.id}">${esc(l.name)}</option>`).join("")}
             <option value="new">➕ Add New Location...</option>
           </select>
-          <button type="button" id="random-location-btn">🎲 Random</button>
+          <button type="button" id="weighted-random-btn" title="Favors less-visited locations">🎲 Random</button>
+          <button type="button" id="true-random-btn" title="Equal chance for all locations">🎯 True Random</button>
         </div>
         <div id="new-location-fields" style="display: none; margin-top: 12px; padding: 12px; border: 1px solid #444; border-radius: 6px;">
           <label>Location Name</label><input id="new-location-name" placeholder="New Venue" />
@@ -580,12 +662,35 @@ export async function renderHappyHour() {
         newLocationFields.style.display = locationSelect.value === "new" ? "block" : "none";
       });
 
-      byId("random-location-btn")?.addEventListener("click", () => {
-        const openLocations = locations.filter((l: any) => !l.closed);
-        if (openLocations.length > 0) {
-          const randomLocation = openLocations[Math.floor(Math.random() * openLocations.length)];
-          locationSelect.value = String(randomLocation.id);
+      byId("weighted-random-btn")?.addEventListener("click", async () => {
+        try {
+          const loc = await api.getRandomLocation(true);
+          locationSelect.value = String(loc.id);
           newLocationFields.style.display = "none";
+        } catch {
+          // Fallback to client-side if the endpoint fails
+          const openLocations = locations.filter((l: any) => !l.closed);
+          if (openLocations.length > 0) {
+            const randomLocation = openLocations[Math.floor(Math.random() * openLocations.length)];
+            locationSelect.value = String(randomLocation.id);
+            newLocationFields.style.display = "none";
+          }
+        }
+      });
+
+      byId("true-random-btn")?.addEventListener("click", async () => {
+        try {
+          const loc = await api.getRandomLocation(false);
+          locationSelect.value = String(loc.id);
+          newLocationFields.style.display = "none";
+        } catch {
+          // Fallback to client-side if the endpoint fails
+          const openLocations = locations.filter((l: any) => !l.closed);
+          if (openLocations.length > 0) {
+            const randomLocation = openLocations[Math.floor(Math.random() * openLocations.length)];
+            locationSelect.value = String(randomLocation.id);
+            newLocationFields.style.display = "none";
+          }
         }
       });
 

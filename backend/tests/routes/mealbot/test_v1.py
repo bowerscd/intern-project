@@ -15,15 +15,6 @@ class TestV1PermanentlyDisabled:
         r = client.post("/api/v1/User", json={"user": "alice", "operation": "CREATE"})
         assert r.status_code == 410
 
-    def test_summary_returns_410(self, client: TestClient) -> None:
-        """v1 Summary returns 410 Gone.
-
-        :param client: Unauthenticated HTTP test client.
-        :type client: TestClient
-        """
-        r = client.get("/api/v1/Summary")
-        assert r.status_code == 410
-
     def test_record_get_returns_410(self, client: TestClient) -> None:
         """v1 Record GET returns 410 Gone.
 

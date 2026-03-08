@@ -44,8 +44,8 @@ SERVER_HOSTNAME: str = _get("SERVER_HOSTNAME", None) or socket.gethostname()
 BACKEND_HOSTNAME: str = _get("BACKEND_HOSTNAME", "backend")
 """The internal Docker hostname for the backend service."""
 
-USE_MOCK: bool = _get_bool("USE_MOCK", False)
-"""Whether to use mock mode (disables auth gate, mocks API calls)."""
+USE_MOCK: bool = _get_bool("USE_MOCK", False) and DEV_MODE
+"""Whether to use mock mode (dev-only; disables auth gate, mocks API calls)."""
 
 USE_PROXY: bool = _get_bool("USE_PROXY", True)
 """Whether to proxy /api/* requests to the backend (recommended)."""

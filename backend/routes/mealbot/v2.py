@@ -205,3 +205,88 @@ async def record(
         },
     )
     return {"status": "ok"}
+
+
+@MealbotV2.delete(
+    "/record/{record_id}",
+    summary="Void a meal record",
+    dependencies=[Depends(validate_csrf_token)],
+    description="Delete (void) a mistaken meal credit record. The payer, "
+    "recipient, original recorder, or any ADMIN can void a record. Requires MEALBOT claim.",
+    status_code=status.HTTP_200_OK,
+)
+async def void_record(
+    record_id: int,
+    account: Annotated[Any, Depends(RequireLogin(AccountClaims.MEALBOT))],
+    db: Database,
+) -> dict[str, Any]:
+    """Void (delete) a meal credit record.
+
+    The payer, recipient, or original recorder of the record may void
+    it.  Users with the ``ADMIN`` claim may void any record.  This is
+    a disaster recovery mechanism for correcting mistakes — duplicate
+    entries, wrong person, wrong amount, etc.
+
+    :param record_id: The record's integer ID.
+    :param account: The authenticated account with ``MEALBOT`` claim.
+    :param db: Active database session.
+    :returns: A status dict.
+    :raises HTTPException: If the record is not found or the caller is
+        not authorized to void it.
+    """
+    from db.functions import get_receipt_by_id, delete_receipt
+
+    require_write_access(account)
+
+    # Capture values before the session closes (lesson #034)
+    account_id = account.id
+    account_username = account.username
+    is_admin = (account.claims & AccountClaims.ADMIN) == AccountClaims.ADMIN
+
+    with db:
+        receipt = get_receipt_by_id(db, record_id)
+        if receipt is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Record not found",
+            )
+
+        # ADMIN can void any record; others must be payer, recipient, or recorder
+        if not is_admin:
+            allowed_ids = {receipt.PayerId, receipt.RecipientId}
+            if receipt.RecorderId is not None:
+                allowed_ids.add(receipt.RecorderId)
+
+            if account_id not in allowed_ids:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You can only void records you are involved in",
+                )
+
+        # Capture info for logging before deletion (lesson #034)
+        payer_name = receipt.Payer.username
+        recipient_name = receipt.Recipient.username
+        credits = receipt.Credits
+
+        delete_receipt(db, record_id)
+        db.commit()
+
+    logger.info(
+        "Mealbot void: record #%d (%s -> %s, %d credits) voided by %s (#%d)",
+        record_id,
+        payer_name,
+        recipient_name,
+        credits,
+        account_username,
+        account_id,
+        extra={
+            "action": "mealbot_void",
+            "record_id": record_id,
+            "payer": payer_name,
+            "recipient": recipient_name,
+            "credits": credits,
+            "voided_by_id": account_id,
+            "voided_by_username": account_username,
+        },
+    )
+    return {"status": "voided", "record_id": record_id}

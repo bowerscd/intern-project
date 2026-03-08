@@ -91,6 +91,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 function get<T>(path: string): Promise<T> { return request<T>("GET", path); }
 function post<T>(path: string, body?: unknown): Promise<T> { return request<T>("POST", path, body); }
 function patch<T>(path: string, body?: unknown): Promise<T> { return request<T>("PATCH", path, body); }
+function del<T>(path: string): Promise<T> { return request<T>("DELETE", path); }
 
 // ── Auth ──────────────────────────────────────────────────────────────
 
@@ -206,6 +207,7 @@ export function updateClaims(body: ClaimsUpdate): Promise<ProfileResponse> {
 // ── Mealbot ───────────────────────────────────────────────────────────
 
 export type RecordResponse = {
+  id: number;
   payer: string;
   recipient: string;
   credits: number;
@@ -257,6 +259,10 @@ export function createMealbotRecord(body: CreateRecordRequest): Promise<{ status
   return post("/api/v2/mealbot/record", body);
 }
 
+export function voidMealbotRecord(recordId: number): Promise<{ status: string; record_id: number }> {
+  return del(`/api/v2/mealbot/record/${recordId}`);
+}
+
 // ── Happy Hour ────────────────────────────────────────────────────────
 
 export type EventResponse = {
@@ -275,6 +281,12 @@ export type EventCreate = {
   location_id: number;
   description?: string;
   when: string;
+};
+
+export type EventUpdate = {
+  location_id?: number;
+  description?: string;
+  when?: string;
 };
 
 export type LocationResponse = {
@@ -340,6 +352,18 @@ export function createEvent(body: EventCreate): Promise<EventResponse> {
   return post("/api/v2/happyhour/events", body);
 }
 
+export function updateEvent(id: number, body: EventUpdate): Promise<EventResponse> {
+  return patch(`/api/v2/happyhour/events/${id}`, body);
+}
+
+export function cancelEvent(id: number): Promise<{ status: string; event_id: number }> {
+  return del(`/api/v2/happyhour/events/${id}`);
+}
+
+export function skipRotationTurn(): Promise<{ status: string; skipped_user: string; next_user: string | null }> {
+  return post("/api/v2/happyhour/rotation/skip");
+}
+
 export function getRotation(): Promise<RotationScheduleResponse> {
   return get("/api/v2/happyhour/rotation");
 }
@@ -358,6 +382,11 @@ export function getLocationsPage(page?: number, pageSize?: number): Promise<Pagi
 
 export function createLocation(body: LocationCreate): Promise<LocationResponse> {
   return post("/api/v2/happyhour/locations", body);
+}
+
+export function getRandomLocation(weighted = false): Promise<LocationResponse> {
+  const q = weighted ? "?weighted=true" : "";
+  return get(`/api/v2/happyhour/locations/random${q}`);
 }
 
 export function updateLocation(id: number, body: LocationUpdate): Promise<LocationResponse> {

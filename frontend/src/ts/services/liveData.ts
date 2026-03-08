@@ -44,6 +44,7 @@ export const liveDataProvider = {
   async getMealbotLedger(): Promise<MealRecord[]> {
     const records = await api.getMealbotLedger();
     return records.map((r) => ({
+      id: r.id,
       payer: r.payer,
       recipient: r.recipient,
       credits: r.credits,
@@ -54,6 +55,7 @@ export const liveDataProvider = {
   async getMyMealbotLedger(): Promise<MealRecord[]> {
     const records = await api.getMyMealbotLedger();
     return records.map((r) => ({
+      id: r.id,
       payer: r.payer,
       recipient: r.recipient,
       credits: r.credits,

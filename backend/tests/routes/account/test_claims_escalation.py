@@ -1,43 +1,6 @@
-"""Tests for claims self-escalation: only ADMIN is blocked from self-assignment."""
+"""Tests for claims escalation guards: BASIC and ADMIN blocked from self-service."""
 
 from starlette.testclient import TestClient
-
-
-class TestClaimsEscalation:
-    """
-    Only ADMIN is blocked from self-assignment. A BASIC user can
-    self-assign HAPPY_HOUR_TYRANT, MEALBOT, etc.
-    """
-
-    def test_can_self_assign_happy_hour_tyrant(
-        self, authenticated_client: TestClient
-    ) -> None:
-        """An authenticated user can give themselves HAPPY_HOUR_TYRANT.
-
-        :param authenticated_client: Pre-authenticated HTTP test client with all claims.
-        :type authenticated_client: TestClient
-        """
-        resp = authenticated_client.patch(
-            "/api/v2/account/claims",
-            json={"add": ["HAPPY_HOUR_TYRANT"], "remove": []},
-        )
-        assert resp.status_code == 200, (
-            f"Self-escalation to HAPPY_HOUR_TYRANT succeeded: {resp.status_code}"
-        )
-
-    def test_cannot_self_assign_admin(self, authenticated_client: TestClient) -> None:
-        """ADMIN is properly blocked.
-
-        :param authenticated_client: Pre-authenticated HTTP test client with all claims.
-        :type authenticated_client: TestClient
-        """
-        resp = authenticated_client.patch(
-            "/api/v2/account/claims",
-            json={"add": ["ADMIN"], "remove": []},
-        )
-        assert resp.status_code == 400, (
-            f"ADMIN self-assignment correctly blocked: {resp.status_code}"
-        )
 
 
 class TestBasicClaimProtected:

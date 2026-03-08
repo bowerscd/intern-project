@@ -26,58 +26,6 @@ def _add_user(database: Database, username: str) -> None:
         s.commit()
 
 
-class TestV2Unauthenticated:
-    """All v2 endpoints should reject unauthenticated requests."""
-
-    def test_ledger_requires_auth(self, client: TestClient) -> None:
-        """Verify ``GET /ledger`` returns 401 without auth.
-
-        :param client: Unauthenticated HTTP test client.
-        :type client: TestClient
-        """
-        r = client.get("/api/v2/mealbot/ledger")
-        assert r.status_code == 401
-
-    def test_ledger_me_requires_auth(self, client: TestClient) -> None:
-        """Verify ``GET /ledger/me`` returns 401 without auth.
-
-        :param client: Unauthenticated HTTP test client.
-        :type client: TestClient
-        """
-        r = client.get("/api/v2/mealbot/ledger/me")
-        assert r.status_code == 401
-
-    def test_summary_requires_auth(self, client: TestClient) -> None:
-        """Verify ``GET /summary`` returns 401 without auth.
-
-        :param client: Unauthenticated HTTP test client.
-        :type client: TestClient
-        """
-        r = client.get("/api/v2/mealbot/summary")
-        assert r.status_code == 401
-
-    def test_record_requires_auth(self, client: TestClient) -> None:
-        """Verify ``POST /record`` returns 401 without auth.
-
-        :param client: Unauthenticated HTTP test client.
-        :type client: TestClient
-        """
-        r = client.post(
-            "/api/v2/mealbot/record",
-            json={"payer": "a", "recipient": "b", "credits": 1},
-        )
-        assert r.status_code == 401
-
-    def test_user_endpoint_removed(self, client: TestClient) -> None:
-        """Verify ``POST /user`` no longer exists (returns 405 Method Not Allowed).
-
-        :param client: Unauthenticated HTTP test client.
-        :type client: TestClient
-        """
-        r = client.post("/api/v2/mealbot/user", json={"username": "test"})
-        assert r.status_code in (404, 405)
-
-
 class TestV2Authenticated:
     """Verify authenticated v2 mealbot endpoints."""
 

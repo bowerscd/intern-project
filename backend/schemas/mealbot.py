@@ -37,6 +37,7 @@ class RecordResponse(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True)
 
+    id: int = Field(..., description="Unique record identifier")
     payer: str = Field(..., description="Username of the payer")
     recipient: str = Field(..., description="Username of the recipient")
     credits: int = Field(..., description="Number of credits")
@@ -51,6 +52,7 @@ class RecordResponse(BaseModel):
         :rtype: RecordResponse
         """
         return RecordResponse(
+            id=r.id,
             payer=r.Payer.username,
             recipient=r.Recipient.username,
             credits=r.Credits,

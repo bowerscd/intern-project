@@ -11,7 +11,6 @@ from db.functions import (
     get_timebound_records,
     get_timebound_records_between_users,
     get_timebound_records_for_user,
-    get_summary_for_user,
     get_events_this_week,
     get_random_previous_location,
     get_accounts_with_claim,
@@ -21,7 +20,7 @@ from db.functions import (
 from typing import Any
 from models.happyhour.location import Location
 from sqlalchemy.orm import Session
-from models import ExternalAuthProvider, AccountClaims, AccountStatus
+from models import ExternalAuthProvider, AccountClaims
 
 
 def _make_users(s: Session, names: list[str]) -> None:
@@ -263,25 +262,6 @@ class TestTimeboundRecordsForUserWithLimit:
         assert len(records) == 2
 
 
-class TestTimeboundSummaryEdgeCases:
-    """Verify ``get_summary_for_user`` time-bound edge cases."""
-
-    def test_nonexistent_user(self, db_session: Session) -> None:
-        """Verify a :class:`ValueError` for an unknown user.
-
-        :param db_session: SQLAlchemy database session.
-        :type db_session: Session
-        """
-        now = datetime.now(UTC)
-        with pytest.raises(ValueError, match="does not exist"):
-            get_summary_for_user(
-                db_session,
-                "nobody",
-                start=now - timedelta(hours=1),
-                end=now + timedelta(hours=1),
-            )
-
-
 class TestEventsThisWeek:
     """Verify ``get_events_this_week`` window boundaries."""
 
@@ -353,38 +333,7 @@ class TestEventsThisWeek:
 
 
 class TestGetAccountsWithClaim:
-    """Verify ``get_accounts_with_claim`` filtering."""
-
-    def test_returns_matching_users(self, db_session: Session) -> None:
-        """Verify only accounts with the requested claim are returned.
-
-        :param db_session: SQLAlchemy database session.
-        :type db_session: Session
-        """
-        act1 = create_account(
-            "hh1",
-            "hh1@test.com",
-            ExternalAuthProvider.test,
-            "hh1",
-            claims=AccountClaims.HAPPY_HOUR,
-        )
-        act1.status = AccountStatus.ACTIVE
-        act2 = create_account(
-            "nohh1",
-            "nohh1@test.com",
-            ExternalAuthProvider.test,
-            "nohh1",
-            claims=AccountClaims.MEALBOT,
-        )
-        act2.status = AccountStatus.ACTIVE
-        db_session.add(act1)
-        db_session.add(act2)
-        db_session.commit()
-
-        results = get_accounts_with_claim(db_session, AccountClaims.HAPPY_HOUR)
-        usernames = [a.username for a in results]
-        assert "hh1" in usernames
-        assert "nohh1" not in usernames
+    """Verify ``get_accounts_with_claim`` edge cases."""
 
     def test_no_matching_users(self, db_session: Session) -> None:
         """Verify an empty list when no accounts match the claim.

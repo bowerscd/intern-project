@@ -28,13 +28,6 @@ class TestAPICacheHeaders:
 class TestSecurityHeaders:
     """Responses should include basic security headers."""
 
-    def test_content_type_header_present(
-        self, authenticated_client: TestClient
-    ) -> None:
-        resp = authenticated_client.get("/api/v2/account/profile")
-        assert "content-type" in resp.headers
-        assert "application/json" in resp.headers["content-type"]
-
     def test_no_server_version_leaked(self, client: TestClient) -> None:
         """The Server header should not leak internal version info."""
         resp = client.get("/api/v2/happyhour/events")

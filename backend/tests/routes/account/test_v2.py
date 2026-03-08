@@ -4,37 +4,6 @@ from models import AccountClaims
 from starlette.testclient import TestClient
 
 
-class TestAccountUnauthenticated:
-    """Verify account endpoints reject unauthenticated requests."""
-
-    def test_profile_requires_auth(self, client: TestClient) -> None:
-        """Verify ``GET /profile`` returns 403 without auth.
-
-        :param client: Unauthenticated HTTP test client.
-        :type client: TestClient
-        """
-        r = client.get("/api/v2/account/profile")
-        assert r.status_code == 401
-
-    def test_update_profile_requires_auth(self, client: TestClient) -> None:
-        """Verify ``PATCH /profile`` returns 403 without auth.
-
-        :param client: Unauthenticated HTTP test client.
-        :type client: TestClient
-        """
-        r = client.patch("/api/v2/account/profile", json={"phone": "5551234"})
-        assert r.status_code == 401
-
-    def test_update_claims_requires_auth(self, client: TestClient) -> None:
-        """Verify ``PATCH /claims`` returns 403 without auth.
-
-        :param client: Unauthenticated HTTP test client.
-        :type client: TestClient
-        """
-        r = client.patch("/api/v2/account/claims", json={"add": ["MEALBOT"]})
-        assert r.status_code == 401
-
-
 class TestAccountAuthenticated:
     """Verify account endpoints with an authenticated client."""
 

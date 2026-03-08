@@ -869,3 +869,191 @@ class TestVisualApproval:
         else:
             # Claim section may not appear if no claimable accounts found
             _snap(page, "claim_02_no_claimable_accounts", request)
+
+    # ── 13  Disaster recovery workflows ──────────────────────────────
+
+    def test_13_disaster_recovery(
+        self, page, frontend_server, backend_server, oidc_server,
+        backend_db_path, request,
+    ):
+        """Screenshot disaster recovery workflows.
+
+        Covers:
+        - Happy hour event with Cancel button visible
+        - Cancelling an event and seeing the freed slot
+        - Creating a replacement event after cancellation
+        - Skip Turn button on the rotation section
+        - Mealbot ledger with Void buttons
+        - Voiding a meal record
+        """
+        frontend_url, _ = frontend_server
+        backend_url, _ = backend_server
+        oidc_issuer, _ = oidc_server
+
+        # Login as dev-admin (has ALL claims including TYRANT + ADMIN)
+        cookies = _oidc_login_cookies(
+            backend_url, oidc_issuer,
+            sub="dev-admin", name="Admin", email="admin@dev.local",
+        )
+        _inject_cookies(page, cookies, frontend_url)
+
+        # ── A. Happy Hour: Create event, then cancel it ──────────────
+
+        # First create a location and event via API so the page has data
+        api_client = httpx.Client(
+            base_url=backend_url, follow_redirects=False, timeout=10,
+        )
+        for k, v in cookies.items():
+            api_client.cookies.set(k, v)
+        csrf = api_client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
+
+        # Create a location
+        loc_resp = api_client.post(
+            "/api/v2/happyhour/locations",
+            json={
+                "name": "Wrong Venue",
+                "address_raw": "1 Mistake Ave, Portland, OR 97201",
+                "number": 1, "street_name": "Mistake Ave",
+                "city": "Portland", "state": "OR", "zip_code": "97201",
+                "latitude": 45.52, "longitude": -122.68,
+            },
+            headers={"X-CSRF-Token": csrf},
+        )
+        assert loc_resp.status_code == 201, loc_resp.text
+        loc_id = loc_resp.json()["id"]
+
+        # Create a second (correct) location
+        csrf = api_client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
+        loc2_resp = api_client.post(
+            "/api/v2/happyhour/locations",
+            json={
+                "name": "Better Bar",
+                "url": "https://betterbar.example.com",
+                "address_raw": "2 Success St, Portland, OR 97201",
+                "number": 2, "street_name": "Success St",
+                "city": "Portland", "state": "OR", "zip_code": "97201",
+                "latitude": 45.53, "longitude": -122.69,
+            },
+            headers={"X-CSRF-Token": csrf},
+        )
+        assert loc2_resp.status_code == 201, loc2_resp.text
+        loc2_id = loc2_resp.json()["id"]
+
+        # Create an event at the wrong venue
+        from datetime import datetime as dt, timezone, timedelta
+        next_week = (dt.now(timezone.utc) + timedelta(days=7)).isoformat()
+        csrf = api_client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
+        event_resp = api_client.post(
+            "/api/v2/happyhour/events",
+            json={
+                "location_id": loc_id,
+                "description": "Oops, wrong venue!",
+                "when": next_week,
+            },
+            headers={"X-CSRF-Token": csrf},
+        )
+        assert event_resp.status_code == 201, event_resp.text
+        event_id = event_resp.json()["id"]
+
+        # Navigate to happy hour page — should show Cancel button
+        page.goto(f"{frontend_url}/happyhour")
+        page.wait_for_load_state("networkidle")
+        time.sleep(2)
+        _snap(page, "recovery_01_happyhour_with_cancel_btn", request)
+
+        # Cancel the event via API (browser confirm dialogs are tricky in
+        # Playwright, so we do the mutation via API and refresh the page)
+        csrf = api_client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
+        cancel_resp = api_client.delete(
+            f"/api/v2/happyhour/events/{event_id}",
+            headers={"X-CSRF-Token": csrf},
+        )
+        assert cancel_resp.status_code == 200, cancel_resp.text
+
+        # Refresh to see the freed slot
+        page.reload()
+        page.wait_for_load_state("networkidle")
+        time.sleep(1.5)
+        _snap(page, "recovery_02_happyhour_after_cancel", request)
+
+        # Create replacement event at the better venue via API
+        csrf = api_client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
+        replace_resp = api_client.post(
+            "/api/v2/happyhour/events",
+            json={
+                "location_id": loc2_id,
+                "description": "Rescheduled to Better Bar!",
+                "when": next_week,
+            },
+            headers={"X-CSRF-Token": csrf},
+        )
+        assert replace_resp.status_code == 201, replace_resp.text
+
+        page.reload()
+        page.wait_for_load_state("networkidle")
+        time.sleep(1.5)
+        _snap(page, "recovery_03_happyhour_replacement_event", request)
+
+        # ── B. Happy Hour: Skip Turn button ──────────────────────────
+
+        # Scroll to the submit section to see the Skip My Turn button
+        submit_section = page.query_selector("#happyhour-submit-section")
+        if submit_section:
+            submit_section.scroll_into_view_if_needed()
+            time.sleep(0.5)
+            skip_btn = page.query_selector("#skip-turn-btn")
+            if skip_btn:
+                _snap(page, "recovery_04_skip_turn_button", request)
+
+        # ── C. Mealbot: Void a record ────────────────────────────────
+
+        # Ensure a second user exists for mealbot
+        try:
+            _register_and_activate(
+                backend_url, oidc_issuer, backend_db_path,
+                sub="recovery-peer", username="recovery_peer",
+                name="Recovery Peer", email="rpeer@test.local",
+            )
+            _grant_claims_via_db(
+                backend_db_path, "recovery_peer", 1 | 4,  # BASIC | MEALBOT
+            )
+        except Exception:
+            pass  # May already exist from earlier tests
+
+        # Create a mealbot record via API
+        csrf = api_client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
+        api_client.post(
+            "/api/v2/mealbot/record",
+            json={"payer": "dev_admin", "recipient": "recovery_peer", "credits": 1},
+            headers={"X-CSRF-Token": csrf},
+        )
+
+        # Navigate to mealbot dashboard
+        page.goto(f"{frontend_url}/mealbot")
+        page.wait_for_load_state("networkidle")
+        time.sleep(2)
+        _snap(page, "recovery_05_mealbot_with_void_buttons", request)
+
+        # Check that void buttons are visible
+        void_btns = page.query_selector_all(".void-record-btn")
+        if void_btns:
+            # Void a record via API (avoid browser confirm dialog)
+            ledger_resp = api_client.get("/api/v2/mealbot/ledger")
+            if ledger_resp.status_code == 200:
+                items = ledger_resp.json().get("items", [])
+                if items:
+                    record_id = items[0]["id"]
+                    csrf = api_client.get(
+                        "/api/v2/auth/csrf-token"
+                    ).json()["csrf_token"]
+                    api_client.delete(
+                        f"/api/v2/mealbot/record/{record_id}",
+                        headers={"X-CSRF-Token": csrf},
+                    )
+
+            page.reload()
+            page.wait_for_load_state("networkidle")
+            time.sleep(1.5)
+            _snap(page, "recovery_06_mealbot_after_void", request)
+
+        api_client.close()

@@ -158,13 +158,15 @@ class TyrantAssignmentStatus(Enum):
     """Status values for a tyrant rotation assignment.
 
     Tracks whether a tyrant selection is still pending, has been
-    fulfilled, was missed, or is scheduled for a future week.
+    fulfilled, was missed, skipped voluntarily, or is scheduled for a
+    future week.
     """
 
     SCHEDULED = "scheduled"
     PENDING = "pending"
     CHOSEN = "chosen"
     MISSED = "missed"
+    SKIPPED = "skipped"
 
 
 class AccountStatus(Enum):

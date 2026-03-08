@@ -101,6 +101,50 @@ async def create_location(
 
 
 @HappyHour.get(
+    "/locations/random",
+    summary="Get a random location",
+    description="Get a random open happy hour location. Use weighted=true for "
+    "inverse-frequency weighting (less-visited locations are more likely). "
+    "Requires HAPPY_HOUR claim.",
+    response_model=LocationResponse,
+)
+async def random_location(
+    account: Annotated[Any, Depends(RequireLogin(AccountClaims.HAPPY_HOUR))],
+    db: Database,
+    weighted: bool = Query(
+        False,
+        description="Use inverse-frequency weighting (fewer visits = higher chance)",
+    ),
+) -> LocationResponse:
+    """Return a random open location.
+
+    When ``weighted=true``, uses inverse-frequency weighting so locations
+    visited fewer times are more likely to be selected.  When
+    ``weighted=false`` (default), all open locations have equal probability.
+
+    :param account: The authenticated account with ``HAPPY_HOUR`` claim.
+    :param db: Active database session.
+    :param weighted: Whether to apply inverse-frequency weighting.
+    :returns: A randomly chosen :class:`LocationResponse`.
+    :raises HTTPException: If no open locations exist.
+    """
+    from db.functions import get_weighted_random_location, get_true_random_location
+
+    with db:
+        loc = (
+            get_weighted_random_location(db)
+            if weighted
+            else get_true_random_location(db)
+        )
+        if loc is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No open locations available",
+            )
+        return LocationResponse.from_model(loc)
+
+
+@HappyHour.get(
     "/locations/{location_id}",
     summary="Get a specific location",
     description="Get a happy hour location by ID. Requires HAPPY_HOUR claim.",

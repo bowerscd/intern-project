@@ -16,6 +16,7 @@ from csrf import validate_csrf_token
 
 from schemas.happyhour import (
     EventCreate,
+    EventUpdate,
     EventResponse,
     PaginatedEventResponse,
     RotationMemberResponse,
@@ -371,3 +372,311 @@ async def get_rotation(
         ]
 
         return RotationScheduleResponse(cycle=cycle, members=members)
+
+
+@HappyHour.patch(
+    "/events/{event_id}",
+    summary="Update a happy hour event",
+    dependencies=[Depends(validate_csrf_token)],
+    description="Update an existing happy hour event (change location, time, or "
+    "description). Requires HAPPY_HOUR_TYRANT or ADMIN claim. Use when the wrong "
+    "venue or time was chosen. Sends updated notifications to all HAPPY_HOUR users.",
+    response_model=EventResponse,
+)
+async def update_event_endpoint(
+    event_id: int,
+    body: EventUpdate,
+    account: Annotated[Any, Depends(RequireLogin(AccountClaims.HAPPY_HOUR))],
+    db: Database,
+) -> EventResponse:
+    """Update an existing happy hour event for disaster recovery.
+
+    Allows changing the location, time, or description after the event
+    was created.  If the location is changed, the new location must be
+    open.  Sends updated notifications to all HAPPY_HOUR users.
+
+    Requires ``HAPPY_HOUR_TYRANT`` or ``ADMIN`` claim.
+
+    :param event_id: The event's integer ID.
+    :param body: The event update payload.
+    :param account: The authenticated account.
+    :param db: Active database session.
+    :returns: The updated :class:`EventResponse`.
+    :raises HTTPException: If the event or new location is not found,
+        or the new location is closed.
+    """
+    require_write_access(account)
+
+    is_tyrant = (
+        account.claims & AccountClaims.HAPPY_HOUR_TYRANT
+    ) == AccountClaims.HAPPY_HOUR_TYRANT
+    is_admin = (account.claims & AccountClaims.ADMIN) == AccountClaims.ADMIN
+    if not (is_tyrant or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Requires HAPPY_HOUR_TYRANT or ADMIN permission",
+        )
+
+    from db.functions import (
+        update_event_fields,
+        get_location_by_id,
+        get_event_by_id,
+    )
+
+    with db:
+        event = get_event_by_id(db, event_id)
+        if event is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Event not found",
+            )
+
+        # Validate new location if provided
+        if body.location_id is not None:
+            location = get_location_by_id(db, body.location_id)
+            if location is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Location not found",
+                )
+            if location.Closed:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Location is closed",
+                )
+
+        update_kwargs: dict = {}
+        if body.location_id is not None:
+            update_kwargs["location_id"] = body.location_id
+        if body.when is not None:
+            update_kwargs["when"] = body.when
+        if body.description is not None:
+            update_kwargs["description"] = body.description
+
+        try:
+            updated = update_event_fields(db, event_id, **update_kwargs)
+        except IntegrityError:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Another event already exists for the target week",
+            )
+
+        if updated is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Event not found",
+            )
+
+        db.commit()
+        response = _event_response(updated)
+        saved_event_id = updated.id
+
+    # Re-notify all HAPPY_HOUR users about the change
+    try:
+        from mail.outgoing import notify_happy_hour_updated
+
+        with db:
+            from db.functions import get_event_by_id as _get_event
+
+            fresh_event = _get_event(db, saved_event_id)
+            if fresh_event is not None:
+                await notify_happy_hour_updated(fresh_event, db)
+    except Exception:
+        import logging
+
+        logging.getLogger(__name__).exception(
+            "Failed to send event update notifications"
+        )
+
+    return response
+
+
+@HappyHour.delete(
+    "/events/{event_id}",
+    summary="Cancel a happy hour event",
+    dependencies=[Depends(validate_csrf_token)],
+    description="Cancel (delete) a happy hour event. Frees the weekly slot so a "
+    "replacement event can be created. Requires HAPPY_HOUR_TYRANT or ADMIN claim. "
+    "Sends cancellation notifications to all HAPPY_HOUR users.",
+    status_code=status.HTTP_200_OK,
+)
+async def cancel_event_endpoint(
+    event_id: int,
+    account: Annotated[Any, Depends(RequireLogin(AccountClaims.HAPPY_HOUR))],
+    db: Database,
+) -> dict:
+    """Cancel a happy hour event.
+
+    Deletes the event and frees the ``week_of`` unique constraint,
+    allowing a new event to be created for the same week.
+
+    Requires ``HAPPY_HOUR_TYRANT`` or ``ADMIN`` claim.
+
+    :param event_id: The event's integer ID.
+    :param account: The authenticated account.
+    :param db: Active database session.
+    :returns: A status dict with details about the cancelled event.
+    :raises HTTPException: If the event is not found.
+    """
+    require_write_access(account)
+
+    is_tyrant = (
+        account.claims & AccountClaims.HAPPY_HOUR_TYRANT
+    ) == AccountClaims.HAPPY_HOUR_TYRANT
+    is_admin = (account.claims & AccountClaims.ADMIN) == AccountClaims.ADMIN
+    if not (is_tyrant or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Requires HAPPY_HOUR_TYRANT or ADMIN permission",
+        )
+
+    from db.functions import get_event_by_id, delete_event
+
+    with db:
+        event = get_event_by_id(db, event_id)
+        if event is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Event not found",
+            )
+
+        # Capture event info for the notification before deleting
+        event_info = {
+            "location_name": event.Location.Name,
+            "location_address": event.Location.AddressRaw,
+            "when": event.When,
+        }
+
+        delete_event(db, event_id)
+        db.commit()
+
+    # Notify all HAPPY_HOUR users about the cancellation
+    try:
+        from mail.outgoing import notify_happy_hour_cancelled
+
+        with db:
+            await notify_happy_hour_cancelled(event_info, db)
+    except Exception:
+        import logging
+
+        logging.getLogger(__name__).exception(
+            "Failed to send event cancellation notifications"
+        )
+
+    return {"status": "cancelled", "event_id": event_id}
+
+
+@HappyHour.post(
+    "/rotation/skip",
+    summary="Skip the current rotation turn",
+    dependencies=[Depends(validate_csrf_token)],
+    description="Voluntarily skip the current rotation turn. Marks the assignment "
+    "as SKIPPED (does not count toward the consecutive miss limit) and "
+    "activates the next person in the rotation. Requires HAPPY_HOUR_TYRANT "
+    "(own turn) or ADMIN (any turn).",
+    status_code=status.HTTP_200_OK,
+)
+async def skip_rotation_turn(
+    account: Annotated[Any, Depends(RequireLogin(AccountClaims.HAPPY_HOUR))],
+    db: Database,
+) -> dict:
+    """Voluntarily skip the current tyrant's rotation turn.
+
+    The assignment is marked as SKIPPED (not MISSED), so it does not
+    count toward the consecutive miss limit.  The next person in the
+    rotation is activated with a new deadline.
+
+    Requires ``HAPPY_HOUR_TYRANT`` (own turn only) or ``ADMIN`` (any turn).
+
+    :param account: The authenticated account.
+    :param db: Active database session.
+    :returns: A status dict indicating who was skipped and who is next.
+    :raises HTTPException: If no pending assignment exists or it's not
+        the caller's turn.
+    """
+    require_write_access(account)
+
+    is_tyrant = (
+        account.claims & AccountClaims.HAPPY_HOUR_TYRANT
+    ) == AccountClaims.HAPPY_HOUR_TYRANT
+    is_admin = (account.claims & AccountClaims.ADMIN) == AccountClaims.ADMIN
+    if not (is_tyrant or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Requires HAPPY_HOUR_TYRANT or ADMIN permission",
+        )
+
+    from db.functions import (
+        get_current_pending_assignment,
+        skip_assignment,
+        get_next_scheduled_assignment,
+        activate_assignment,
+        get_current_cycle_number,
+    )
+
+    # Capture values before the session closes (lesson #034)
+    account_id = account.id
+    account_username = account.username
+
+    with db:
+        pending = get_current_pending_assignment(db)
+        if pending is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No pending rotation assignment to skip",
+            )
+
+        # ADMIN can skip anyone's turn; TYRANT can only skip their own
+        if not is_admin and pending.account_id != account_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only skip your own rotation turn",
+            )
+
+        skip_assignment(db, pending.id)
+
+        # Activate the next person in the rotation
+        cycle = get_current_cycle_number(db)
+        next_up = get_next_scheduled_assignment(db, cycle)
+        next_username = None
+        next_up_id = None
+
+        if next_up is not None:
+            from datetime import datetime, UTC
+            from scheduler import _next_wednesday_noon
+
+            now = datetime.now(UTC)
+            deadline = _next_wednesday_noon(now)
+            activate_assignment(db, next_up.id, deadline)
+            db.refresh(next_up)
+            next_username = next_up.Account.username
+            next_up_id = next_up.id
+
+        db.commit()
+
+    # Notify the next person if one was activated
+    if next_up_id is not None and next_username is not None:
+        try:
+            from mail.outgoing import notify_tyrant_assigned
+
+            with db:
+                from db.functions import get_assignment_by_id
+
+                fresh_next = get_assignment_by_id(db, next_up_id)
+                if fresh_next is not None:
+                    await notify_tyrant_assigned(
+                        fresh_next.Account, fresh_next.deadline_at
+                    )
+        except Exception:
+            import logging
+
+            logging.getLogger(__name__).exception(
+                "Failed to notify next tyrant after skip"
+            )
+
+    return {
+        "status": "skipped",
+        "skipped_user": account_username,
+        "next_user": next_username,
+    }
