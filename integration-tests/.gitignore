@@ -20,3 +20,4 @@ playwright-report/
 
 # Backend DB bind-mount directory (created at test runtime)
 backend-data/
+screenshots/
