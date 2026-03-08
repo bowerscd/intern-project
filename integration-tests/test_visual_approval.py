@@ -1,13 +1,10 @@
 """Visual Approval Tests — Screenshot Every Workflow Stage.
 
-Takes a screenshot at each stage of every user-facing workflow,
-saving them into a timestamped directory for human review.
+Each test resets the database and seeds its own data, so tests are
+fully isolated and can run in any order.
 
 Run:
-    pytest test_visual_approval.py -v --screenshots-dir=./screenshots
-
-Or from the root Makefile:
-    make test-visual
+    RUN_VISUAL_TESTS=1 pytest test_visual_approval.py -v
 
 The test creates a numbered screenshot at every milestone so a human
 can review the progression page-by-page without running the app.
@@ -18,7 +15,7 @@ from __future__ import annotations
 import os
 import sqlite3
 import time
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from urllib.parse import urlparse, parse_qs, urlencode
 
@@ -30,30 +27,30 @@ from helpers import (
     rewrite_oidc_url,
 )
 
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
+# ── Claim bitmask constants ──────────────────────────────────────────
+BASIC = 1
+ADMIN = 2
+MEALBOT = 4
+COOKBOOK = 8
+HAPPY_HOUR = 16
+HAPPY_HOUR_TYRANT = 32
+ALL_CLAIMS = BASIC | ADMIN | MEALBOT | COOKBOOK | HAPPY_HOUR | HAPPY_HOUR_TYRANT
 
+# ── Screenshot helpers ───────────────────────────────────────────────
 _SCREENSHOT_DIR: Path | None = None
 _STEP = 0
 
 
 def _screenshot_dir(request) -> Path:
-    """Resolve the screenshot output directory."""
     global _SCREENSHOT_DIR
     if _SCREENSHOT_DIR is None:
-        d = request.config.getoption("--screenshots-dir", None)
-        if d:
-            _SCREENSHOT_DIR = Path(d)
-        else:
-            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-            _SCREENSHOT_DIR = Path(__file__).parent / "screenshots" / ts
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        _SCREENSHOT_DIR = Path(__file__).parent / "screenshots" / ts
     _SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
     return _SCREENSHOT_DIR
 
 
 def _snap(page, name: str, request) -> Path:
-    """Take a screenshot with an auto-incrementing step number."""
     global _STEP
     _STEP += 1
     d = _screenshot_dir(request)
@@ -62,39 +59,48 @@ def _snap(page, name: str, request) -> Path:
     return path
 
 
-# ---------------------------------------------------------------------------
-# Shared OIDC login helper
-# ---------------------------------------------------------------------------
+# ── DB reset helper ──────────────────────────────────────────────────
+def _reset_db(db_path: str) -> None:
+    """Truncate all app tables and re-seed the dev-admin account."""
+    conn = sqlite3.connect(db_path)
+    # Truncate domain data but keep the accounts table intact
+    # (the backend's ORM caches account objects in session)
+    for t in ["receipts", "HappyHourEvents", "HappyHourLocations",
+              "HappyHourTyrantRotation", "account_claim_requests"]:
+        conn.execute(f"DELETE FROM [{t}]")
+    # Delete non-admin accounts (keep the seeded dev-admin)
+    conn.execute("DELETE FROM accounts WHERE username != 'admin'")
+    # Ensure dev-admin has ALL claims
+    conn.execute("UPDATE accounts SET claims = ? WHERE username = 'admin'", (ALL_CLAIMS,))
+    conn.commit()
+    conn.close()
 
+
+def _grant_claims(db_path: str, username: str, claims: int) -> None:
+    conn = sqlite3.connect(db_path)
+    conn.execute("UPDATE accounts SET claims = ? WHERE username = ?", (claims, username))
+    conn.commit()
+    conn.close()
+
+
+# ── OIDC helpers ─────────────────────────────────────────────────────
 def _oidc_login_cookies(
-    backend_url: str,
-    oidc_issuer: str,
-    *,
-    sub: str,
-    name: str = "Test User",
-    email: str = "test@test.local",
+    backend_url: str, oidc_issuer: str, *,
+    sub: str, name: str = "Test User", email: str = "test@test.local",
     mode: str = "login",
 ) -> dict[str, str]:
-    """Drive an OIDC login/register flow and return session cookies.
-
-    :param mode: "login" or "register"
-    :returns: Dict of cookie name → value pairs.
-    """
     client = httpx.Client(base_url=backend_url, follow_redirects=False, timeout=10)
-    endpoint = f"/api/v2/auth/{mode}/test"
-    resp = client.get(endpoint)
-    assert resp.status_code in (302, 307), f"{endpoint} returned {resp.status_code}"
+    resp = client.get(f"/api/v2/auth/{mode}/test")
+    assert resp.status_code in (302, 307)
     auth_url = rewrite_oidc_url(resp.headers["location"], oidc_issuer)
-    resp = httpx.get(auth_url, follow_redirects=False, timeout=10)
+    httpx.get(auth_url, follow_redirects=False, timeout=10)
     parsed = urlparse(auth_url)
     qs = parse_qs(parsed.query)
     approve = f"{oidc_issuer}/authorize/approve?" + urlencode({
         "redirect_uri": qs["redirect_uri"][0],
         "state": qs["state"][0],
         "nonce": qs["nonce"][0],
-        "sub": sub,
-        "name": name,
-        "email": email,
+        "sub": sub, "name": name, "email": email,
     })
     resp = httpx.get(approve, follow_redirects=False, timeout=10)
     assert resp.status_code == 302
@@ -105,542 +111,334 @@ def _oidc_login_cookies(
     return cookies
 
 
-def _inject_cookies(page_or_context, cookies: dict[str, str], url: str) -> None:
-    """Add cookies to a Playwright page or browser context."""
-    target = getattr(page_or_context, "context", page_or_context)
+def _inject_cookies(target, cookies: dict[str, str], url: str) -> None:
+    ctx = getattr(target, "context", target)
     for k, v in cookies.items():
-        target.add_cookies([{"name": k, "value": v, "url": url}])
+        ctx.add_cookies([{"name": k, "value": v, "url": url}])
 
 
-def _register_and_activate(
-    backend_url: str,
-    oidc_issuer: str,
-    db_path: str,
-    *,
-    sub: str,
-    username: str,
-    name: str = "Test User",
-    email: str = "test@test.local",
-) -> None:
-    """Register a user via OIDC, complete registration, and activate."""
+def _register_and_activate(backend_url, oidc_issuer, db_path, *, sub, username, name="Test", email="t@t.local"):
     client = httpx.Client(base_url=backend_url, follow_redirects=False, timeout=10)
     resp = client.get("/api/v2/auth/register/test")
     auth_url = rewrite_oidc_url(resp.headers["location"], oidc_issuer)
-    resp = httpx.get(auth_url, follow_redirects=False, timeout=10)
+    httpx.get(auth_url, follow_redirects=False, timeout=10)
     parsed = urlparse(auth_url)
     qs = parse_qs(parsed.query)
     approve = f"{oidc_issuer}/authorize/approve?" + urlencode({
-        "redirect_uri": qs["redirect_uri"][0],
-        "state": qs["state"][0],
-        "nonce": qs["nonce"][0],
-        "sub": sub, "name": name, "email": email,
+        "redirect_uri": qs["redirect_uri"][0], "state": qs["state"][0],
+        "nonce": qs["nonce"][0], "sub": sub, "name": name, "email": email,
     })
     resp = httpx.get(approve, follow_redirects=False, timeout=10)
     cb = urlparse(resp.headers["location"])
     client.get(f"{cb.path}?{cb.query}")
     csrf = client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
-    client.post(
-        "/api/v2/auth/complete-registration",
-        json={"username": username},
-        headers={"X-CSRF-Token": csrf},
-    )
+    client.post("/api/v2/auth/complete-registration", json={"username": username}, headers={"X-CSRF-Token": csrf})
     client.close()
     activate_account(db_path, username)
 
 
-def _grant_claims_via_db(db_path: str, username: str, claims_int: int) -> None:
-    """Set account claims via direct DB access."""
-    conn = sqlite3.connect(db_path)
-    conn.execute(
-        "UPDATE accounts SET claims = ? WHERE username = ?",
-        (claims_int, username),
-    )
-    conn.commit()
-    conn.close()
-
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
-
-_SCREENSHOT_DIR: Path | None = None
-_STEP = 0
+def _api_client(backend_url, cookies):
+    """Create an authenticated httpx client for API calls."""
+    c = httpx.Client(base_url=backend_url, follow_redirects=False, timeout=10)
+    for k, v in cookies.items():
+        c.cookies.set(k, v)
+    return c
 
 
-def _screenshot_dir(request) -> Path:
-    """Resolve the screenshot output directory."""
-    global _SCREENSHOT_DIR
-    if _SCREENSHOT_DIR is None:
-        d = request.config.getoption("--screenshots-dir", None)
-        if d:
-            _SCREENSHOT_DIR = Path(d)
-        else:
-            ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-            _SCREENSHOT_DIR = Path(__file__).parent / "screenshots" / ts
-    _SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
-    return _SCREENSHOT_DIR
+def _get_csrf(client):
+    return client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
 
 
-def _snap(page, name: str, request) -> Path:
-    """Take a screenshot with an auto-incrementing step number."""
-    global _STEP
-    _STEP += 1
-    d = _screenshot_dir(request)
-    path = d / f"{_STEP:03d}_{name}.png"
-    page.screenshot(path=str(path), full_page=True)
-    return path
-
-
-def conftest_screenshot_option(parser):
-    """Add --screenshots-dir CLI option (called from conftest.py)."""
-    parser.addoption(
-        "--screenshots-dir",
-        action="store",
-        default=None,
-        help="Directory to save visual approval screenshots",
-    )
-
-
-# ---------------------------------------------------------------------------
-# Pytest hooks
-# ---------------------------------------------------------------------------
-
+# ── Pytest hooks ─────────────────────────────────────────────────────
 def pytest_addoption(parser):
-    parser.addoption(
-        "--screenshots-dir",
-        action="store",
-        default=None,
-        help="Directory to save visual approval screenshots",
-    )
+    parser.addoption("--screenshots-dir", action="store", default=None)
 
-
-# ---------------------------------------------------------------------------
-# Fixtures
-# ---------------------------------------------------------------------------
 
 @pytest.fixture(autouse=True)
 def _reset_step():
-    """Reset the step counter between tests so numbering is per-test."""
     global _STEP
     _STEP = 0
 
 
-# ---------------------------------------------------------------------------
-# Test: Full Visual Walkthrough
-# ---------------------------------------------------------------------------
-
+# ── Test class ───────────────────────────────────────────────────────
 @pytest.mark.skipif(
     not os.environ.get("RUN_VISUAL_TESTS"),
     reason="Set RUN_VISUAL_TESTS=1 to run visual approval tests",
 )
 class TestVisualApproval:
-    """Walk through every user-facing workflow and capture screenshots.
 
-    Coverage checklist:
-      Pages: /, /login, /auth/complete-registration, /auth/claim-account,
-             /account, /mealbot, /mealbot/individualized, /happyhour,
-             /admin, 404
-      Flows: registration, login, profile edit, claim toggle, theme switch,
-             mealbot record, happy hour submit, admin approve/ban/defunct,
-             admin claim review, defunct read-only, logout
-      Viewports: desktop + mobile (with sidebar toggle)
-      Themes: 13-theme showcase on /account
-    """
-
-    # ── 01  Public pages (no auth) ────────────────────────────────────
-
-    def test_01_public_pages(self, page, frontend_server, request):
-        """Screenshot all publicly accessible pages."""
+    # ── 01: Public pages ─────────────────────────────────────────────
+    def test_01_public_pages(self, page, frontend_server, backend_db_path, request):
+        """Screenshot public pages: index, login, happyhour, 404."""
+        _reset_db(backend_db_path)
         frontend_url, _ = frontend_server
 
-        page.goto(f"{frontend_url}/")
-        page.wait_for_load_state("networkidle")
-        _snap(page, "index_page", request)
+        for path, name in [("/", "index"), ("/login", "login"), ("/happyhour", "happyhour_public"), ("/auth/complete-registration", "registration_form"), ("/auth/claim-account", "claim_form"), ("/nonexistent-page", "404_page")]:
+            page.goto(f"{frontend_url}{path}")
+            page.wait_for_load_state("networkidle")
+            time.sleep(0.5)
+            _snap(page, name, request)
 
-        page.goto(f"{frontend_url}/login")
-        page.wait_for_load_state("networkidle")
-        _snap(page, "login_page", request)
-
-        page.goto(f"{frontend_url}/happyhour")
-        page.wait_for_load_state("networkidle")
-        _snap(page, "happyhour_public", request)
-
-        page.goto(f"{frontend_url}/auth/complete-registration")
-        page.wait_for_load_state("networkidle")
-        _snap(page, "complete_registration_page", request)
-
-        page.goto(f"{frontend_url}/auth/claim-account")
-        page.wait_for_load_state("networkidle")
-        _snap(page, "claim_account_page", request)
-
-        # 404 page
-        page.goto(f"{frontend_url}/nonexistent-page")
-        page.wait_for_load_state("networkidle")
-        _snap(page, "404_page", request)
-
-    # ── 02  OIDC registration flow ───────────────────────────────────
-
+    # ── 02: Registration flow ────────────────────────────────────────
     def test_02_registration_flow(
-        self, page, frontend_server, backend_server, oidc_server,
-        backend_db_path, request,
+        self, page, frontend_server, backend_server, oidc_server, backend_db_path, request,
     ):
-        """Screenshot the full browser-driven OIDC registration flow.
-
-        Login page → click Register → Mock OIDC authorize page → fill
-        form → click Authorize → complete-registration page → fill
-        username → pending approval message.
-        """
+        """Full OIDC registration: login page -> register -> OIDC -> complete -> pending."""
+        _reset_db(backend_db_path)
         frontend_url, _ = frontend_server
         frontend_port = frontend_server[1]
 
-        # ── Step 1: Login page ──
         page.goto(f"{frontend_url}/login")
         page.wait_for_load_state("networkidle")
-        _snap(page, "oidc_01_login_page", request)
+        _snap(page, "reg_01_login_page", request)
 
-        # ── Step 2: Click "Register with Test Provider" ──
-        page.wait_for_selector("#login-actions a", timeout=5000)
-        register_link = page.locator("a", has_text="Register with Test Provider")
-        _snap(page, "oidc_02_register_link_visible", request)
-        register_link.click()
-
-        # ── Step 3: Mock OIDC authorize page ──
+        page.locator("a", has_text="Register with Test Provider").click()
         page.wait_for_selector("button[type='submit']", timeout=10000)
-        _snap(page, "oidc_03_mock_oidc_authorize_page", request)
+        _snap(page, "reg_02_oidc_authorize", request)
 
-        # Fill in the identity fields
-        page.fill("input[name='sub']", "vis-oidc-reg-user")
-        page.fill("input[name='name']", "Visual OIDC User")
-        page.fill("input[name='email']", "vis-oidc@test.local")
-        _snap(page, "oidc_04_mock_oidc_form_filled", request)
-
-        # ── Step 4: Click Authorize ──
+        page.fill("input[name='sub']", "vis-reg-user")
+        page.fill("input[name='name']", "Visual Test User")
+        page.fill("input[name='email']", "vis@test.local")
+        _snap(page, "reg_03_oidc_filled", request)
         page.click("button[type='submit']")
 
-        # ── Step 5: Complete Registration page ──
-        # The OIDC callback lands on the backend's port; the backend redirects
-        # to /auth/complete-registration.  If we landed on the backend's port
-        # instead of the frontend, navigate to the frontend (cookies are
-        # port-agnostic per RFC 6265).
         page.wait_for_url("**/complete-registration**", timeout=10000)
         current = page.url
         if f":{frontend_port}" not in current:
             page.goto(f"{frontend_url}/auth/complete-registration")
-
         page.wait_for_selector("#complete-registration-form", timeout=5000)
-        _snap(page, "oidc_05_complete_registration_form", request)
+        _snap(page, "reg_04_complete_form", request)
 
-        # Fill in username and submit
-        page.fill("#username", "vis_oidc_user")
-        _snap(page, "oidc_06_username_filled", request)
-        page.click('#complete-registration-form button[type="submit"]')
-
-        # ── Step 6: Pending approval message ──
-        result = page.locator("#complete-registration-result")
-        result.wait_for(state="visible", timeout=5000)
-        _snap(page, "oidc_07_pending_approval_message", request)
-
-        # ── Step 7: Activate and login via browser ──
-        activate_account(backend_db_path, "vis_oidc_user")
-
-        # Now drive the LOGIN flow through the browser
-        page.goto(f"{frontend_url}/login")
-        page.wait_for_selector("#login-actions a", timeout=5000)
-        login_link = page.locator("a", has_text="Login with Test Provider")
-        _snap(page, "oidc_08_login_link_visible", request)
-        login_link.click()
-
-        # Mock OIDC page again (login mode)
-        page.wait_for_selector("button[type='submit']", timeout=10000)
-        _snap(page, "oidc_09_mock_oidc_login_page", request)
-
-        page.fill("input[name='sub']", "vis-oidc-reg-user")
-        page.fill("input[name='name']", "Visual OIDC User")
-        page.fill("input[name='email']", "vis-oidc@test.local")
-        page.click("button[type='submit']")
-
-        # After login callback, backend redirects to /api/v2/account/profile
-        # or the configured redirect. Wait for navigation to settle.
-        page.wait_for_load_state("networkidle", timeout=10000)
+        page.fill("#username", "visual_user")
+        _snap(page, "reg_05_username_filled", request)
+        page.click("#complete-registration-form button[type='submit']")
         time.sleep(1)
-        _snap(page, "oidc_10_post_login_landing", request)
+        _snap(page, "reg_06_pending_approval", request)
 
-        # Navigate to account page to confirm we're authenticated
-        page.goto(f"{frontend_url}/account")
-        page.wait_for_load_state("networkidle")
-        time.sleep(1)
-        _snap(page, "oidc_11_account_page_after_login", request)
-
-    # ── 03  Account page — profile & claims ──────────────────────────
-
-    def test_03_account_interactions(
-        self, page, frontend_server, backend_server, oidc_server,
-        backend_db_path, request,
+    # ── 03: Account page with claims ─────────────────────────────────
+    def test_03_account_page(
+        self, page, frontend_server, backend_server, oidc_server, backend_db_path, request,
     ):
-        """Screenshot profile editing, claim toggles, and theme picker."""
+        """Account page: profile, claims toggles, theme picker."""
+        _reset_db(backend_db_path)
         frontend_url, _ = frontend_server
         backend_url, _ = backend_server
         oidc_issuer, _ = oidc_server
 
-        # Login as dev-admin (has ALL claims)
-        cookies = _oidc_login_cookies(
-            backend_url, oidc_issuer,
-            sub="dev-admin", name="Admin", email="admin@dev.local",
-        )
+        cookies = _oidc_login_cookies(backend_url, oidc_issuer, sub="dev-admin", name="Admin", email="admin@dev.local")
         _inject_cookies(page, cookies, frontend_url)
 
         page.goto(f"{frontend_url}/account")
         page.wait_for_load_state("networkidle")
         time.sleep(1)
-        _snap(page, "account_admin_full", request)
+        _snap(page, "account_01_full", request)
 
-        # Toggle a claim off
-        checkbox = page.query_selector('.claim-checkbox[data-claim="MEALBOT"]')
-        if checkbox and checkbox.is_checked():
-            checkbox.click()
+        # Toggle MEALBOT claim
+        cb = page.query_selector(".claim-checkbox[data-claim=\"MEALBOT\"]")
+        if cb and cb.is_checked():
+            cb.click()
             time.sleep(0.8)
-            _snap(page, "account_mealbot_unchecked", request)
-            # Toggle it back on
-            checkbox.click()
+            _snap(page, "account_02_mealbot_off", request)
+            cb.click()
             time.sleep(0.8)
-            _snap(page, "account_mealbot_rechecked", request)
 
-        # Scroll to theme picker
+        # Theme picker
         picker = page.query_selector("#theme-picker")
         if picker:
             picker.scroll_into_view_if_needed()
             time.sleep(0.3)
-            _snap(page, "account_theme_picker_visible", request)
+            _snap(page, "account_03_theme_picker", request)
 
-    # ── 04  Mealbot page — summary + record ──────────────────────────
-
-    def test_04_mealbot_page(
-        self, page, frontend_server, backend_server, oidc_server,
-        backend_db_path, request,
+    # ── 04: Mealbot with data ────────────────────────────────────────
+    def test_04_mealbot(
+        self, page, frontend_server, backend_server, oidc_server, backend_db_path, request,
     ):
-        """Screenshot the Mealbot dashboard and record a meal."""
+        """Mealbot: create peer user, record meals, show summary & ledger."""
+        _reset_db(backend_db_path)
         frontend_url, _ = frontend_server
         backend_url, _ = backend_server
         oidc_issuer, _ = oidc_server
 
-        # Create a second user so mealbot has someone to record against
-        _register_and_activate(
-            backend_url, oidc_issuer, backend_db_path,
-            sub="mealbot-peer", username="peer_user",
-            name="Peer User", email="peer@test.local",
-        )
-        # Give them MEALBOT claim
-        _grant_claims_via_db(backend_db_path, "peer_user", 1 | 4)  # BASIC | MEALBOT
+        # Create a peer user for meal recording
+        _register_and_activate(backend_url, oidc_issuer, backend_db_path,
+            sub="meal-peer", username="peer", name="Peer", email="peer@test.local")
+        _grant_claims(backend_db_path, "peer", BASIC | MEALBOT)
 
-        # Login as dev-admin
-        cookies = _oidc_login_cookies(
-            backend_url, oidc_issuer,
-            sub="dev-admin", name="Admin", email="admin@dev.local",
-        )
+        # Login as admin
+        cookies = _oidc_login_cookies(backend_url, oidc_issuer, sub="dev-admin", name="Admin", email="admin@dev.local")
         _inject_cookies(page, cookies, frontend_url)
 
-        # Mealbot dashboard
+        # Record some meals via API so the page has data
+        api = _api_client(backend_url, cookies)
+        csrf = _get_csrf(api)
+        for _ in range(3):
+            api.post("/api/v2/mealbot/record", json={"payer": "admin", "recipient": "peer", "credits": 1}, headers={"X-CSRF-Token": csrf})
+            csrf = _get_csrf(api)
+        api.post("/api/v2/mealbot/record", json={"payer": "peer", "recipient": "admin", "credits": 1}, headers={"X-CSRF-Token": csrf})
+        api.close()
+
+        # Mealbot dashboard with real data
         page.goto(f"{frontend_url}/mealbot")
         page.wait_for_load_state("networkidle")
         time.sleep(1.5)
-        _snap(page, "mealbot_dashboard_empty", request)
+        _snap(page, "mealbot_01_dashboard", request)
 
-        # Type a username into the other-person field and click "I Paid"
+        # Record a meal via UI
         other_input = page.query_selector("#other-user-input")
         if other_input:
-            other_input.fill("peer_user")
-            time.sleep(0.3)
-            _snap(page, "mealbot_other_user_filled", request)
-
+            other_input.fill("peer")
             i_paid = page.query_selector("#i-paid-btn")
             if i_paid:
                 i_paid.click()
                 time.sleep(1)
-                _snap(page, "mealbot_after_i_paid", request)
+                _snap(page, "mealbot_02_after_record", request)
 
-        # My Summary / individualized page
+        # Individualized page
         page.goto(f"{frontend_url}/mealbot/individualized")
         page.wait_for_load_state("networkidle")
         time.sleep(1)
-        _snap(page, "mealbot_individualized", request)
+        _snap(page, "mealbot_03_individualized", request)
 
-    # ── 05  Happy Hour authenticated view ────────────────────────────
-
-    def test_05_happyhour_authenticated(
-        self, page, frontend_server, backend_server, oidc_server,
-        backend_db_path, request,
+    # ── 05: Happy Hour with data ─────────────────────────────────────
+    def test_05_happyhour(
+        self, page, frontend_server, backend_server, oidc_server, backend_db_path, request,
     ):
-        """Screenshot Happy Hour page with tyrant management sections."""
+        """Happy Hour: create locations + event, show submit form, rotation."""
+        _reset_db(backend_db_path)
         frontend_url, _ = frontend_server
         backend_url, _ = backend_server
         oidc_issuer, _ = oidc_server
 
-        # Login as dev-admin (has HAPPY_HOUR_TYRANT)
-        cookies = _oidc_login_cookies(
-            backend_url, oidc_issuer,
-            sub="dev-admin", name="Admin", email="admin@dev.local",
-        )
+        cookies = _oidc_login_cookies(backend_url, oidc_issuer, sub="dev-admin", name="Admin", email="admin@dev.local")
         _inject_cookies(page, cookies, frontend_url)
 
+        # Create location + event via API
+        api = _api_client(backend_url, cookies)
+        csrf = _get_csrf(api)
+        loc = api.post("/api/v2/happyhour/locations", json={
+            "name": "The Crafty Fox", "url": "https://craftyfox.example.com",
+            "address_raw": "123 Brew Ave, Portland, OR 97201",
+            "number": 123, "street_name": "Brew Ave", "city": "Portland",
+            "state": "OR", "zip_code": "97201", "latitude": 45.52, "longitude": -122.68,
+        }, headers={"X-CSRF-Token": csrf})
+        assert loc.status_code == 201, loc.text
+        loc_id = loc.json()["id"]
+
+        csrf = _get_csrf(api)
+        next_week = (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
+        evt = api.post("/api/v2/happyhour/events", json={
+            "location_id": loc_id, "description": "Weekly HH at Crafty Fox!", "when": next_week,
+        }, headers={"X-CSRF-Token": csrf})
+        assert evt.status_code == 201, evt.text
+        api.close()
+
+        # Happy hour page with real data
         page.goto(f"{frontend_url}/happyhour")
         page.wait_for_load_state("networkidle")
         time.sleep(1.5)
-        _snap(page, "happyhour_authenticated", request)
+        _snap(page, "hh_01_with_event", request)
 
-        # Scroll to the submit section if present
-        submit_section = page.query_selector("#happyhour-submit-section")
-        if submit_section:
-            submit_section.scroll_into_view_if_needed()
+        # Submit section (visible because admin has TYRANT claim)
+        submit = page.query_selector("#happyhour-submit-section")
+        if submit and submit.is_visible():
+            submit.scroll_into_view_if_needed()
             time.sleep(0.5)
-            _snap(page, "happyhour_submit_section", request)
+            _snap(page, "hh_02_submit_form", request)
 
-        # Scroll to locations section if present
-        loc_section = page.query_selector("#happyhour-locations-section")
-        if loc_section:
-            loc_section.scroll_into_view_if_needed()
+        # Locations section
+        locs = page.query_selector("#happyhour-locations-section")
+        if locs and locs.is_visible():
+            locs.scroll_into_view_if_needed()
             time.sleep(0.5)
-            _snap(page, "happyhour_locations_section", request)
+            _snap(page, "hh_03_locations", request)
 
-        # Show "Add New Location" fields
-        loc_select = page.query_selector("#location-select")
-        if loc_select:
-            loc_select.select_option("new")
-            time.sleep(0.5)
-            _snap(page, "happyhour_new_location_form", request)
-
-    # ── 06  Admin dashboard — all tabs + actions ─────────────────────
-
-    def test_06_admin_dashboard(
-        self, page, frontend_server, backend_server, oidc_server,
-        backend_db_path, request,
+    # ── 06: Admin dashboard ──────────────────────────────────────────
+    def test_06_admin(
+        self, page, frontend_server, backend_server, oidc_server, backend_db_path, request,
     ):
-        """Screenshot every admin tab, plus approve/status-change actions."""
+        """Admin: pending accounts, all accounts, claim requests."""
+        _reset_db(backend_db_path)
         frontend_url, _ = frontend_server
         backend_url, _ = backend_server
         oidc_issuer, _ = oidc_server
 
-        # Create a pending user for admin to see
-        _register_and_activate(
-            backend_url, oidc_issuer, backend_db_path,
-            sub="pending-vis", username="pending_vis",
-            name="Pending Visible", email="pendvis@test.local",
-        )
-        # Re-set to pending_approval so admin sees them
+        # Create a pending user
+        _register_and_activate(backend_url, oidc_issuer, backend_db_path,
+            sub="pending-vis", username="pending_user", name="Pending User", email="pend@test.local")
         conn = sqlite3.connect(backend_db_path)
-        conn.execute(
-            "UPDATE accounts SET status = 'pending_approval' "
-            "WHERE username = 'pending_vis'"
-        )
+        conn.execute("UPDATE accounts SET status = 'pending_approval' WHERE username = 'pending_user'")
         conn.commit()
         conn.close()
 
-        # Login as admin
-        cookies = _oidc_login_cookies(
-            backend_url, oidc_issuer,
-            sub="dev-admin", name="Admin", email="admin@dev.local",
-        )
+        cookies = _oidc_login_cookies(backend_url, oidc_issuer, sub="dev-admin", name="Admin", email="admin@dev.local")
         _inject_cookies(page, cookies, frontend_url)
 
         page.goto(f"{frontend_url}/admin")
         page.wait_for_load_state("networkidle")
         time.sleep(1.5)
-        _snap(page, "admin_pending_tab", request)
+        _snap(page, "admin_01_pending", request)
 
-        # Approve the pending account
-        approve_btn = page.query_selector(".approve-account-btn")
-        if approve_btn:
-            approve_btn.click()
+        # Approve
+        btn = page.query_selector(".approve-account-btn")
+        if btn:
+            btn.click()
             time.sleep(1)
-            _snap(page, "admin_after_approve", request)
+            _snap(page, "admin_02_after_approve", request)
 
         # All Accounts tab
         tabs = page.query_selector_all(".admin-tab")
         if len(tabs) > 1:
             tabs[1].click()
             time.sleep(1)
-            _snap(page, "admin_all_accounts_tab", request)
+            _snap(page, "admin_03_all_accounts", request)
 
-            # Use status filter
-            filt = page.query_selector("#admin-status-filter")
-            if filt:
-                filt.select_option("active")
-                time.sleep(1)
-                _snap(page, "admin_filter_active", request)
-                filt.select_option("")
-                time.sleep(0.5)
-
-        # Claim Requests tab
+        # Claims tab
         if len(tabs) > 2:
             tabs[2].click()
             time.sleep(1)
-            _snap(page, "admin_claims_tab", request)
+            _snap(page, "admin_04_claims_tab", request)
 
-    # ── 07  Defunct (disabled) account — read-only ────────────────────
-
-    def test_07_defunct_account(
-        self, page, frontend_server, backend_server, oidc_server,
-        backend_db_path, request,
+    # ── 07: Defunct account ──────────────────────────────────────────
+    def test_07_defunct(
+        self, page, frontend_server, backend_server, oidc_server, backend_db_path, request,
     ):
-        """Screenshot what a defunct account sees — banner + disabled controls."""
+        """Defunct account shows read-only banner on all pages."""
+        _reset_db(backend_db_path)
         frontend_url, _ = frontend_server
         backend_url, _ = backend_server
         oidc_issuer, _ = oidc_server
 
-        sub = "defunct-vis-user"
-        _register_and_activate(
-            backend_url, oidc_issuer, backend_db_path,
-            sub=sub, username="defunctvis",
-            name="Defunct Vis", email="defunctvis@test.local",
-        )
-        # Give them MEALBOT+HAPPY_HOUR before marking defunct
-        _grant_claims_via_db(backend_db_path, "defunctvis", 1 | 4 | 16)
+        _register_and_activate(backend_url, oidc_issuer, backend_db_path,
+            sub="defunct-vis", username="defunctvis", name="Defunct", email="def@test.local")
+        _grant_claims(backend_db_path, "defunctvis", BASIC | MEALBOT | HAPPY_HOUR)
         conn = sqlite3.connect(backend_db_path)
-        conn.execute(
-            "UPDATE accounts SET status = 'defunct' WHERE username = 'defunctvis'"
-        )
+        conn.execute("UPDATE accounts SET status = 'defunct' WHERE username = 'defunctvis'")
         conn.commit()
         conn.close()
 
-        cookies = _oidc_login_cookies(
-            backend_url, oidc_issuer,
-            sub=sub, name="Defunct Vis", email="defunctvis@test.local",
-        )
+        cookies = _oidc_login_cookies(backend_url, oidc_issuer, sub="defunct-vis", name="Defunct", email="def@test.local")
         _inject_cookies(page, cookies, frontend_url)
 
-        # Account page — should show defunct banner + disabled controls
-        page.goto(f"{frontend_url}/account")
-        page.wait_for_load_state("networkidle")
-        time.sleep(1)
-        _snap(page, "defunct_account_page", request)
+        for path, name in [("/account", "defunct_01_account"), ("/mealbot", "defunct_02_mealbot"), ("/happyhour", "defunct_03_happyhour")]:
+            page.goto(f"{frontend_url}{path}")
+            page.wait_for_load_state("networkidle")
+            time.sleep(1)
+            _snap(page, name, request)
 
-        # Mealbot page — should load but record buttons won't work
-        page.goto(f"{frontend_url}/mealbot")
-        page.wait_for_load_state("networkidle")
-        time.sleep(1)
-        _snap(page, "defunct_mealbot_page", request)
-
-        # Happy Hour page — should show data but submit is blocked
-        page.goto(f"{frontend_url}/happyhour")
-        page.wait_for_load_state("networkidle")
-        time.sleep(1)
-        _snap(page, "defunct_happyhour_page", request)
-
-    # ── 08  Theme showcase ───────────────────────────────────────────
-
-    def test_08_theme_showcase(
-        self, page, frontend_server, backend_server, oidc_server, request,
+    # ── 08: Theme showcase ───────────────────────────────────────────
+    def test_08_themes(
+        self, page, frontend_server, backend_server, oidc_server, backend_db_path, request,
     ):
         """Screenshot all 23 themes on the account page."""
+        _reset_db(backend_db_path)
         frontend_url, _ = frontend_server
         backend_url, _ = backend_server
         oidc_issuer, _ = oidc_server
 
-        cookies = _oidc_login_cookies(
-            backend_url, oidc_issuer,
-            sub="dev-admin", name="Admin", email="admin@dev.local",
-        )
+        cookies = _oidc_login_cookies(backend_url, oidc_issuer, sub="dev-admin", name="Admin", email="admin@dev.local")
         _inject_cookies(page, cookies, frontend_url)
 
-        all_themes = [
+        themes = [
             "default", "light", "solarized-dark", "solarized-light",
             "nord", "dracula", "monokai", "cyberpunk", "ocean", "forest",
             "sunset", "midnight-purple", "cherry-blossom", "retro-terminal",
@@ -648,412 +446,212 @@ class TestVisualApproval:
             "slate", "rose-gold", "emerald", "coffee",
         ]
 
-        for theme in all_themes:
-            page.goto(f"{frontend_url}/account")
-            page.wait_for_load_state("networkidle")
-            time.sleep(0.5)
+        # Load the page once, then switch themes via JS attribute only
+        page.goto(f"{frontend_url}/account")
+        page.wait_for_load_state("networkidle")
+        time.sleep(1)
+
+        for theme in themes:
             if theme == "default":
-                page.evaluate(
-                    "document.documentElement.removeAttribute('data-theme')"
-                )
+                page.evaluate("document.documentElement.removeAttribute('data-theme')")
             else:
-                page.evaluate(
-                    f"document.documentElement.setAttribute('data-theme', '{theme}')"
-                )
-            time.sleep(0.3)
+                page.evaluate(f"document.documentElement.setAttribute('data-theme', '{theme}')")
+            time.sleep(0.5)
             _snap(page, f"theme_{theme}", request)
 
-    # ── 09  Mobile views (all pages + sidebar) ───────────────────────
-
-    def test_09_mobile_views(
-        self, browser, frontend_server, backend_server, oidc_server,
-        backend_db_path, request,
+    # ── 09: Mobile views ─────────────────────────────────────────────
+    def test_09_mobile(
+        self, page, frontend_server, backend_server, oidc_server, backend_db_path, request,
     ):
-        """Screenshot every page at mobile viewport width."""
+        """Screenshot every page at 375x812 mobile viewport."""
+        _reset_db(backend_db_path)
         frontend_url, _ = frontend_server
         backend_url, _ = backend_server
         oidc_issuer, _ = oidc_server
 
-        context = browser.new_context(
-            base_url=frontend_url,
-            viewport={"width": 375, "height": 812},
-            is_mobile=True,
-        )
-        mob_page = context.new_page()
+        cookies = _oidc_login_cookies(backend_url, oidc_issuer, sub="dev-admin", name="Admin", email="admin@dev.local")
+        _inject_cookies(page, cookies, frontend_url)
 
-        # Login as admin
-        cookies = _oidc_login_cookies(
-            backend_url, oidc_issuer,
-            sub="dev-admin", name="Admin", email="admin@dev.local",
-        )
-        _inject_cookies(context, cookies, frontend_url)
+        # Use mobile viewport on the existing page (avoids creating a separate context)
+        page.set_viewport_size({"width": 375, "height": 812})
 
-        pages_to_shot = [
-            ("/", "mobile_index"),
-            ("/login", "mobile_login"),
-            ("/account", "mobile_account"),
-            ("/admin", "mobile_admin"),
-            ("/happyhour", "mobile_happyhour"),
-            ("/mealbot", "mobile_mealbot"),
-            ("/mealbot/individualized", "mobile_my_summary"),
-            ("/auth/complete-registration", "mobile_registration"),
-        ]
-
-        for path, snap_name in pages_to_shot:
-            mob_page.goto(f"{frontend_url}{path}")
-            mob_page.wait_for_load_state("networkidle")
+        for path, name in [("/", "mobile_index"), ("/account", "mobile_account"), ("/happyhour", "mobile_happyhour"), ("/mealbot", "mobile_mealbot"), ("/admin", "mobile_admin")]:
+            page.goto(f"{frontend_url}{path}")
+            page.wait_for_load_state("networkidle")
             time.sleep(1)
-            _snap(mob_page, snap_name, request)
-
-            # Open sidebar on mobile
-            toggle = mob_page.query_selector("#menu-toggle")
+            _snap(page, name, request)
+            toggle = page.query_selector("#menu-toggle")
             if toggle and toggle.is_visible():
                 toggle.click()
                 time.sleep(0.5)
-                _snap(mob_page, f"{snap_name}_sidebar_open", request)
-                overlay = mob_page.query_selector("#sidebar-overlay")
-                if overlay and overlay.is_visible():
-                    overlay.click()
-                    time.sleep(0.3)
+                _snap(page, f"{name}_sidebar", request)
+                page.evaluate("document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebar-overlay').classList.remove('open')")
+                time.sleep(0.3)
 
-        mob_page.close()
-        context.close()
+        # Restore desktop viewport
+        page.set_viewport_size({"width": 1280, "height": 720})
 
-    # ── 10  Error page & login redirect ──────────────────────────────
-
-    def test_10_error_and_redirect(
-        self, page, frontend_server, request,
-    ):
-        """Screenshot the login error state and auth-gated redirect."""
+    # ── 10: Error and redirect ───────────────────────────────────────
+    def test_10_errors(self, page, frontend_server, backend_db_path, request):
+        """404 page and login redirect."""
+        _reset_db(backend_db_path)
         frontend_url, _ = frontend_server
 
-        # Login page with error query param
-        page.goto(f"{frontend_url}/login?error=Your+account+is+banned.")
+        page.goto(f"{frontend_url}/nonexistent", timeout=60000)
         page.wait_for_load_state("networkidle")
-        _snap(page, "login_error_message", request)
+        _snap(page, "error_404", request)
 
-        # Trying to access /account without auth → redirect to /login
-        page.context.clear_cookies()
-        page.goto(f"{frontend_url}/account")
+        page.goto(f"{frontend_url}/account", timeout=60000)
         page.wait_for_load_state("networkidle")
         time.sleep(0.5)
-        _snap(page, "login_redirect_from_account", request)
+        _snap(page, "error_redirect_to_login", request)
 
-    # ── 11  OIDC login for banned / defunct user via browser ─────────
-
-    def test_11_oidc_rejected_login(
-        self, page, frontend_server, backend_server, oidc_server,
-        backend_db_path, request,
+    # ── 11: OIDC rejected login ──────────────────────────────────────
+    def test_11_oidc_rejected(
+        self, page, frontend_server, backend_server, oidc_server, backend_db_path, request,
     ):
-        """Screenshot what happens when a banned user tries to login via OIDC.
-
-        Full browser flow: login page → OIDC → callback → redirect back
-        to /login?error=... with the error banner visible.
-        """
+        """Login attempt for non-existent user shows error."""
+        _reset_db(backend_db_path)
         frontend_url, _ = frontend_server
         frontend_port = frontend_server[1]
-        backend_url, _ = backend_server
-        oidc_issuer, _ = oidc_server
 
-        # Create a banned user
-        sub = "banned-oidc-user"
-        _register_and_activate(
-            backend_url, oidc_issuer, backend_db_path,
-            sub=sub, username="banned_oidc",
-            name="Banned OIDC", email="banned-oidc@test.local",
-        )
-        conn = sqlite3.connect(backend_db_path)
-        conn.execute(
-            "UPDATE accounts SET status = 'banned' "
-            "WHERE username = 'banned_oidc'"
-        )
-        conn.commit()
-        conn.close()
-
-        # Clear cookies from prior tests
-        page.context.clear_cookies()
-
-        # ── Drive the login flow through the browser ──
-        page.goto(f"{frontend_url}/login")
-        page.wait_for_selector("#login-actions a", timeout=5000)
-        _snap(page, "banned_01_login_page", request)
+        page.goto(f"{frontend_url}/login", timeout=60000)
+        page.wait_for_load_state("networkidle")
+        _snap(page, "rejected_01_login_page", request)
 
         page.locator("a", has_text="Login with Test Provider").click()
         page.wait_for_selector("button[type='submit']", timeout=10000)
-        _snap(page, "banned_02_oidc_authorize", request)
-
-        page.fill("input[name='sub']", sub)
-        page.fill("input[name='name']", "Banned OIDC")
-        page.fill("input[name='email']", "banned-oidc@test.local")
+        page.fill("input[name='sub']", "unknown-user-xyz")
+        page.fill("input[name='name']", "Nobody")
+        page.fill("input[name='email']", "nobody@test.local")
         page.click("button[type='submit']")
 
-        # The backend redirects to /login?error=Your+account+is+banned.
-        page.wait_for_url("**/login**", timeout=10000)
-
-        # If we landed on the backend's port, navigate to the frontend
+        page.wait_for_load_state("networkidle", timeout=10000)
+        time.sleep(1)
         current = page.url
-        if f":{frontend_port}" not in current:
-            from urllib.parse import urlparse as _up, parse_qs as _pq
-            _parsed = _up(current)
-            _qs = _pq(_parsed.query)
-            error_msg = _qs.get("error", [""])[0]
-            if error_msg:
-                page.goto(
-                    f"{frontend_url}/login?error={error_msg}"
-                )
-            else:
-                page.goto(f"{frontend_url}/login")
+        # Backend redirects to /login?error=... via the frontend
+        if "/login" not in current:
+            page.goto(f"{frontend_url}/login")
+            page.wait_for_load_state("networkidle")
+        _snap(page, "rejected_02_error_shown", request)
 
-        page.wait_for_load_state("networkidle")
-        time.sleep(0.5)
-        _snap(page, "banned_03_login_error_after_oidc", request)
-
-    # ── 12  Claim existing account flow via browser ──────────────────
-
-    def test_12_claim_account_flow(
-        self, page, frontend_server, backend_server, oidc_server,
-        backend_db_path, request,
+    # ── 12: Claim account flow ───────────────────────────────────────
+    def test_12_claim_flow(
+        self, page, frontend_server, backend_server, oidc_server, backend_db_path, request,
     ):
-        """Screenshot the claim-account flow from registration page.
-
-        A new OIDC user sees the claim section on complete-registration
-        when legacy accounts exist, fills in the claim form, and sees
-        the submission confirmation.
-        """
+        """Claim account section on registration page."""
+        _reset_db(backend_db_path)
         frontend_url, _ = frontend_server
+        backend_url, _ = backend_server
+        oidc_issuer, _ = oidc_server
         frontend_port = frontend_server[1]
 
-        # First, create a legacy account that can be claimed
-        # (account with no external_unique_id matching, created via DB)
+        # Create a legacy claimable account
         conn = sqlite3.connect(backend_db_path)
         conn.execute(
             "INSERT OR IGNORE INTO accounts "
-            "(username, email, phone_provider, account_provider, "
-            " external_unique_id, claims, status) "
-            "VALUES ('legacy_claimable', NULL, 1, 1, 'legacy-no-match', 1, 'active')"
+            "(username, email, phone_provider, account_provider, external_unique_id, claims, status) "
+            "VALUES ('legacy_user', NULL, 1, 1, 'legacy-no-match', 1, 'active')"
         )
         conn.commit()
         conn.close()
 
-        # Clear cookies
         page.context.clear_cookies()
-
-        # Drive OIDC register flow
         page.goto(f"{frontend_url}/login")
         page.wait_for_selector("#login-actions a", timeout=5000)
         page.locator("a", has_text="Register with Test Provider").click()
-
         page.wait_for_selector("button[type='submit']", timeout=10000)
-        page.fill("input[name='sub']", "claim-flow-user")
-        page.fill("input[name='name']", "Claim Flow User")
-        page.fill("input[name='email']", "claim-flow@test.local")
+        page.fill("input[name='sub']", "claim-test-user")
+        page.fill("input[name='name']", "Claim Tester")
+        page.fill("input[name='email']", "claim@test.local")
         page.click("button[type='submit']")
 
         page.wait_for_url("**/complete-registration**", timeout=10000)
         current = page.url
         if f":{frontend_port}" not in current:
             page.goto(f"{frontend_url}/auth/complete-registration")
-
         page.wait_for_selector("#complete-registration-form", timeout=5000)
-        time.sleep(1.5)  # Wait for claim section to load dynamically
-        _snap(page, "claim_01_registration_with_claim_section", request)
+        time.sleep(1.5)
+        _snap(page, "claim_01_registration_with_claim", request)
 
-        # Check if the claim section appeared
         claim_form = page.query_selector("#claim-account-form")
         if claim_form:
-            page.fill("#claim-username", "legacy_claimable")
-            _snap(page, "claim_02_claim_form_filled", request)
-            page.click('#claim-account-form button[type="submit"]')
+            page.fill("#claim-username", "legacy_user")
+            _snap(page, "claim_02_form_filled", request)
+            page.click("#claim-account-form button[type='submit']")
             time.sleep(1)
-            _snap(page, "claim_03_claim_submitted", request)
-        else:
-            # Claim section may not appear if no claimable accounts found
-            _snap(page, "claim_02_no_claimable_accounts", request)
+            _snap(page, "claim_03_submitted", request)
 
-    # ── 13  Disaster recovery workflows ──────────────────────────────
-
-    def test_13_disaster_recovery(
-        self, page, frontend_server, backend_server, oidc_server,
-        backend_db_path, request,
+    # ── 13: Disaster recovery ────────────────────────────────────────
+    def test_13_recovery(
+        self, page, frontend_server, backend_server, oidc_server, backend_db_path, request,
     ):
-        """Screenshot disaster recovery workflows.
-
-        Covers:
-        - Happy hour event with Cancel button visible
-        - Cancelling an event and seeing the freed slot
-        - Creating a replacement event after cancellation
-        - Skip Turn button on the rotation section
-        - Mealbot ledger with Void buttons
-        - Voiding a meal record
-        """
+        """Recovery: cancel event, reschedule, void mealbot record."""
+        _reset_db(backend_db_path)
         frontend_url, _ = frontend_server
         backend_url, _ = backend_server
         oidc_issuer, _ = oidc_server
 
-        # Login as dev-admin (has ALL claims including TYRANT + ADMIN)
-        cookies = _oidc_login_cookies(
-            backend_url, oidc_issuer,
-            sub="dev-admin", name="Admin", email="admin@dev.local",
-        )
+        # Create a peer for mealbot
+        _register_and_activate(backend_url, oidc_issuer, backend_db_path,
+            sub="recov-peer", username="recov_peer", name="Peer", email="rpeer@test.local")
+        _grant_claims(backend_db_path, "recov_peer", BASIC | MEALBOT)
+
+        cookies = _oidc_login_cookies(backend_url, oidc_issuer, sub="dev-admin", name="Admin", email="admin@dev.local")
         _inject_cookies(page, cookies, frontend_url)
 
-        # ── A. Happy Hour: Create event, then cancel it ──────────────
+        api = _api_client(backend_url, cookies)
 
-        # First create a location and event via API so the page has data
-        api_client = httpx.Client(
-            base_url=backend_url, follow_redirects=False, timeout=10,
-        )
-        for k, v in cookies.items():
-            api_client.cookies.set(k, v)
-        csrf = api_client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
+        # Create location + event
+        csrf = _get_csrf(api)
+        loc = api.post("/api/v2/happyhour/locations", json={
+            "name": "Wrong Venue", "address_raw": "1 Mistake Ave, Portland, OR 97201",
+            "number": 1, "street_name": "Mistake Ave", "city": "Portland",
+            "state": "OR", "zip_code": "97201", "latitude": 45.52, "longitude": -122.68,
+        }, headers={"X-CSRF-Token": csrf})
+        assert loc.status_code == 201, loc.text
 
-        # Create a location
-        loc_resp = api_client.post(
-            "/api/v2/happyhour/locations",
-            json={
-                "name": "Wrong Venue",
-                "address_raw": "1 Mistake Ave, Portland, OR 97201",
-                "number": 1, "street_name": "Mistake Ave",
-                "city": "Portland", "state": "OR", "zip_code": "97201",
-                "latitude": 45.52, "longitude": -122.68,
-            },
-            headers={"X-CSRF-Token": csrf},
-        )
-        assert loc_resp.status_code == 201, loc_resp.text
-        loc_id = loc_resp.json()["id"]
+        csrf = _get_csrf(api)
+        next_week = (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
+        evt = api.post("/api/v2/happyhour/events", json={
+            "location_id": loc.json()["id"], "description": "Wrong venue!", "when": next_week,
+        }, headers={"X-CSRF-Token": csrf})
+        assert evt.status_code == 201, evt.text
+        event_id = evt.json()["id"]
 
-        # Create a second (correct) location
-        csrf = api_client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
-        loc2_resp = api_client.post(
-            "/api/v2/happyhour/locations",
-            json={
-                "name": "Better Bar",
-                "url": "https://betterbar.example.com",
-                "address_raw": "2 Success St, Portland, OR 97201",
-                "number": 2, "street_name": "Success St",
-                "city": "Portland", "state": "OR", "zip_code": "97201",
-                "latitude": 45.53, "longitude": -122.69,
-            },
-            headers={"X-CSRF-Token": csrf},
-        )
-        assert loc2_resp.status_code == 201, loc2_resp.text
-        loc2_id = loc2_resp.json()["id"]
-
-        # Create an event at the wrong venue
-        from datetime import datetime as dt, timezone, timedelta
-        next_week = (dt.now(timezone.utc) + timedelta(days=7)).isoformat()
-        csrf = api_client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
-        event_resp = api_client.post(
-            "/api/v2/happyhour/events",
-            json={
-                "location_id": loc_id,
-                "description": "Oops, wrong venue!",
-                "when": next_week,
-            },
-            headers={"X-CSRF-Token": csrf},
-        )
-        assert event_resp.status_code == 201, event_resp.text
-        event_id = event_resp.json()["id"]
-
-        # Navigate to happy hour page — should show Cancel button
+        # Screenshot with Cancel button
         page.goto(f"{frontend_url}/happyhour")
         page.wait_for_load_state("networkidle")
         time.sleep(2)
-        _snap(page, "recovery_01_happyhour_with_cancel_btn", request)
+        _snap(page, "recovery_01_cancel_btn_visible", request)
 
-        # Cancel the event via API (browser confirm dialogs are tricky in
-        # Playwright, so we do the mutation via API and refresh the page)
-        csrf = api_client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
-        cancel_resp = api_client.delete(
-            f"/api/v2/happyhour/events/{event_id}",
-            headers={"X-CSRF-Token": csrf},
-        )
-        assert cancel_resp.status_code == 200, cancel_resp.text
-
-        # Refresh to see the freed slot
+        # Cancel via API
+        csrf = _get_csrf(api)
+        api.delete(f"/api/v2/happyhour/events/{event_id}", headers={"X-CSRF-Token": csrf})
         page.reload()
         page.wait_for_load_state("networkidle")
         time.sleep(1.5)
-        _snap(page, "recovery_02_happyhour_after_cancel", request)
+        _snap(page, "recovery_02_after_cancel", request)
 
-        # Create replacement event at the better venue via API
-        csrf = api_client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
-        replace_resp = api_client.post(
-            "/api/v2/happyhour/events",
-            json={
-                "location_id": loc2_id,
-                "description": "Rescheduled to Better Bar!",
-                "when": next_week,
-            },
-            headers={"X-CSRF-Token": csrf},
-        )
-        assert replace_resp.status_code == 201, replace_resp.text
+        # Create a meal and void it
+        csrf = _get_csrf(api)
+        api.post("/api/v2/mealbot/record", json={"payer": "admin", "recipient": "recov_peer", "credits": 1}, headers={"X-CSRF-Token": csrf})
 
-        page.reload()
-        page.wait_for_load_state("networkidle")
-        time.sleep(1.5)
-        _snap(page, "recovery_03_happyhour_replacement_event", request)
-
-        # ── B. Happy Hour: Skip Turn button ──────────────────────────
-
-        # Scroll to the submit section to see the Skip My Turn button
-        submit_section = page.query_selector("#happyhour-submit-section")
-        if submit_section:
-            submit_section.scroll_into_view_if_needed()
-            time.sleep(0.5)
-            skip_btn = page.query_selector("#skip-turn-btn")
-            if skip_btn:
-                _snap(page, "recovery_04_skip_turn_button", request)
-
-        # ── C. Mealbot: Void a record ────────────────────────────────
-
-        # Ensure a second user exists for mealbot
-        try:
-            _register_and_activate(
-                backend_url, oidc_issuer, backend_db_path,
-                sub="recovery-peer", username="recovery_peer",
-                name="Recovery Peer", email="rpeer@test.local",
-            )
-            _grant_claims_via_db(
-                backend_db_path, "recovery_peer", 1 | 4,  # BASIC | MEALBOT
-            )
-        except Exception:
-            pass  # May already exist from earlier tests
-
-        # Create a mealbot record via API
-        csrf = api_client.get("/api/v2/auth/csrf-token").json()["csrf_token"]
-        api_client.post(
-            "/api/v2/mealbot/record",
-            json={"payer": "dev_admin", "recipient": "recovery_peer", "credits": 1},
-            headers={"X-CSRF-Token": csrf},
-        )
-
-        # Navigate to mealbot dashboard
         page.goto(f"{frontend_url}/mealbot")
         page.wait_for_load_state("networkidle")
         time.sleep(2)
-        _snap(page, "recovery_05_mealbot_with_void_buttons", request)
+        _snap(page, "recovery_03_mealbot_with_void", request)
 
-        # Check that void buttons are visible
-        void_btns = page.query_selector_all(".void-record-btn")
-        if void_btns:
-            # Void a record via API (avoid browser confirm dialog)
-            ledger_resp = api_client.get("/api/v2/mealbot/ledger")
-            if ledger_resp.status_code == 200:
-                items = ledger_resp.json().get("items", [])
-                if items:
-                    record_id = items[0]["id"]
-                    csrf = api_client.get(
-                        "/api/v2/auth/csrf-token"
-                    ).json()["csrf_token"]
-                    api_client.delete(
-                        f"/api/v2/mealbot/record/{record_id}",
-                        headers={"X-CSRF-Token": csrf},
-                    )
+        # Void via API
+        ledger = api.get("/api/v2/mealbot/ledger")
+        if ledger.status_code == 200 and ledger.json().get("items"):
+            rid = ledger.json()["items"][0]["id"]
+            csrf = _get_csrf(api)
+            api.delete(f"/api/v2/mealbot/record/{rid}", headers={"X-CSRF-Token": csrf})
 
-            page.reload()
-            page.wait_for_load_state("networkidle")
-            time.sleep(1.5)
-            _snap(page, "recovery_06_mealbot_after_void", request)
+        page.reload()
+        page.wait_for_load_state("networkidle")
+        time.sleep(1.5)
+        _snap(page, "recovery_04_after_void", request)
 
-        api_client.close()
+        api.close()
