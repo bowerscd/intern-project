@@ -1,8 +1,54 @@
 :root {
   color-scheme: light dark;
-  font-family: Arial, sans-serif;
 
-  /* ── Theme variables (default = dark) ─────── */
+  /* ── Typography ────────────────────────────── */
+  --font-body: Arial, Helvetica, sans-serif;
+  --font-heading: inherit;
+  --font-mono: "Courier New", "Lucida Console", monospace;
+  --font-size-base: 1rem;
+  --line-height: 1.5;
+  --letter-spacing: 0;
+  --heading-weight: 700;
+  --heading-transform: none;
+  --heading-letter-spacing: 0;
+
+  /* ── Shape & Spacing ───────────────────────── */
+  --radius: 8px;
+  --radius-sm: 4px;
+  --radius-lg: 12px;
+  --radius-input: 6px;
+  --radius-button: 6px;
+  --spacing-card: 12px;
+  --spacing-page: 16px;
+  --border-width: 1px;
+  --border-style: solid;
+
+  /* ── Shadows & Effects ─────────────────────── */
+  --shadow-card: none;
+  --shadow-button: none;
+  --shadow-input: none;
+  --shadow-sidebar: none;
+  --shadow-header: none;
+
+  /* ── Transitions & Motion ──────────────────── */
+  --transition-speed: 0.15s;
+  --transition-fn: ease;
+
+  /* ── Layout ────────────────────────────────── */
+  --sidebar-width: 200px;
+  --content-max-width: 1200px;
+  --card-gap: 12px;
+
+  /* ── Button styling ────────────────────────── */
+  --button-weight: inherit;
+  --button-transform: none;
+  --button-letter-spacing: 0;
+
+  /* ── Table styling ─────────────────────────── */
+  --table-stripe: transparent;
+  --table-row-height: auto;
+
+  /* ── Colors (default = dark) ───────────────── */
   --bg-body: #121212;
   --fg-body: #f0f0f0;
   --bg-sidebar: #1a1a1a;
@@ -57,9 +103,20 @@ html {
 
 body {
   margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height);
+  letter-spacing: var(--letter-spacing);
   background: var(--bg-body);
   color: var(--fg-body);
   overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--heading-weight);
+  text-transform: var(--heading-transform);
+  letter-spacing: var(--heading-letter-spacing);
 }
 
 /* ── App layout ───────────────────────────────── */
@@ -70,10 +127,10 @@ body {
 
 /* ── Sidebar ─────────────────────────────────── */
 .sidebar {
-  width: 200px;
+  width: var(--sidebar-width);
   flex-shrink: 0;
   background: var(--bg-sidebar);
-  border-left: 1px solid var(--border-sidebar);
+  border-left: var(--border-width) var(--border-style) var(--border-sidebar);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -81,11 +138,12 @@ body {
   right: 0;
   bottom: 0;
   z-index: 100;
+  box-shadow: var(--shadow-sidebar);
 }
 
 .sidebar-header {
   padding: 18px 16px 14px;
-  border-bottom: 1px solid var(--border-sidebar);
+  border-bottom: var(--border-width) var(--border-style) var(--border-sidebar);
 }
 
 .sidebar-header .brand {
@@ -113,7 +171,7 @@ body {
   text-decoration: none;
   padding: 10px 16px;
   font-size: 0.95em;
-  transition: background 0.15s, color 0.15s;
+  transition: background var(--transition-speed) var(--transition-fn), color var(--transition-speed) var(--transition-fn);
   border-right: 3px solid transparent;
 }
 
@@ -160,14 +218,14 @@ body {
 /* ── Main content area ───────────────────────── */
 .main-wrapper {
   flex: 1;
-  margin-right: 200px;
+  margin-right: var(--sidebar-width);
   min-width: 0;
 }
 
 .page {
-  max-width: 1200px;
+  max-width: var(--content-max-width);
   margin: 0 auto;
-  padding: 16px;
+  padding: var(--spacing-page);
   width: 100%;
   box-sizing: border-box;
 }
@@ -175,22 +233,23 @@ body {
 .grid-2 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 12px;
+  gap: var(--card-gap);
 }
 
 .card {
   background: var(--bg-card);
-  border: 1px solid var(--border-card);
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 12px;
+  border: var(--border-width) var(--border-style) var(--border-card);
+  border-radius: var(--radius);
+  padding: var(--spacing-card);
+  margin-bottom: var(--card-gap);
   overflow: hidden;
   box-sizing: border-box;
+  box-shadow: var(--shadow-card);
 }
 
 .prominent-card {
   background: var(--bg-prominent);
-  border: 2px solid var(--border-prominent);
+  border: 2px var(--border-style) var(--border-prominent);
   box-shadow: 0 4px 12px var(--shadow-prominent);
 }
 
@@ -245,12 +304,13 @@ label:has(input[type="checkbox"]):hover {
 input, select, button, textarea {
   font: inherit;
   padding: 8px;
-  border-radius: 6px;
-  border: 1px solid var(--border-input);
+  border-radius: var(--radius-input);
+  border: var(--border-width) var(--border-style) var(--border-input);
   margin-right: 6px;
   box-sizing: border-box;
   background: var(--bg-input);
   color: var(--fg-input);
+  box-shadow: var(--shadow-input);
 }
 
 input, select {
@@ -268,9 +328,14 @@ button {
   cursor: pointer;
   background: var(--bg-button);
   color: var(--fg-button);
-  border: 1px solid var(--border-button);
-  transition: background 0.2s;
+  border: var(--border-width) var(--border-style) var(--border-button);
+  border-radius: var(--radius-button);
+  transition: background var(--transition-speed) var(--transition-fn);
   width: auto;
+  box-shadow: var(--shadow-button);
+  font-weight: var(--button-weight);
+  text-transform: var(--button-transform);
+  letter-spacing: var(--button-letter-spacing);
 }
 
 button:hover {
@@ -302,7 +367,7 @@ thead {
 th, td {
   text-align: left;
   padding: 6px;
-  border-bottom: 1px solid var(--border-table);
+  border-bottom: var(--border-width) var(--border-style) var(--border-table);
 }
 
 th {
@@ -310,10 +375,15 @@ th {
   color: var(--fg-accent);
 }
 
+tr:nth-child(even) {
+  background: var(--table-stripe);
+}
+
 .status {
   padding: 8px;
-  border-left: 4px solid var(--border-status);
+  border-left: 4px var(--border-style) var(--border-status);
   background: var(--bg-status);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 .scrollable-content {
