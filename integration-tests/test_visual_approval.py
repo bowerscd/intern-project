@@ -219,7 +219,7 @@ class TestVisualApproval:
     def test_03_account_page(
         self, page, frontend_server, backend_server, oidc_server, backend_db_path, request,
     ):
-        """Account page: profile, claims toggles, theme picker."""
+        """Account page: profile form, claims toggles, theme picker."""
         _reset_db(backend_db_path)
         frontend_url, _ = frontend_server
         backend_url, _ = backend_server
@@ -230,24 +230,42 @@ class TestVisualApproval:
 
         page.goto(f"{frontend_url}/account")
         page.wait_for_load_state("networkidle")
-        time.sleep(1)
-        _snap(page, "account_01_full", request)
+        time.sleep(1.5)
+        _snap(page, "account_01_profile_form", request)
 
-        # Toggle MEALBOT claim
-        cb = page.query_selector(".claim-checkbox[data-claim=\"MEALBOT\"]")
-        if cb and cb.is_checked():
-            cb.click()
-            time.sleep(0.8)
-            _snap(page, "account_02_mealbot_off", request)
-            cb.click()
-            time.sleep(0.8)
+        # Scroll to claims section
+        claims_form = page.query_selector("#claims-form")
+        if claims_form:
+            claims_form.scroll_into_view_if_needed()
+            time.sleep(0.5)
+            _snap(page, "account_02_claims_section", request)
+
+        # Wait for claim checkboxes to render then toggle one
+        page.wait_for_selector(".claim-checkbox", timeout=5000)
+        cb = page.query_selector('.claim-checkbox[data-claim="MEALBOT"]')
+        if cb:
+            if cb.is_checked():
+                cb.click()
+                time.sleep(0.8)
+                _snap(page, "account_03_mealbot_unchecked", request)
+                cb.click()
+                time.sleep(0.8)
+            else:
+                cb.click()
+                time.sleep(0.8)
+                _snap(page, "account_03_mealbot_checked", request)
 
         # Theme picker
         picker = page.query_selector("#theme-picker")
         if picker:
             picker.scroll_into_view_if_needed()
-            time.sleep(0.3)
-            _snap(page, "account_03_theme_picker", request)
+            time.sleep(0.5)
+            _snap(page, "account_04_theme_picker", request)
+
+        # Scroll back to top for profile save button
+        page.evaluate("window.scrollTo(0, 0)")
+        time.sleep(0.3)
+        _snap(page, "account_05_top_of_page", request)
 
     # ── 04: Mealbot with data ────────────────────────────────────────
     def test_04_mealbot(
