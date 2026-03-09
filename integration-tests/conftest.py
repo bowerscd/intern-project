@@ -16,12 +16,13 @@ There are two modes of operation:
 
 from __future__ import annotations
 
+import io
 import os
 import signal
 import socket
 import subprocess
 import sys
-import tempfile
+import threading
 import time
 from pathlib import Path
 from typing import Generator
@@ -96,6 +97,29 @@ def _wait_for_port(port: int, timeout: float = 15.0) -> None:
         except OSError:
             time.sleep(0.2)
     raise TimeoutError(f"Port {port} did not open within {timeout}s")
+
+
+def _drain_pipe(pipe: io.BufferedReader, sink: io.BytesIO) -> threading.Thread:
+    """Start a daemon thread that reads *pipe* into *sink* until EOF.
+
+    Without this, subprocess stdout/stderr pipes fill their 64 KB kernel
+    buffer and the child process blocks on its next ``write()`` call,
+    deadlocking the server.  The sink captures output so it can still be
+    inspected on startup failure.
+    """
+    def _reader() -> None:
+        try:
+            while True:
+                chunk = pipe.read(4096)
+                if not chunk:
+                    break
+                sink.write(chunk)
+        except (ValueError, OSError):
+            pass  # pipe closed
+
+    t = threading.Thread(target=_reader, daemon=True)
+    t.start()
+    return t
 
 
 # ---------------------------------------------------------------------------
@@ -178,14 +202,21 @@ def backend_server(oidc_server, _db_path):
         stderr=subprocess.PIPE,
     )
 
+    # Drain pipes in background threads to prevent the 64 KB kernel pipe
+    # buffer from filling up and blocking the server process.
+    out_buf, err_buf = io.BytesIO(), io.BytesIO()
+    _drain_pipe(proc.stdout, out_buf)
+    _drain_pipe(proc.stderr, err_buf)
+
     try:
         _wait_for_port(port)
     except TimeoutError:
         proc.kill()
-        stdout, stderr = proc.communicate(timeout=5)
+        proc.wait(timeout=5)
         raise RuntimeError(
             f"Backend failed to start on port {port}.\n"
-            f"stdout: {stdout.decode()}\nstderr: {stderr.decode()}"
+            f"stdout: {out_buf.getvalue().decode(errors='replace')}\n"
+            f"stderr: {err_buf.getvalue().decode(errors='replace')}"
         )
 
     base_url = f"http://127.0.0.1:{port}"
@@ -260,14 +291,20 @@ def frontend_server(backend_server):
         stderr=subprocess.PIPE,
     )
 
+    # Drain pipes in background threads — same rationale as backend.
+    out_buf, err_buf = io.BytesIO(), io.BytesIO()
+    _drain_pipe(proc.stdout, out_buf)
+    _drain_pipe(proc.stderr, err_buf)
+
     try:
         _wait_for_port(port)
     except TimeoutError:
         proc.kill()
-        stdout, stderr = proc.communicate(timeout=5)
+        proc.wait(timeout=5)
         raise RuntimeError(
             f"Frontend failed to start on port {port}.\n"
-            f"stdout: {stdout.decode()}\nstderr: {stderr.decode()}"
+            f"stdout: {out_buf.getvalue().decode(errors='replace')}\n"
+            f"stderr: {err_buf.getvalue().decode(errors='replace')}"
         )
 
     base_url = f"http://127.0.0.1:{port}"
