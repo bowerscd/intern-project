@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Visual Timeline Viewer</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0d1117; color:#c9d1d9; font-family:system-ui,-apple-system,sans-serif; height:100vh; overflow:hidden; display:flex; }
+#sidebar { width:280px; min-width:280px; background:#161b22; border-right:1px solid #30363d; display:flex; flex-direction:column; }
+#sidebar h2 { padding:16px; font-size:14px; color:#8b949e; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid #30363d; }
+#flow-list { flex:1; overflow-y:auto; }
+.flow-item { padding:10px 16px; cursor:pointer; border-left:3px solid transparent; font-size:13px; transition:background .1s; }
+.flow-item:hover { background:#1c2128; }
+.flow-item.active { background:#1c2128; border-left-color:#58a6ff; color:#58a6ff; }
+.flow-item .count { color:#8b949e; font-size:11px; margin-left:4px; }
+#main { flex:1; display:flex; flex-direction:column; min-width:0; }
+#topbar { padding:12px 20px; background:#161b22; border-bottom:1px solid #30363d; display:flex; align-items:center; justify-content:space-between; }
+#topbar h1 { font-size:16px; font-weight:600; }
+#step-info { color:#8b949e; font-size:13px; }
+#viewer { flex:1; display:flex; align-items:center; justify-content:center; overflow:auto; position:relative; padding:20px; }
+#viewer img { max-width:100%; max-height:100%; object-fit:contain; border-radius:6px; border:1px solid #30363d; }
+#bottom { padding:12px 20px; background:#161b22; border-top:1px solid #30363d; text-align:center; }
+#dots { display:flex; justify-content:center; gap:6px; margin-bottom:8px; flex-wrap:wrap; }
+.dot { width:10px; height:10px; border-radius:50%; background:#30363d; cursor:pointer; transition:background .15s; }
+.dot.active { background:#58a6ff; }
+.dot:hover { background:#58a6ff80; }
+#caption { color:#8b949e; font-size:12px; }
+#help { position:fixed; bottom:12px; right:12px; background:#30363d; padding:8px 12px; border-radius:6px; font-size:11px; color:#8b949e; pointer-events:none; }
+#help kbd { background:#0d1117; padding:1px 5px; border-radius:3px; font-family:monospace; color:#c9d1d9; }
+#loading { display:flex; align-items:center; justify-content:center; height:100vh; width:100%; color:#8b949e; font-size:18px; }
+</style>
+</head>
+<body>
+<div id="loading">Scanning screenshots…</div>
+<div id="sidebar" style="display:none">
+  <h2>Workflows</h2>
+  <div id="flow-list"></div>
+</div>
+<div id="main" style="display:none">
+  <div id="topbar">
+    <h1 id="flow-title"></h1>
+    <span id="step-info"></span>
+  </div>
+  <div id="viewer">
+    <img id="img" src="" alt="">
+  </div>
+  <div id="bottom">
+    <div id="dots"></div>
+    <div id="caption"></div>
+  </div>
+</div>
+<div id="help" style="display:none">
+  <kbd>&larr;</kbd><kbd>&rarr;</kbd> step &nbsp;
+  <kbd>&uarr;</kbd><kbd>&darr;</kbd> workflow
+</div>
+
+<script>
+/**
+ * Visual Timeline Viewer
+ *
+ * Usage: serve this file from a screenshot output directory using any
+ * static file server, e.g.:
+ *
+ *   cd screenshots/20260308_201503
+ *   python3 -m http.server 9876 --bind 127.0.0.1
+ *   open http://127.0.0.1:9876/viewer.html
+ *
+ * The viewer auto-discovers flow directories and their PNG files by
+ * fetching the directory listing from the dev server.
+ */
+
+const FLOW_LABELS = {
+  "01_account_registration": "Account Registration & Approval",
+  "02_account_claim": "Account Claim",
+  "03_mealbot": "Mealbot Usage",
+  "04_happy_hour": "Happy Hour Lifecycle",
+  "05_account_self_service": "Account Self-Service",
+  "06_defunct_account": "Defunct Account (Read-only)",
+  "07_login_rejection": "Login Rejection",
+  "08_public_pages": "Public Pages & Redirects",
+  "09_admin_dashboard": "Admin Dashboard",
+  "10_disaster_recovery": "Disaster Recovery",
+  "11_mobile_views": "Mobile Responsive Views",
+  "12_theme_showcase": "Theme Showcase",
+};
+
+async function discoverFlows() {
+  // Fetch the directory listing from the dev server and parse hrefs
+  const resp = await fetch("./");
+  const html = await resp.text();
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
+  const links = Array.from(doc.querySelectorAll("a"));
+  const dirs = links
+    .map(a => a.getAttribute("href"))
+    .filter(h => h && h.endsWith("/") && /^\d{2}_/.test(h))
+    .map(h => h.replace(/\/$/, ""))
+    .sort();
+  const flows = {};
+  for (const dir of dirs) {
+    const r = await fetch(`./${dir}/`);
+    const h = await r.text();
+    const d = parser.parseFromString(h, "text/html");
+    const images = Array.from(d.querySelectorAll("a"))
+      .map(a => a.getAttribute("href"))
+      .filter(f => f && f.endsWith(".png"))
+      .sort();
+    if (images.length > 0) {
+      flows[dir] = {
+        label: FLOW_LABELS[dir] || dir.replace(/_/g, " ").replace(/^\d+\s*/, ""),
+        images,
+      };
+    }
+  }
+  return flows;
+}
+
+async function main() {
+  const DATA = await discoverFlows();
+  const flowKeys = Object.keys(DATA);
+  if (flowKeys.length === 0) {
+    document.getElementById("loading").textContent =
+      "No screenshot directories found. Serve this file from a screenshot output directory.";
+    return;
+  }
+
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("sidebar").style.display = "flex";
+  document.getElementById("main").style.display = "flex";
+  document.getElementById("help").style.display = "block";
+
+  let flowIdx = 0, stepIdx = 0;
+  const flowList = document.getElementById("flow-list");
+  const flowTitle = document.getElementById("flow-title");
+  const stepInfo = document.getElementById("step-info");
+  const img = document.getElementById("img");
+  const dots = document.getElementById("dots");
+  const caption = document.getElementById("caption");
+
+  flowKeys.forEach((key, i) => {
+    const d = document.createElement("div");
+    d.className = "flow-item";
+    d.innerHTML = DATA[key].label + '<span class="count">(' + DATA[key].images.length + ")</span>";
+    d.onclick = () => { flowIdx = i; stepIdx = 0; render(); };
+    flowList.appendChild(d);
+  });
+
+  function render() {
+    const key = flowKeys[flowIdx];
+    const flow = DATA[key];
+    const images = flow.images;
+    stepIdx = Math.max(0, Math.min(stepIdx, images.length - 1));
+    document.querySelectorAll(".flow-item").forEach((el, i) => el.classList.toggle("active", i === flowIdx));
+    const activeEl = document.querySelector(".flow-item.active");
+    if (activeEl) activeEl.scrollIntoView({ block: "nearest" });
+    flowTitle.textContent = flow.label;
+    stepInfo.textContent = (stepIdx + 1) + " / " + images.length;
+    img.src = key + "/" + images[stepIdx];
+    dots.innerHTML = "";
+    images.forEach((_, i) => {
+      const dot = document.createElement("div");
+      dot.className = "dot" + (i === stepIdx ? " active" : "");
+      dot.onclick = () => { stepIdx = i; render(); };
+      dots.appendChild(dot);
+    });
+    const name = images[stepIdx].replace(/^\d+_/, "").replace(/\.png$/, "").replace(/_/g, " ");
+    caption.textContent = name;
+  }
+
+  document.addEventListener("keydown", (e) => {
+    switch (e.key) {
+      case "ArrowRight": stepIdx++; render(); e.preventDefault(); break;
+      case "ArrowLeft":  stepIdx--; render(); e.preventDefault(); break;
+      case "ArrowDown":  flowIdx = Math.min(flowIdx + 1, flowKeys.length - 1); stepIdx = 0; render(); e.preventDefault(); break;
+      case "ArrowUp":    flowIdx = Math.max(flowIdx - 1, 0); stepIdx = 0; render(); e.preventDefault(); break;
+    }
+  });
+
+  render();
+}
+
+main();
+</script>
+</body>
+</html>
