@@ -4,16 +4,20 @@ Each test captures a numbered sequence of screenshots representing every
 page an end-user sees during a particular workflow.  Together, these form
 a visual timeline that can be reviewed without running the application.
 
-Screenshots are organised into flow-specific sub-directories::
+Every ``FlowRecorder.snap()`` call cycles all 23 CSS themes, producing
+one screenshot per theme in per-theme sub-directories::
 
     screenshots/{timestamp}/
-        01_account_registration/
+        01_account_registration_t01_default/
             001_login_page.png
             002_oidc_register_form.png
             ...
-        02_account_claim/
+        01_account_registration_t02_light/
             001_login_page.png
             ...
+
+Serve the ``screenshots/`` directory and open ``viewer.html`` to browse
+all runs, flows, and themes interactively (Space cycles themes).
 
 Run::
 
@@ -46,6 +50,14 @@ ALL_CLAIMS = BASIC | ADMIN | MEALBOT | COOKBOOK | HAPPY_HOUR | HAPPY_HOUR_TYRANT
 # ── Session-wide screenshot root ─────────────────────────────────────
 _SESSION_DIR: Path | None = None
 
+THEMES = [
+    "default", "light", "solarized-dark", "solarized-light",
+    "nord", "dracula", "monokai", "cyberpunk", "ocean", "forest",
+    "sunset", "midnight-purple", "cherry-blossom", "retro-terminal",
+    "high-contrast", "warm-earth", "arctic", "neon", "paper",
+    "slate", "rose-gold", "emerald", "coffee",
+]
+
 
 def _session_dir() -> Path:
     global _SESSION_DIR
@@ -55,21 +67,59 @@ def _session_dir() -> Path:
     return _SESSION_DIR
 
 
+def _apply_theme(page, theme: str) -> None:
+    """Apply a CSS theme by setting data-theme on <html>."""
+    if theme == "default":
+        page.evaluate(
+            "document.documentElement.removeAttribute('data-theme')"
+        )
+    else:
+        page.evaluate(
+            "document.documentElement.setAttribute("
+            f"'data-theme', '{theme}')"
+        )
+
+
 # ── FlowRecorder — per-flow screenshot sequencer ─────────────────────
 class FlowRecorder:
-    """Manages numbered screenshots for a single flow."""
+    """Manages numbered screenshots for a single flow.
+
+    Every ``snap()`` call cycles all 23 themes, taking one screenshot
+    per theme into per-theme sub-directories::
+
+        {flow_name}_t01_default/001_foo.png
+        {flow_name}_t02_light/001_foo.png
+        …
+
+    The ``default`` theme is restored after each snap so subsequent
+    browser interactions are unaffected.
+    """
 
     def __init__(self, flow_name: str) -> None:
-        self.dir = _session_dir() / flow_name
-        self.dir.mkdir(parents=True, exist_ok=True)
+        self.flow_name = flow_name
         self.step = 0
+        self._theme_dirs: dict[str, Path] = {}
+        for idx, theme in enumerate(THEMES, start=1):
+            d = _session_dir() / f"{flow_name}_t{idx:02d}_{theme}"
+            d.mkdir(parents=True, exist_ok=True)
+            self._theme_dirs[theme] = d
 
     def snap(self, page, description: str) -> Path:
-        """Take a full-page screenshot and return its path."""
+        """Cycle all themes and screenshot each; return default-theme path."""
         self.step += 1
-        path = self.dir / f"{self.step:03d}_{description}.png"
-        page.screenshot(path=str(path), full_page=True)
-        return path
+        first_path: Path | None = None
+        for theme in THEMES:
+            _apply_theme(page, theme)
+            page.evaluate("document.body.offsetHeight")
+            time.sleep(0.15)
+            path = self._theme_dirs[theme] / f"{self.step:03d}_{description}.png"
+            page.screenshot(path=str(path), full_page=True)
+            if first_path is None:
+                first_path = path
+        # Restore default so subsequent interactions are unaffected
+        _apply_theme(page, "default")
+        assert first_path is not None
+        return first_path
 
 
 # ── DB helpers ────────────────────────────────────────────────────────
@@ -1050,40 +1100,508 @@ class TestFlow11MobileViews:
 # Flow 12 — Theme Showcase
 # ═══════════════════════════════════════════════════════════════════════
 
+def _seed_showcase_data(
+    backend_url: str,
+    oidc_issuer: str,
+    db_path: str,
+) -> None:
+    """Populate the database with realistic data for theme screenshots.
+
+    Creates additional users, happy-hour locations, upcoming + past events,
+    mealbot records, tyrant rotation entries, and a pending account-claim
+    request so that every page has visible rows/tables/cards.
+    """
+    # ── Create extra users ────────────────────────────────────────────
+    users = [
+        ("user-alice", "alice", "Alice Chen", "alice@example.com"),
+        ("user-bob", "bob", "Bob Martinez", "bob@example.com"),
+        ("user-carol", "carol", "Carol Nguyen", "carol@example.com"),
+    ]
+    for sub, username, name, email in users:
+        _register_and_activate(
+            backend_url, oidc_issuer, db_path,
+            sub=sub, username=username, name=name, email=email,
+        )
+        _grant_claims(db_path, username, BASIC | MEALBOT | HAPPY_HOUR)
+
+    # One user left pending (for the admin page's "Pending Accounts" tab)
+    _register_and_activate(
+        backend_url, oidc_issuer, db_path,
+        sub="user-pending", username="pendinguser", name="Pending Pete",
+        email="pete@example.com",
+    )
+    _set_status(db_path, "pendinguser", "pending_approval")
+
+    # ── Admin API client ──────────────────────────────────────────────
+    cookies = _oidc_login_cookies(
+        backend_url, oidc_issuer,
+        sub="dev-admin", name="Admin", email="admin@dev.local",
+    )
+    api = _api_client(backend_url, cookies)
+
+    # ── Happy-Hour locations ──────────────────────────────────────────
+    locations_data = [
+        {
+            "name": "The Crafty Fox",
+            "url": "https://craftyfox.example.com",
+            "address_raw": "123 Brew Ave, Portland, OR 97201",
+            "number": 123, "street_name": "Brew Ave", "city": "Portland",
+            "state": "OR", "zip_code": "97201",
+            "latitude": 45.52, "longitude": -122.68,
+        },
+        {
+            "name": "Sunset Taphouse",
+            "url": "https://sunsettap.example.com",
+            "address_raw": "456 Hilltop Rd, Portland, OR 97214",
+            "number": 456, "street_name": "Hilltop Rd", "city": "Portland",
+            "state": "OR", "zip_code": "97214",
+            "latitude": 45.51, "longitude": -122.64,
+        },
+        {
+            "name": "NW Barrel Room",
+            "url": "https://nwbarrel.example.com",
+            "address_raw": "789 Pearl St, Portland, OR 97209",
+            "number": 789, "street_name": "Pearl St", "city": "Portland",
+            "state": "OR", "zip_code": "97209",
+            "latitude": 45.53, "longitude": -122.68,
+        },
+        {
+            "name": "Hawthorne Hideaway",
+            "url": None,
+            "address_raw": "1010 Hawthorne Blvd, Portland, OR 97214",
+            "number": 1010, "street_name": "Hawthorne Blvd", "city": "Portland",
+            "state": "OR", "zip_code": "97214",
+            "latitude": 45.51, "longitude": -122.63,
+        },
+    ]
+    location_ids = []
+    for loc_data in locations_data:
+        csrf = _get_csrf(api)
+        resp = api.post(
+            "/api/v2/happyhour/locations",
+            json=loc_data,
+            headers={"X-CSRF-Token": csrf},
+        )
+        assert resp.status_code == 201, resp.text
+        location_ids.append(resp.json()["id"])
+
+    # ── Happy-Hour events (1 upcoming via API, 3 past via direct SQL) ──
+    now = datetime.now(timezone.utc)
+
+    # Upcoming event — use API (validates future date)
+    csrf = _get_csrf(api)
+    next_week = (now + timedelta(days=5)).isoformat()
+    resp = api.post(
+        "/api/v2/happyhour/events",
+        json={
+            "location_id": location_ids[0],
+            "description": "Friday Happy Hour at Crafty Fox!",
+            "when": next_week,
+        },
+        headers={"X-CSRF-Token": csrf},
+    )
+    assert resp.status_code == 201, resp.text
+
+    # ── Mealbot records ───────────────────────────────────────────────
+    meal_records = [
+        ("admin", "alice", 1),
+        ("admin", "bob", 1),
+        ("alice", "admin", 1),
+        ("bob", "carol", 1),
+        ("carol", "alice", 1),
+        ("admin", "carol", 1),
+        ("bob", "admin", 1),
+    ]
+    for payer, recipient, credits in meal_records:
+        csrf = _get_csrf(api)
+        api.post(
+            "/api/v2/mealbot/record",
+            json={"payer": payer, "recipient": recipient, "credits": credits},
+            headers={"X-CSRF-Token": csrf},
+        )
+
+    api.close()
+
+    # ── All remaining data via direct SQL (single connection) ─────────
+    # Insert a legacy account first (uses its own connection internally)
+    _insert_legacy_account(db_path, "oldtimer")
+
+    conn = sqlite3.connect(db_path, timeout=10)
+
+    # Past events (API rejects past dates)
+    admin_id = conn.execute(
+        "SELECT id FROM accounts WHERE username = 'admin'"
+    ).fetchone()[0]
+    past_events = [
+        (location_ids[1], "Last week's meetup at Sunset Taphouse",
+         (now - timedelta(days=7)).isoformat(),
+         (now - timedelta(days=7)).strftime("%G-W%V"), admin_id),
+        (location_ids[2], "Double-pour night at NW Barrel Room",
+         (now - timedelta(days=14)).isoformat(),
+         (now - timedelta(days=14)).strftime("%G-W%V"), admin_id),
+        (location_ids[3], "Trivia & Brews at Hawthorne Hideaway",
+         (now - timedelta(days=21)).isoformat(),
+         (now - timedelta(days=21)).strftime("%G-W%V"), admin_id),
+    ]
+    for loc_id, desc, when, week_of, tyrant_id in past_events:
+        conn.execute(
+            "INSERT OR IGNORE INTO HappyHourEvents "
+            "(LocationID, Description, [When], week_of, TyrantID, AutoSelected) "
+            "VALUES (?, ?, ?, ?, ?, 0)",
+            (loc_id, desc, when, week_of, tyrant_id),
+        )
+
+    # Tyrant rotation entries
+    alice_id = conn.execute(
+        "SELECT id FROM accounts WHERE username = 'alice'"
+    ).fetchone()[0]
+    bob_id = conn.execute(
+        "SELECT id FROM accounts WHERE username = 'bob'"
+    ).fetchone()[0]
+    carol_id = conn.execute(
+        "SELECT id FROM accounts WHERE username = 'carol'"
+    ).fetchone()[0]
+
+    rotation_rows = [
+        (admin_id, 1, 1, "chosen"),
+        (alice_id, 1, 2, "chosen"),
+        (bob_id, 1, 3, "missed"),
+        (carol_id, 1, 4, "pending"),
+        (admin_id, 1, 5, "scheduled"),
+        (alice_id, 1, 6, "scheduled"),
+    ]
+    for acct_id, cycle, position, status in rotation_rows:
+        conn.execute(
+            "INSERT INTO HappyHourTyrantRotation "
+            "(account_id, cycle, position, status, assigned_at) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (acct_id, cycle, position, status, now.isoformat()),
+        )
+
+    # Pending account-claim request (for admin Claims tab)
+    oldtimer_id = conn.execute(
+        "SELECT id FROM accounts WHERE username = 'oldtimer'"
+    ).fetchone()[0]
+    conn.execute(
+        "INSERT INTO account_claim_requests "
+        "(requester_provider, requester_external_id, requester_name, "
+        " requester_email, target_account_id, status, created_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (1, "claimant-ext-id", "Claimant User", "claimant@example.com",
+         oldtimer_id, "pending", now.isoformat()),
+    )
+    conn.commit()
+    conn.close()
+
+
 @_skip
 class TestFlow12ThemeShowcase:
-    THEMES = [
-        "default", "light", "solarized-dark", "solarized-light",
-        "nord", "dracula", "monokai", "cyberpunk", "ocean", "forest",
-        "sunset", "midnight-purple", "cherry-blossom", "retro-terminal",
-        "high-contrast", "warm-earth", "arctic", "neon", "paper",
-        "slate", "rose-gold", "emerald", "coffee",
-    ]
+    """Capture ~33 screenshots per theme across 6 phases.
+
+    Uses the theme-aware FlowRecorder which automatically cycles all 23
+    themes at each snap() call.  Non-mutating phases share a single DB
+    seed; only the four admin-action screenshots need a reseed.
+
+    Expected runtime: ~5 min.
+    """
+
+    # ── main test ──────────────────────────────────────────────────────
 
     def test_theme_showcase(
-        self, page, frontend_server, backend_server, oidc_server, backend_db_path,
+        self,
+        page,
+        frontend_server,
+        backend_server,
+        oidc_server,
+        backend_db_path,
     ):
-        _reset_db(backend_db_path)
         frontend_url, _ = frontend_server
         backend_url, _ = backend_server
         oidc_issuer, _ = oidc_server
-        flow = FlowRecorder("12_theme_showcase")
 
-        cookies = _oidc_login_cookies(
-            backend_url, oidc_issuer, sub="dev-admin", name="Admin", email="admin@dev.local",
+        page.on("dialog", lambda d: d.accept())
+
+        # ── one-time data seed ────────────────────────────────────────
+        _reset_db(backend_db_path)
+        _seed_showcase_data(backend_url, oidc_issuer, backend_db_path)
+        _register_and_activate(
+            backend_url, oidc_issuer, backend_db_path,
+            sub="defunct-user", username="defunct_user",
+            name="Defunct User", email="defunct@test.local",
         )
-        _inject_cookies(page, cookies, frontend_url)
+        _grant_claims(
+            backend_db_path, "defunct_user",
+            BASIC | MEALBOT | HAPPY_HOUR,
+        )
+        _set_status(backend_db_path, "defunct_user", "defunct")
+
+        # ── cache session cookies for every role ──────────────────────
+        admin_cookies = _oidc_login_cookies(
+            backend_url, oidc_issuer,
+            sub="dev-admin", name="Admin", email="admin@dev.local",
+        )
+        alice_cookies = _oidc_login_cookies(
+            backend_url, oidc_issuer,
+            sub="user-alice", name="Alice Chen",
+            email="alice@example.com",
+        )
+        defunct_cookies = _oidc_login_cookies(
+            backend_url, oidc_issuer,
+            sub="defunct-user", name="Defunct User",
+            email="defunct@test.local",
+        )
+
+        flow = FlowRecorder("12_theme_showcase")
+        snap = flow.snap
+
+        # ╔══════════════════════════════════════════════════════════════
+        # ║ Phase 1 — Unauthenticated (3 page-states)
+        # ╚══════════════════════════════════════════════════════════════
+        _clear_user(page)
+
+        page.goto(f"{frontend_url}/login")
+        page.wait_for_load_state("networkidle")
+        time.sleep(0.3)
+        snap(page, "login_page")
+
+        page.goto(
+            f"{frontend_url}/login?error=Authentication+failed"
+        )
+        page.wait_for_load_state("networkidle")
+        snap(page, "login_error")
+
+        page.goto(f"{frontend_url}/nonexistent-page")
+        page.wait_for_load_state("networkidle")
+        snap(page, "page_404")
+
+        # ╔══════════════════════════════════════════════════════════════
+        # ║ Phase 2 — Admin session, data-rich pages (10 page-states)
+        # ╚══════════════════════════════════════════════════════════════
+        _inject_cookies(page, admin_cookies, frontend_url)
+
+        # Happy hour — three scroll positions
+        page.goto(f"{frontend_url}/happyhour")
+        page.wait_for_load_state("networkidle")
+        time.sleep(0.5)
+        page.evaluate("window.scrollTo(0, 0)")
+        time.sleep(0.15)
+        snap(page, "happyhour_top")
+
+        page.evaluate(
+            "window.scrollTo(0, document.body.scrollHeight / 2)"
+        )
+        time.sleep(0.15)
+        snap(page, "happyhour_mid")
+
+        page.evaluate(
+            "window.scrollTo(0, document.body.scrollHeight)"
+        )
+        time.sleep(0.15)
+        snap(page, "happyhour_bottom")
+
+        # Mealbot — two scroll positions
+        page.goto(f"{frontend_url}/mealbot")
+        page.wait_for_load_state("networkidle")
+        time.sleep(0.5)
+        page.evaluate("window.scrollTo(0, 0)")
+        time.sleep(0.15)
+        snap(page, "mealbot_top")
+
+        page.evaluate(
+            "window.scrollTo(0, document.body.scrollHeight)"
+        )
+        time.sleep(0.15)
+        snap(page, "mealbot_bottom")
+
+        # Account — two scroll positions
+        page.goto(f"{frontend_url}/account")
+        page.wait_for_load_state("networkidle")
+        time.sleep(0.5)
+        page.evaluate("window.scrollTo(0, 0)")
+        time.sleep(0.15)
+        snap(page, "account_top")
+
+        page.evaluate(
+            "window.scrollTo(0, document.body.scrollHeight)"
+        )
+        time.sleep(0.15)
+        snap(page, "account_bottom")
+
+        # Admin — three tabs
+        page.goto(f"{frontend_url}/admin")
+        page.wait_for_load_state("networkidle")
+        time.sleep(0.5)
+        snap(page, "admin_pending_tab")
+
+        tab = page.locator(".admin-tab[data-tab='accounts']")
+        if tab.count() > 0:
+            tab.click()
+            time.sleep(0.3)
+        snap(page, "admin_accounts_tab")
+
+        tab = page.locator(".admin-tab[data-tab='claims']")
+        if tab.count() > 0:
+            tab.click()
+            time.sleep(0.3)
+        snap(page, "admin_claims_tab")
+
+        # ╔══════════════════════════════════════════════════════════════
+        # ║ Phase 3 — Regular-user perspective (3 page-states)
+        # ╚══════════════════════════════════════════════════════════════
+        _clear_user(page)
+        _inject_cookies(page, alice_cookies, frontend_url)
 
         page.goto(f"{frontend_url}/account")
         page.wait_for_load_state("networkidle")
-        time.sleep(1)
+        time.sleep(0.5)
+        snap(page, "user_account")
 
-        for theme in self.THEMES:
-            if theme == "default":
-                page.evaluate("document.documentElement.removeAttribute('data-theme')")
-            else:
-                page.evaluate(
-                    f"document.documentElement.setAttribute('data-theme', '{theme}')"
-                )
+        page.goto(f"{frontend_url}/happyhour")
+        page.wait_for_load_state("networkidle")
+        time.sleep(0.5)
+        snap(page, "user_happyhour")
+
+        page.goto(f"{frontend_url}/mealbot")
+        page.wait_for_load_state("networkidle")
+        time.sleep(0.5)
+        snap(page, "user_mealbot")
+
+        # ╔══════════════════════════════════════════════════════════════
+        # ║ Phase 4 — Defunct user / read-only (3 page-states)
+        # ╚══════════════════════════════════════════════════════════════
+        _clear_user(page)
+        _inject_cookies(page, defunct_cookies, frontend_url)
+
+        page.goto(f"{frontend_url}/account")
+        page.wait_for_load_state("networkidle")
+        time.sleep(0.5)
+        snap(page, "defunct_account")
+
+        page.goto(f"{frontend_url}/happyhour")
+        page.wait_for_load_state("networkidle")
+        time.sleep(0.5)
+        snap(page, "defunct_happyhour")
+
+        page.goto(f"{frontend_url}/mealbot")
+        page.wait_for_load_state("networkidle")
+        time.sleep(0.5)
+        snap(page, "defunct_mealbot")
+
+        # ╔══════════════════════════════════════════════════════════════
+        # ║ Phase 5 — Mobile views, admin session (10 page-states)
+        # ╚══════════════════════════════════════════════════════════════
+        _clear_user(page)
+        _inject_cookies(page, admin_cookies, frontend_url)
+        page.set_viewport_size({"width": 375, "height": 812})
+
+        page.goto(f"{frontend_url}/login")
+        page.wait_for_load_state("networkidle")
+        time.sleep(0.3)
+        snap(page, "mobile_login")
+
+        toggle = page.query_selector("#menu-toggle")
+        if toggle and toggle.is_visible():
+            toggle.click()
+            time.sleep(0.3)
+            snap(page, "mobile_login_sidebar")
+            page.evaluate(
+                "document.getElementById('sidebar')"
+                ".classList.remove('open');"
+                "document.getElementById('sidebar-overlay')"
+                ".classList.remove('open');"
+            )
+            time.sleep(0.1)
+
+        for path, name in [
+            ("/happyhour", "mobile_happyhour"),
+            ("/mealbot", "mobile_mealbot"),
+            ("/account", "mobile_account"),
+            ("/admin", "mobile_admin"),
+        ]:
+            page.goto(f"{frontend_url}{path}")
+            page.wait_for_load_state("networkidle")
             time.sleep(0.5)
-            flow.snap(page, f"theme_{theme}")
+            snap(page, name)
+
+            toggle = page.query_selector("#menu-toggle")
+            if toggle and toggle.is_visible():
+                toggle.click()
+                time.sleep(0.3)
+                snap(page, f"{name}_sidebar")
+                page.evaluate(
+                    "document.getElementById('sidebar')"
+                    ".classList.remove('open');"
+                    "document.getElementById('sidebar-overlay')"
+                    ".classList.remove('open');"
+                )
+                time.sleep(0.1)
+
+        # Restore desktop viewport for remaining phases
+        page.set_viewport_size({"width": 1280, "height": 720})
+
+        # ╔══════════════════════════════════════════════════════════════
+        # ║ Phase 6 — Admin actions / mutating  (4 page-states)
+        # ║ Each action changes server state so we reseed before it,
+        # ║ then snap all 23 themes on the result page.
+        # ╚══════════════════════════════════════════════════════════════
+
+        def _reseed_and_login():
+            """Reset DB, re-seed data, inject admin cookies."""
+            _reset_db(backend_db_path)
+            _seed_showcase_data(backend_url, oidc_issuer, backend_db_path)
+            _clear_user(page)
+            _inject_cookies(page, admin_cookies, frontend_url)
+
+        # Action 1 — approve pending account
+        _reseed_and_login()
+        page.goto(f"{frontend_url}/admin")
+        page.wait_for_load_state("networkidle")
+        time.sleep(0.5)
+        tab = page.locator(".admin-tab[data-tab='pending']")
+        if tab.count() > 0:
+            tab.click()
+            time.sleep(0.3)
+        btn = page.locator(".approve-account-btn").first
+        if btn.count() > 0 and btn.is_visible():
+            btn.click()
+            time.sleep(0.5)
+        snap(page, "admin_after_approve")
+
+        # Action 2 — approve pending claim
+        _reseed_and_login()
+        page.goto(f"{frontend_url}/admin")
+        page.wait_for_load_state("networkidle")
+        time.sleep(0.5)
+        tab = page.locator(".admin-tab[data-tab='claims']")
+        if tab.count() > 0:
+            tab.click()
+            time.sleep(0.3)
+        btn = page.locator(".approve-claim-btn").first
+        if btn.count() > 0 and btn.is_visible():
+            btn.click()
+            time.sleep(0.5)
+        snap(page, "admin_after_claim_approve")
+
+        # Action 3 — cancel upcoming happy-hour event
+        _reseed_and_login()
+        page.goto(f"{frontend_url}/happyhour")
+        page.wait_for_load_state("networkidle")
+        time.sleep(0.5)
+        btn = page.locator(".cancel-event-btn").first
+        if btn.count() > 0 and btn.is_visible():
+            btn.click()
+            time.sleep(0.8)
+        page.evaluate("window.scrollTo(0, 0)")
+        time.sleep(0.15)
+        snap(page, "happyhour_after_cancel")
+
+        # Action 4 — void a mealbot record
+        _reseed_and_login()
+        page.goto(f"{frontend_url}/mealbot")
+        page.wait_for_load_state("networkidle")
+        time.sleep(0.5)
+        btn = page.locator(".void-record-btn").first
+        if btn.count() > 0 and btn.is_visible():
+            btn.click()
+            time.sleep(0.8)
+        snap(page, "mealbot_after_void")

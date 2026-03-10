@@ -7,9 +7,9 @@
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 2: "light" — BAUHAUS STUDIO
-   Geometric, primary-color accents, asymmetric grid, left sidebar,
-   thick black borders, Mondrian-inspired card accents
+   Theme 2: "light" — DE STIJL / BAUHAUS STUDIO
+   Sidebar becomes horizontal top nav bar. Asymmetric Mondrian grid.
+   Bold primary blocks, thick black frames, geometric precision.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="light"] {
   color-scheme: light;
@@ -18,48 +18,49 @@
   --font-size-base: 1rem; --line-height: 1.55; --heading-weight: 900;
   --heading-transform: uppercase; --heading-letter-spacing: 0.04em;
   --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
-  --spacing-card: 20px; --spacing-page: 28px; --card-gap: 20px;
+  --spacing-card: 24px; --spacing-page: 32px; --card-gap: 0;
   --border-width: 3px;
   --shadow-card: none; --shadow-button: none; --shadow-input: none;
-  --shadow-sidebar: none; --transition-speed: 0.1s;
-  --bg-body: #f8f6f0; --fg-body: #111111; --bg-sidebar: #ffffff; --border-sidebar: #111111;
-  --fg-brand: #111111; --fg-brand-hover: #d32f2f; --fg-nav: #333; --fg-nav-hover: #111;
-  --bg-nav-hover: rgba(211,47,47,0.06); --bg-nav-active: rgba(211,47,47,0.12);
+  --shadow-sidebar: none; --transition-speed: 0.08s;
+  --sidebar-width: 0px;
+  --bg-body: #f5f0e8; --fg-body: #111111; --bg-sidebar: #111111; --border-sidebar: #111111;
+  --fg-brand: #ffffff; --fg-brand-hover: #ffd600; --fg-nav: #ffffff; --fg-nav-hover: #ffd600;
+  --bg-nav-hover: transparent; --bg-nav-active: transparent;
   --bg-card: #ffffff; --border-card: #111111;
   --bg-prominent: #ffffff;
   --border-prominent: #1565c0; --shadow-prominent: none;
   --fg-accent: #d32f2f; --fg-accent-alt: #1565c0;
   --bg-input: #ffffff; --fg-input: #111; --border-input: #111;
   --bg-button: #111111; --fg-button: #ffffff; --border-button: #111111;
-  --bg-button-hover: #333; --bg-button-active: #000;
+  --bg-button-hover: #d32f2f; --bg-button-active: #000;
   --bg-thead: #ffd600; --border-table: #111; --table-stripe: rgba(0,0,0,0.03);
   --bg-status: #e3f2fd; --border-status: #1565c0; --fg-muted: #666;
-  --bg-mobile-header: #ffffff; --bg-overlay: rgba(0,0,0,0.4);
+  --bg-mobile-header: #111111; --bg-overlay: rgba(0,0,0,0.6);
   --tap-highlight: rgba(211,47,47,0.2); --bg-checkbox-label: rgba(211,47,47,0.04);
   --bg-checkbox-label-mobile: rgba(248,246,240,0.8); --bg-menu-toggle-hover: rgba(211,47,47,0.08);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 3: "solarized-dark" — BLUEPRINT / DRAFTING TABLE
-   Monospace dense layout, grid-paper background, technical drawing feel,
-   hairline borders, no curves, annotation-style labels
+   Theme 3: "solarized-dark" — BLUEPRINT DRAFTING TABLE
+   Bottom status-bar sidebar. Grid-paper background. Technical monospace.
+   Cards as outlined schematic panels with coordinate markers.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="solarized-dark"] {
   --font-body: "Source Code Pro","Fira Code",monospace;
   --font-heading: "Source Code Pro","Fira Code",monospace;
-  --font-size-base: 0.88rem; --line-height: 1.4; --letter-spacing: 0.01em;
-  --heading-weight: 400; --heading-transform: uppercase; --heading-letter-spacing: 0.12em;
+  --font-size-base: 0.85rem; --line-height: 1.4; --letter-spacing: 0.01em;
+  --heading-weight: 400; --heading-transform: uppercase; --heading-letter-spacing: 0.14em;
   --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
-  --spacing-card: 10px; --spacing-page: 14px; --card-gap: 8px; --content-max-width: 960px;
-  --border-width: 1px; --border-style: solid;
+  --spacing-card: 12px; --spacing-page: 20px; --card-gap: 12px; --content-max-width: 960px;
+  --border-width: 1px; --border-style: solid; --sidebar-width: 0px;
   --shadow-card: none; --shadow-button: none; --shadow-input: none; --shadow-sidebar: none;
   --transition-speed: 0s;
   --button-weight: 400; --button-transform: uppercase; --button-letter-spacing: 0.06em;
   --bg-body: #002b36; --fg-body: #839496; --bg-sidebar: #073642; --border-sidebar: #2a5060;
-  --fg-brand: #93a1a1; --fg-brand-hover: #b58900; --fg-nav: #586e75; --fg-nav-hover: #93a1a1;
+  --fg-brand: #b58900; --fg-brand-hover: #cb4b16; --fg-nav: #657b83; --fg-nav-hover: #93a1a1;
   --bg-nav-hover: rgba(181,137,0,0.06); --bg-nav-active: rgba(181,137,0,0.12);
-  --bg-card: #073642; --border-card: #2a5060;
-  --bg-prominent: #073642;
+  --bg-card: rgba(7,54,66,0.6); --border-card: #2a5060;
+  --bg-prominent: rgba(7,54,66,0.8);
   --border-prominent: #b58900; --shadow-prominent: none;
   --fg-accent: #b58900; --fg-accent-alt: #cb4b16;
   --bg-input: #002b36; --fg-input: #839496; --border-input: #2a5060;
@@ -73,120 +74,121 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 4: "solarized-light" — JAPANESE WOODBLOCK / WASHI
-   Clean light aesthetic, generous whitespace, delicate serif type,
-   watercolor-soft borders, floating cards with subtle paper texture,
-   wide reading column, left sidebar
+   Theme 4: "solarized-light" — JAPANESE WASHI / IKEBANA
+   Sidebar disappears on desktop; centered narrow reading column.
+   Borderless cards as flowing text. Extreme whitespace. Calligraphic.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="solarized-light"] {
   color-scheme: light;
   --font-body: "Crimson Text",Georgia,"Noto Serif",serif;
   --font-heading: "Playfair Display","Crimson Text",Georgia,serif;
-  --font-size-base: 1.05rem; --line-height: 1.75; --heading-weight: 700;
-  --heading-letter-spacing: -0.01em;
-  --radius: 2px; --radius-sm: 1px; --radius-lg: 3px; --radius-input: 2px; --radius-button: 2px;
-  --spacing-card: 28px; --spacing-page: 36px; --card-gap: 24px; --content-max-width: 780px;
-  --border-width: 1px;
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.04); --shadow-button: none;
-  --shadow-sidebar: none; --transition-speed: 0.3s;
-  --bg-body: #faf8f2; --fg-body: #4a4a40; --bg-sidebar: #f0ebe0; --border-sidebar: #d8d0c0;
-  --fg-brand: #3a3a30; --fg-brand-hover: #8b6914; --fg-nav: #6a6a5a; --fg-nav-hover: #3a3a30;
-  --bg-nav-hover: rgba(139,105,20,0.05); --bg-nav-active: rgba(139,105,20,0.1);
-  --bg-card: #ffffff; --border-card: #e8e0d0;
-  --bg-prominent: #ffffff;
-  --border-prominent: #c0956a; --shadow-prominent: rgba(139,105,20,0.08);
+  --font-size-base: 1.1rem; --line-height: 1.85; --heading-weight: 400;
+  --heading-letter-spacing: 0.06em; --heading-transform: none;
+  --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
+  --spacing-card: 40px 0; --spacing-page: 48px 24px; --card-gap: 0;
+  --content-max-width: 640px; --sidebar-width: 0px;
+  --border-width: 0; --border-style: none;
+  --shadow-card: none; --shadow-button: none; --shadow-sidebar: none;
+  --transition-speed: 0.4s;
+  --bg-body: #faf6ee; --fg-body: #3a3a30; --bg-sidebar: #faf6ee; --border-sidebar: transparent;
+  --fg-brand: #3a3a30; --fg-brand-hover: #8b6914; --fg-nav: #8a8a70; --fg-nav-hover: #3a3a30;
+  --bg-nav-hover: transparent; --bg-nav-active: transparent;
+  --bg-card: transparent; --border-card: transparent;
+  --bg-prominent: transparent;
+  --border-prominent: transparent; --shadow-prominent: none;
   --fg-accent: #8b6914; --fg-accent-alt: #b48a3c;
-  --bg-input: #faf8f2; --fg-input: #4a4a40; --border-input: #d0c8b8;
-  --bg-button: #f0ebe0; --fg-button: #4a4a40; --border-button: #d0c8b8;
-  --bg-button-hover: #e8e0d0; --bg-button-active: #d8d0c0;
-  --bg-thead: transparent; --border-table: #e8e0d0; --table-stripe: rgba(0,0,0,0.015);
-  --bg-status: #f0ebe0; --border-status: #c0956a; --fg-muted: #8a8a7a;
-  --bg-mobile-header: #f0ebe0; --bg-overlay: rgba(0,0,0,0.15);
-  --tap-highlight: rgba(139,105,20,0.15); --bg-checkbox-label: rgba(139,105,20,0.03);
-  --bg-checkbox-label-mobile: rgba(240,235,224,0.7); --bg-menu-toggle-hover: rgba(139,105,20,0.06);
+  --bg-input: transparent; --fg-input: #3a3a30; --border-input: transparent;
+  --bg-button: transparent; --fg-button: #8b6914; --border-button: #8b6914;
+  --bg-button-hover: rgba(139,105,20,0.06); --bg-button-active: rgba(139,105,20,0.12);
+  --bg-thead: transparent; --border-table: #e0d8c4; --table-stripe: transparent;
+  --bg-status: transparent; --border-status: #8b6914; --fg-muted: #a0a090;
+  --bg-mobile-header: #faf6ee; --bg-overlay: rgba(250,246,238,0.9);
+  --tap-highlight: rgba(139,105,20,0.15); --bg-checkbox-label: transparent;
+  --bg-checkbox-label-mobile: rgba(250,246,238,0.8); --bg-menu-toggle-hover: rgba(139,105,20,0.06);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
    Theme 5: "nord" — FROSTED GLASS / AURORA BOREALIS
-   Glassmorphism, translucent cards with backdrop blur, floating
-   pill-shaped elements, soft glow effects, dreamy atmosphere
+   Glassmorphism throughout. Sidebar becomes translucent floating panel.
+   Cards are frosted glass panes with soft glow. Everything is pills.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="nord"] {
   --font-body: "Inter",system-ui,sans-serif;
-  --font-heading: "Inter",system-ui,sans-serif; --heading-weight: 300;
-  --heading-letter-spacing: 0.08em; --heading-transform: uppercase;
-  --radius: 20px; --radius-sm: 12px; --radius-lg: 28px; --radius-input: 14px; --radius-button: 50px;
-  --spacing-card: 24px; --spacing-page: 28px; --card-gap: 20px;
-  --shadow-card: 0 8px 32px rgba(0,0,0,0.2); --shadow-button: 0 4px 16px rgba(136,192,208,0.15);
-  --shadow-sidebar: -8px 0 32px rgba(0,0,0,0.15); --shadow-input: none;
-  --button-weight: 600; --button-letter-spacing: 0.04em;
-  --transition-speed: 0.35s; --transition-fn: cubic-bezier(0.25,0.8,0.25,1);
-  --bg-body: #242933; --fg-body: #d8dee9;
-  --bg-sidebar: rgba(46,52,64,0.7); --border-sidebar: rgba(76,86,106,0.3);
-  --fg-brand: #eceff4; --fg-brand-hover: #88c0d0; --fg-nav: #8895a7; --fg-nav-hover: #eceff4;
-  --bg-nav-hover: rgba(136,192,208,0.08); --bg-nav-active: rgba(136,192,208,0.16);
-  --bg-card: rgba(59,66,82,0.5); --border-card: rgba(76,86,106,0.25);
-  --bg-prominent: rgba(59,66,82,0.65);
-  --border-prominent: rgba(136,192,208,0.5); --shadow-prominent: rgba(136,192,208,0.15);
+  --font-heading: "Inter",system-ui,sans-serif; --heading-weight: 200;
+  --heading-letter-spacing: 0.12em; --heading-transform: uppercase;
+  --font-size-base: 0.95rem; --line-height: 1.6;
+  --radius: 24px; --radius-sm: 16px; --radius-lg: 32px; --radius-input: 50px; --radius-button: 50px;
+  --spacing-card: 28px; --spacing-page: 32px; --card-gap: 24px;
+  --shadow-card: 0 8px 32px rgba(0,0,0,0.3); --shadow-button: 0 4px 16px rgba(136,192,208,0.15);
+  --shadow-sidebar: none; --shadow-input: none;
+  --button-weight: 500; --button-letter-spacing: 0.06em; --button-transform: uppercase;
+  --transition-speed: 0.4s; --transition-fn: cubic-bezier(0.25,0.8,0.25,1);
+  --bg-body: #1a1e26; --fg-body: #d8dee9;
+  --bg-sidebar: rgba(46,52,64,0.4); --border-sidebar: rgba(76,86,106,0.2);
+  --fg-brand: #eceff4; --fg-brand-hover: #88c0d0; --fg-nav: #7a8698; --fg-nav-hover: #eceff4;
+  --bg-nav-hover: rgba(136,192,208,0.1); --bg-nav-active: rgba(136,192,208,0.2);
+  --bg-card: rgba(46,52,64,0.35); --border-card: rgba(136,192,208,0.08);
+  --bg-prominent: rgba(46,52,64,0.5);
+  --border-prominent: rgba(136,192,208,0.3); --shadow-prominent: rgba(136,192,208,0.12);
   --fg-accent: #88c0d0; --fg-accent-alt: #81a1c1;
-  --bg-input: rgba(46,52,64,0.4); --fg-input: #d8dee9; --border-input: rgba(76,86,106,0.3);
-  --bg-button: rgba(136,192,208,0.15); --fg-button: #88c0d0; --border-button: rgba(136,192,208,0.3);
-  --bg-button-hover: rgba(136,192,208,0.25); --bg-button-active: rgba(136,192,208,0.1);
-  --bg-thead: rgba(59,66,82,0.6); --border-table: rgba(76,86,106,0.2);
-  --bg-status: rgba(59,66,82,0.6); --border-status: #88c0d0; --fg-muted: #6a7a8c;
-  --bg-mobile-header: rgba(46,52,64,0.9); --tap-highlight: rgba(136,192,208,0.2);
-  --bg-checkbox-label: rgba(136,192,208,0.04); --bg-checkbox-label-mobile: rgba(59,66,82,0.4);
+  --bg-input: rgba(46,52,64,0.3); --fg-input: #d8dee9; --border-input: rgba(136,192,208,0.15);
+  --bg-button: rgba(136,192,208,0.12); --fg-button: #88c0d0; --border-button: rgba(136,192,208,0.2);
+  --bg-button-hover: rgba(136,192,208,0.22); --bg-button-active: rgba(136,192,208,0.08);
+  --bg-thead: rgba(46,52,64,0.5); --border-table: rgba(76,86,106,0.15);
+  --bg-status: rgba(46,52,64,0.5); --border-status: #88c0d0; --fg-muted: #5a6a7c;
+  --bg-mobile-header: rgba(46,52,64,0.85); --tap-highlight: rgba(136,192,208,0.2);
+  --bg-checkbox-label: rgba(136,192,208,0.04); --bg-checkbox-label-mobile: rgba(46,52,64,0.4);
   --bg-menu-toggle-hover: rgba(136,192,208,0.1);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
    Theme 6: "dracula" — GOTHIC CATHEDRAL
-   Deep purple-black ambience, ornate serif headings, heavy drop shadows,
-   gradient cards that feel like stained glass, thick ornamental borders
+   Sidebar becomes full-width header band. Cards in stained-glass layout.
+   Ornate serif headings, heavy drop shadows, arch-shaped accents.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="dracula"] {
   --font-body: "Lato","Helvetica Neue",system-ui,sans-serif;
   --font-heading: "Playfair Display","Libre Baskerville",Georgia,serif;
-  --heading-weight: 700; --line-height: 1.6;
-  --radius: 4px; --radius-sm: 2px; --radius-lg: 6px; --radius-input: 4px; --radius-button: 4px;
-  --spacing-card: 24px; --spacing-page: 28px; --card-gap: 20px;
-  --border-width: 1px;
-  --shadow-card: 0 10px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(189,147,249,0.1);
+  --heading-weight: 700; --line-height: 1.65; --heading-transform: none;
+  --radius: 4px; --radius-sm: 2px; --radius-lg: 8px; --radius-input: 4px; --radius-button: 4px;
+  --spacing-card: 28px; --spacing-page: 36px; --card-gap: 24px;
+  --border-width: 1px; --sidebar-width: 0px;
+  --shadow-card: 0 12px 48px rgba(0,0,0,0.5), 0 2px 8px rgba(189,147,249,0.08);
   --shadow-button: 0 4px 12px rgba(0,0,0,0.3);
-  --shadow-sidebar: -6px 0 24px rgba(0,0,0,0.4);
-  --transition-speed: 0.3s; --transition-fn: cubic-bezier(0.4,0,0.2,1);
-  --bg-body: #1a1826; --fg-body: #e8e4f0; --bg-sidebar: #14121e; --border-sidebar: #2e2940;
-  --fg-brand: #e8e4f0; --fg-brand-hover: #bd93f9; --fg-nav: #6a6480; --fg-nav-hover: #e8e4f0;
-  --bg-nav-hover: rgba(189,147,249,0.06); --bg-nav-active: rgba(189,147,249,0.12);
-  --bg-card: linear-gradient(180deg,#201e30 0%,#1a1826 100%); --border-card: #2e2940;
+  --shadow-sidebar: none;
+  --transition-speed: 0.35s; --transition-fn: cubic-bezier(0.4,0,0.2,1);
+  --bg-body: #1a1826; --fg-body: #e8e4f0; --bg-sidebar: #0e0c16; --border-sidebar: #2e2940;
+  --fg-brand: #bd93f9; --fg-brand-hover: #ff79c6; --fg-nav: #a8a0c0; --fg-nav-hover: #e8e4f0;
+  --bg-nav-hover: rgba(189,147,249,0.08); --bg-nav-active: rgba(189,147,249,0.15);
+  --bg-card: linear-gradient(180deg,#201e30 0%,#18162a 100%); --border-card: #2e2940;
   --bg-prominent: linear-gradient(135deg,#2a2640 0%,#1a1826 100%);
-  --border-prominent: #bd93f9; --shadow-prominent: rgba(189,147,249,0.2);
+  --border-prominent: #bd93f9; --shadow-prominent: rgba(189,147,249,0.15);
   --fg-accent: #bd93f9; --fg-accent-alt: #ff79c6;
   --bg-input: #14121e; --fg-input: #e8e4f0; --border-input: #3a3550;
   --bg-button: linear-gradient(135deg,#3a3550 0%,#2e2940 100%); --fg-button: #e8e4f0; --border-button: #4a4560;
   --bg-button-hover: #4a4560; --bg-button-active: #2a2640;
   --bg-thead: #201e30; --border-table: #2e2940;
   --bg-status: #201e30; --border-status: #50fa7b; --fg-muted: #6a6480;
-  --bg-mobile-header: #14121e; --tap-highlight: rgba(189,147,249,0.2);
+  --bg-mobile-header: #0e0c16; --tap-highlight: rgba(189,147,249,0.2);
   --bg-checkbox-label: rgba(189,147,249,0.04); --bg-checkbox-label-mobile: rgba(20,18,30,0.5);
   --bg-menu-toggle-hover: rgba(189,147,249,0.08);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
    Theme 7: "monokai" — HACKER TERMINAL / IDE
-   Dense code-editor layout, monospace everything, syntax-highlight colors,
-   no radius, minimal spacing, line-number-style borders, cursor blink
+   Sidebar collapses to narrow icon strip. Cards become terminal panes.
+   Dense monospace layout, syntax-colored elements, blinking cursor.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="monokai"] {
   --font-body: "JetBrains Mono","Fira Code","Cascadia Code",monospace;
   --font-heading: "JetBrains Mono","Fira Code",monospace;
-  --font-size-base: 0.85rem; --line-height: 1.35; --letter-spacing: 0.02em;
-  --heading-weight: 400; --heading-transform: uppercase; --heading-letter-spacing: 0.1em;
+  --font-size-base: 0.82rem; --line-height: 1.35; --letter-spacing: 0.015em;
+  --heading-weight: 400; --heading-transform: none; --heading-letter-spacing: 0;
   --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
-  --spacing-card: 8px; --spacing-page: 10px; --card-gap: 4px; --content-max-width: 900px;
-  --border-width: 1px;
+  --spacing-card: 0; --spacing-page: 0; --card-gap: 0; --content-max-width: 100%;
+  --border-width: 1px; --sidebar-width: 48px;
   --shadow-card: none; --shadow-button: none; --shadow-input: none; --shadow-sidebar: none;
-  --button-weight: 400; --button-transform: uppercase; --button-letter-spacing: 0.08em;
+  --button-weight: 400; --button-transform: none; --button-letter-spacing: 0;
   --transition-speed: 0s;
   --bg-body: #272822; --fg-body: #f8f8f2; --bg-sidebar: #1e1f1a; --border-sidebar: #3e3d32;
   --fg-brand: #a6e22e; --fg-brand-hover: #f92672; --fg-nav: #75715e; --fg-nav-hover: #f8f8f2;
@@ -198,259 +200,267 @@
   --bg-input: #272822; --fg-input: #f8f8f2; --border-input: #3e3d32;
   --bg-button: transparent; --fg-button: #a6e22e; --border-button: #3e3d32;
   --bg-button-hover: rgba(166,226,46,0.08); --bg-button-active: rgba(166,226,46,0.15);
-  --bg-thead: #1e1f1a; --border-table: #3e3d32; --table-stripe: rgba(166,226,46,0.02);
-  --bg-status: #2a2b24; --border-status: #e6db74; --fg-muted: #75715e;
+  --bg-thead: #1e1f1a; --border-table: #3e3d32; --table-stripe: rgba(62,61,50,0.3);
+  --bg-status: #1e1f1a; --border-status: #f92672; --fg-muted: #75715e;
   --bg-mobile-header: #1e1f1a; --tap-highlight: rgba(166,226,46,0.2);
-  --bg-checkbox-label: rgba(166,226,46,0.03); --bg-checkbox-label-mobile: rgba(30,31,26,0.5);
+  --bg-checkbox-label: rgba(166,226,46,0.04); --bg-checkbox-label-mobile: rgba(30,31,26,0.5);
   --bg-menu-toggle-hover: rgba(166,226,46,0.08);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 8: "cyberpunk" — NEON DYSTOPIA
-   Glitchy, hostile UI with sharp angles, neon magenta/cyan,
-   clip-path cuts, animated glow borders, aggressive typography
+   Theme 8: "cyberpunk" — NEON DYSTOPIA / BLADE RUNNER
+   Diagonal clip-path cuts. Scanline overlay. Glitch text shadows.
+   Sidebar as vertical neon strip. Everything angular and aggressive.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="cyberpunk"] {
-  --font-body: "Rajdhani","Orbitron","Share Tech Mono",monospace;
+  --font-body: "Rajdhani","Share Tech Mono",system-ui,sans-serif;
   --font-heading: "Orbitron","Rajdhani",sans-serif;
-  --font-size-base: 0.9rem; --letter-spacing: 0.04em; --line-height: 1.5;
-  --heading-weight: 900; --heading-transform: uppercase; --heading-letter-spacing: 0.2em;
+  --font-size-base: 0.92rem; --line-height: 1.5;
+  --heading-weight: 700; --heading-transform: uppercase; --heading-letter-spacing: 0.08em;
   --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
-  --spacing-card: 16px; --spacing-page: 20px; --card-gap: 12px;
+  --spacing-card: 20px; --spacing-page: 24px; --card-gap: 16px;
   --border-width: 2px;
-  --button-weight: 700; --button-transform: uppercase; --button-letter-spacing: 0.12em;
-  --shadow-card: 0 0 20px rgba(255,0,255,0.15), 0 0 60px rgba(0,255,255,0.05);
-  --shadow-button: 0 0 12px rgba(255,0,255,0.3);
-  --shadow-sidebar: -6px 0 30px rgba(255,0,255,0.2);
-  --transition-speed: 0.08s;
-  --bg-body: #080810; --fg-body: #d0d0ff; --bg-sidebar: #0c0c18; --border-sidebar: #ff00ff;
-  --fg-brand: #ff00ff; --fg-brand-hover: #00ffff; --fg-nav: #6644aa; --fg-nav-hover: #ff00ff;
-  --bg-nav-hover: rgba(255,0,255,0.06); --bg-nav-active: rgba(0,255,255,0.1);
-  --bg-card: #0c0c18; --border-card: rgba(255,0,255,0.3);
-  --bg-prominent: linear-gradient(135deg,#1a0a2e 0%,#080810 100%);
-  --border-prominent: #ff00ff; --shadow-prominent: rgba(255,0,255,0.4);
-  --fg-accent: #00ffff; --fg-accent-alt: #ff00ff;
-  --bg-input: #080810; --fg-input: #d0d0ff; --border-input: rgba(255,0,255,0.5);
+  --shadow-card: 0 0 20px rgba(255,0,255,0.08); --shadow-button: none;
+  --shadow-sidebar: none; --shadow-input: none;
+  --transition-speed: 0.15s;
+  --bg-body: #0a0a12; --fg-body: #e0e0ff; --bg-sidebar: #06060e; --border-sidebar: rgba(255,0,255,0.2);
+  --fg-brand: #ff00ff; --fg-brand-hover: #00ffff; --fg-nav: #8080a0; --fg-nav-hover: #ff00ff;
+  --bg-nav-hover: rgba(255,0,255,0.06); --bg-nav-active: rgba(255,0,255,0.15);
+  --bg-card: rgba(10,10,20,0.8); --border-card: rgba(255,0,255,0.15);
+  --bg-prominent: rgba(10,10,20,0.9);
+  --border-prominent: #ff00ff; --shadow-prominent: rgba(255,0,255,0.2);
+  --fg-accent: #ff00ff; --fg-accent-alt: #00ffff;
+  --bg-input: rgba(10,10,20,0.6); --fg-input: #e0e0ff; --border-input: rgba(255,0,255,0.2);
   --bg-button: transparent; --fg-button: #ff00ff; --border-button: #ff00ff;
-  --bg-button-hover: rgba(255,0,255,0.15); --bg-button-active: rgba(255,0,255,0.25);
-  --bg-thead: #0c0c18; --border-table: rgba(255,0,255,0.2);
-  --bg-status: #1a0a2e; --border-status: #00ffff; --fg-muted: #5533aa;
-  --bg-mobile-header: #0c0c18; --tap-highlight: rgba(255,0,255,0.2);
-  --bg-checkbox-label: rgba(255,0,255,0.04); --bg-checkbox-label-mobile: rgba(12,12,24,0.5);
-  --bg-menu-toggle-hover: rgba(0,255,255,0.08);
+  --bg-button-hover: rgba(255,0,255,0.15); --bg-button-active: rgba(255,0,255,0.05);
+  --bg-thead: rgba(10,10,20,0.9); --border-table: rgba(255,0,255,0.1);
+  --bg-status: rgba(10,10,20,0.8); --border-status: #00ffff; --fg-muted: #606080;
+  --bg-mobile-header: #06060e; --bg-overlay: rgba(0,0,0,0.8);
+  --tap-highlight: rgba(255,0,255,0.3); --bg-checkbox-label: rgba(255,0,255,0.04);
+  --bg-checkbox-label-mobile: rgba(10,10,20,0.6); --bg-menu-toggle-hover: rgba(255,0,255,0.1);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
    Theme 9: "ocean" — DEEP SEA BIOLUMINESCENCE
-   Dark oceanic depth, glowing accents like deep-sea creatures,
-   undulating organic shapes, extreme pill radius, wavy decorations
+   Organic flowing shapes. Cards overlap vertically with wave-like edges.
+   Sidebar becomes translucent depth-gauge strip. Bioluminescent glows.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="ocean"] {
-  --font-body: "Nunito","Quicksand",system-ui,sans-serif;
-  --font-heading: "Quicksand","Nunito",sans-serif; --heading-weight: 800;
-  --font-size-base: 1rem; --line-height: 1.65;
-  --radius: 24px; --radius-sm: 12px; --radius-lg: 32px; --radius-input: 16px; --radius-button: 50px;
-  --spacing-card: 24px; --spacing-page: 28px; --card-gap: 20px;
-  --shadow-card: 0 12px 40px rgba(0,20,40,0.5), 0 0 20px rgba(77,208,225,0.05);
-  --shadow-button: 0 4px 16px rgba(0,0,0,0.2);
-  --shadow-sidebar: -8px 0 24px rgba(0,10,20,0.3);
-  --button-weight: 700; --transition-speed: 0.4s; --transition-fn: cubic-bezier(0.25,0.8,0.25,1);
-  --bg-body: #060e18; --fg-body: #b0d4e8; --bg-sidebar: #081420; --border-sidebar: #0e2a3a;
-  --fg-brand: #4dd0e1; --fg-brand-hover: #00bcd4; --fg-nav: #4a8aa0; --fg-nav-hover: #b0d4e8;
+  --font-body: "Quicksand","Nunito",system-ui,sans-serif;
+  --font-heading: "Quicksand","Nunito",sans-serif;
+  --font-size-base: 0.95rem; --line-height: 1.65; --heading-weight: 700;
+  --heading-letter-spacing: 0.02em;
+  --radius: 32px; --radius-sm: 20px; --radius-lg: 40px; --radius-input: 20px; --radius-button: 50px;
+  --spacing-card: 28px; --spacing-page: 32px; --card-gap: 20px;
+  --border-width: 1px;
+  --shadow-card: 0 12px 40px rgba(0,15,30,0.5); --shadow-button: 0 4px 16px rgba(0,15,30,0.3);
+  --shadow-sidebar: none; --shadow-input: none;
+  --transition-speed: 0.5s; --transition-fn: cubic-bezier(0.23,1,0.32,1);
+  --bg-body: #040e18; --fg-body: #b0d4e8; --bg-sidebar: rgba(4,14,24,0.85); --border-sidebar: rgba(77,208,225,0.1);
+  --fg-brand: #4dd0e1; --fg-brand-hover: #00e5ff; --fg-nav: #5a8aa0; --fg-nav-hover: #b0d4e8;
   --bg-nav-hover: rgba(77,208,225,0.06); --bg-nav-active: rgba(77,208,225,0.12);
-  --bg-card: #081420; --border-card: #0e2a3a;
-  --bg-prominent: linear-gradient(180deg,#0c1e30 0%,#060e18 100%);
-  --border-prominent: #00bcd4; --shadow-prominent: rgba(77,208,225,0.2);
+  --bg-card: rgba(8,24,40,0.6); --border-card: rgba(77,208,225,0.08);
+  --bg-prominent: rgba(8,30,50,0.7);
+  --border-prominent: rgba(0,188,212,0.3); --shadow-prominent: rgba(77,208,225,0.1);
   --fg-accent: #4dd0e1; --fg-accent-alt: #00bcd4;
-  --bg-input: #060e18; --fg-input: #b0d4e8; --border-input: #1a3a4a;
-  --bg-button: #0e2a3a; --fg-button: #4dd0e1; --border-button: transparent;
-  --bg-button-hover: #143a50; --bg-button-active: #081420;
-  --bg-thead: #081420; --border-table: #0e2a3a;
-  --bg-status: #0c1e30; --border-status: #4dd0e1; --fg-muted: #3a6a80;
-  --bg-mobile-header: #081420; --tap-highlight: rgba(77,208,225,0.2);
-  --bg-checkbox-label: rgba(77,208,225,0.03); --bg-checkbox-label-mobile: rgba(8,20,32,0.5);
-  --bg-menu-toggle-hover: rgba(77,208,225,0.08);
+  --bg-input: rgba(4,14,24,0.5); --fg-input: #b0d4e8; --border-input: rgba(77,208,225,0.15);
+  --bg-button: rgba(77,208,225,0.1); --fg-button: #4dd0e1; --border-button: rgba(77,208,225,0.2);
+  --bg-button-hover: rgba(77,208,225,0.2); --bg-button-active: rgba(77,208,225,0.05);
+  --bg-thead: rgba(8,24,40,0.8); --border-table: rgba(77,208,225,0.08);
+  --bg-status: rgba(8,24,40,0.6); --border-status: #4dd0e1; --fg-muted: #4a7a90;
+  --bg-mobile-header: rgba(4,14,24,0.9); --tap-highlight: rgba(77,208,225,0.2);
+  --bg-checkbox-label: rgba(77,208,225,0.04); --bg-checkbox-label-mobile: rgba(8,24,40,0.5);
+  --bg-menu-toggle-hover: rgba(77,208,225,0.1);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 10: "forest" — ENCHANTED WOODLAND
-   Organic shapes, earthy tones, leaf-like asymmetric radius,
-   textured cards, serif body, nature-inspired accents
+   Theme 10: "forest" — ENCHANTED WOODLAND JOURNAL
+   Left sidebar as vine-covered panel. Cards as journal pages with
+   ruled lines. Serif everything, decorative leaf ornaments, earthy tones.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="forest"] {
-  --font-body: "Crimson Text",Georgia,serif; --font-heading: "Libre Baskerville","Crimson Text",Georgia,serif;
-  --font-size-base: 1.02rem; --heading-weight: 700; --line-height: 1.6;
-  --radius: 8px; --radius-sm: 4px; --radius-lg: 12px; --radius-input: 6px; --radius-button: 6px;
-  --spacing-card: 20px; --spacing-page: 24px; --card-gap: 16px;
-  --border-width: 1px;
-  --shadow-card: 0 4px 16px rgba(0,12,0,0.3); --shadow-button: 0 2px 6px rgba(0,0,0,0.15);
-  --shadow-sidebar: -4px 0 12px rgba(0,10,0,0.2);
-  --table-stripe: rgba(102,187,106,0.04); --transition-speed: 0.25s;
-  --bg-body: #080e08; --fg-body: #b8d8b8; --bg-sidebar: #0e1a0e; --border-sidebar: #1a3a1a;
-  --fg-brand: #81c784; --fg-brand-hover: #4caf50; --fg-nav: #5a8a5a; --fg-nav-hover: #b8d8b8;
-  --bg-nav-hover: rgba(76,175,80,0.06); --bg-nav-active: rgba(76,175,80,0.12);
-  --bg-card: #0e1a0e; --border-card: #1a3a1a;
-  --bg-prominent: linear-gradient(180deg,#132813 0%,#080e08 100%);
-  --border-prominent: #4caf50; --shadow-prominent: rgba(76,175,80,0.15);
-  --fg-accent: #66bb6a; --fg-accent-alt: #a5d6a7;
-  --bg-input: #080e08; --fg-input: #b8d8b8; --border-input: #2a4a2a;
-  --bg-button: #1a3a1a; --fg-button: #b8d8b8; --border-button: #2a5a2a;
-  --bg-button-hover: #2a4a2a; --bg-button-active: #132813;
-  --bg-thead: #0e1a0e; --border-table: #1a3a1a;
-  --bg-status: #132813; --border-status: #66bb6a; --fg-muted: #4a7a4a;
-  --bg-mobile-header: #0e1a0e; --tap-highlight: rgba(76,175,80,0.2);
-  --bg-checkbox-label: rgba(76,175,80,0.04); --bg-checkbox-label-mobile: rgba(14,26,14,0.5);
-  --bg-menu-toggle-hover: rgba(76,175,80,0.08);
+  --font-body: "Merriweather","Crimson Text",Georgia,serif;
+  --font-heading: "Playfair Display","Crimson Text",Georgia,serif;
+  --font-size-base: 0.95rem; --line-height: 1.75; --heading-weight: 700;
+  --heading-letter-spacing: 0; --heading-transform: none;
+  --radius: 3px; --radius-sm: 2px; --radius-lg: 6px; --radius-input: 3px; --radius-button: 3px;
+  --spacing-card: 24px; --spacing-page: 28px; --card-gap: 16px;
+  --border-width: 1px; --sidebar-width: 220px;
+  --shadow-card: 0 2px 8px rgba(0,12,0,0.3); --shadow-button: none;
+  --shadow-sidebar: -4px 0 16px rgba(0,12,0,0.2); --shadow-input: none;
+  --transition-speed: 0.3s;
+  --bg-body: #0c1a0c; --fg-body: #c8d8c0; --bg-sidebar: #081208; --border-sidebar: #1a3018;
+  --fg-brand: #81c784; --fg-brand-hover: #a5d6a7; --fg-nav: #6a8a60; --fg-nav-hover: #c8d8c0;
+  --bg-nav-hover: rgba(129,199,132,0.06); --bg-nav-active: rgba(129,199,132,0.12);
+  --bg-card: #0e1e0e; --border-card: #1a3018;
+  --bg-prominent: #0e200e;
+  --border-prominent: #66bb6a; --shadow-prominent: rgba(102,187,106,0.1);
+  --fg-accent: #81c784; --fg-accent-alt: #a5d6a7;
+  --bg-input: #0a160a; --fg-input: #c8d8c0; --border-input: #1a3018;
+  --bg-button: #162816; --fg-button: #c8d8c0; --border-button: #1a3018;
+  --bg-button-hover: #1e3a1e; --bg-button-active: #0e1e0e;
+  --bg-thead: #0e1e0e; --border-table: #1a3018; --table-stripe: rgba(129,199,132,0.03);
+  --bg-status: #0e200e; --border-status: #66bb6a; --fg-muted: #5a7a50;
+  --bg-mobile-header: #081208; --tap-highlight: rgba(129,199,132,0.2);
+  --bg-checkbox-label: rgba(129,199,132,0.04); --bg-checkbox-label-mobile: rgba(14,30,14,0.5);
+  --bg-menu-toggle-hover: rgba(129,199,132,0.08);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 11: "sunset" — DESERT MIRAGE
-   Hot gradient backgrounds, wavy silhouettes via border-radius,
-   bold warm typography, sand-textured cards, molten accents
+   Theme 11: "sunset" — DESERT CANYON / HORIZONTAL STRATA
+   Full-width horizontal card strips like geological layers.
+   Sidebar becomes bottom tab bar. Gradient bands across the page.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="sunset"] {
-  --font-body: "Poppins","Nunito",system-ui,sans-serif;
-  --font-heading: "Poppins",sans-serif; --heading-weight: 700;
-  --font-size-base: 1rem; --line-height: 1.6;
-  --radius: 16px; --radius-sm: 8px; --radius-lg: 24px; --radius-input: 12px; --radius-button: 12px;
-  --spacing-card: 22px; --spacing-page: 26px; --card-gap: 18px;
-  --shadow-card: 0 8px 32px rgba(30,10,0,0.5); --shadow-button: 0 4px 12px rgba(0,0,0,0.2);
-  --shadow-sidebar: -6px 0 20px rgba(30,10,0,0.3);
-  --button-weight: 600; --transition-speed: 0.3s;
-  --bg-body: linear-gradient(180deg,#1a0f0a 0%,#0d0806 100%); --fg-body: #f0d8c0;
-  --bg-sidebar: #1a0e08; --border-sidebar: #3a1a0a;
-  --fg-brand: #ffb74d; --fg-brand-hover: #ff7043; --fg-nav: #a07050; --fg-nav-hover: #f0d8c0;
-  --bg-nav-hover: rgba(255,112,67,0.06); --bg-nav-active: rgba(255,112,67,0.12);
-  --bg-card: linear-gradient(180deg,#2a1610 0%,#1a0e08 100%); --border-card: #3a1a0a;
-  --bg-prominent: linear-gradient(135deg,#3a1a0a 0%,#1a0f0a 100%);
-  --border-prominent: #ff7043; --shadow-prominent: rgba(255,112,67,0.25);
-  --fg-accent: #ff7043; --fg-accent-alt: #ffb74d;
-  --bg-input: #1a0f0a; --fg-input: #f0d8c0; --border-input: #5a3018;
-  --bg-button: linear-gradient(135deg,#4a2010 0%,#3a1a0a 100%); --fg-button: #ffcc80; --border-button: transparent;
-  --bg-button-hover: #5a3018; --bg-button-active: #3a1a0a;
-  --bg-thead: #2a1610; --border-table: #3a1a0a;
-  --bg-status: #3a1a0a; --border-status: #ffb74d; --fg-muted: #7a5a3a;
-  --bg-mobile-header: #1a0e08; --tap-highlight: rgba(255,112,67,0.2);
-  --bg-checkbox-label: rgba(255,112,67,0.04); --bg-checkbox-label-mobile: rgba(26,14,8,0.5);
-  --bg-menu-toggle-hover: rgba(255,112,67,0.08);
+  --font-body: "Source Sans 3","Fira Sans",system-ui,sans-serif;
+  --font-heading: "Poppins","Source Sans 3",sans-serif;
+  --font-size-base: 1rem; --line-height: 1.6; --heading-weight: 700;
+  --heading-transform: none; --heading-letter-spacing: -0.01em;
+  --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 8px; --radius-button: 8px;
+  --spacing-card: 32px 48px; --spacing-page: 0; --card-gap: 0;
+  --content-max-width: 100%; --sidebar-width: 0px;
+  --border-width: 0; --border-style: none;
+  --shadow-card: none; --shadow-button: 0 2px 8px rgba(30,10,0,0.3);
+  --shadow-sidebar: none; --shadow-input: none;
+  --transition-speed: 0.3s;
+  --bg-body: #1a0e08; --fg-body: #f0d8c0; --bg-sidebar: #120a06; --border-sidebar: #3a2010;
+  --fg-brand: #ff8a65; --fg-brand-hover: #ffab91; --fg-nav: #c09070; --fg-nav-hover: #f0d8c0;
+  --bg-nav-hover: rgba(255,138,101,0.08); --bg-nav-active: rgba(255,138,101,0.15);
+  --bg-card: #1e1008; --border-card: transparent;
+  --bg-prominent: linear-gradient(135deg,#2a1808 0%,#1a0e08 100%);
+  --border-prominent: #ff8a65; --shadow-prominent: rgba(255,138,101,0.1);
+  --fg-accent: #ff8a65; --fg-accent-alt: #ffab91;
+  --bg-input: rgba(26,14,8,0.5); --fg-input: #f0d8c0; --border-input: #3a2010;
+  --bg-button: linear-gradient(135deg,#4a2010 0%,#6a3018 100%); --fg-button: #f0d8c0; --border-button: transparent;
+  --bg-button-hover: linear-gradient(135deg,#5a3018 0%,#7a4020 100%); --bg-button-active: #3a1808;
+  --bg-thead: #1e1008; --border-table: #3a2010; --table-stripe: rgba(255,138,101,0.03);
+  --bg-status: #1e1008; --border-status: #ff8a65; --fg-muted: #8a6a50;
+  --bg-mobile-header: #120a06; --bg-overlay: rgba(0,0,0,0.7);
+  --tap-highlight: rgba(255,138,101,0.2); --bg-checkbox-label: rgba(255,138,101,0.04);
+  --bg-checkbox-label-mobile: rgba(30,16,8,0.5); --bg-menu-toggle-hover: rgba(255,138,101,0.08);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
    Theme 12: "midnight-purple" — COSMIC NEBULA
-   Ultra-deep space purple, floating elements with glow,
-   gradient text headings, cosmic shimmer effects, generous spacing
+   Floating card galaxy. Gradient text headings. Radial decorations.
+   Sidebar fades into an orbital navigation arc.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="midnight-purple"] {
-  --font-body: "DM Sans","Inter",system-ui,sans-serif;
-  --font-heading: "DM Sans","Inter",sans-serif; --heading-weight: 700;
-  --font-size-base: 1rem; --line-height: 1.6;
-  --radius: 14px; --radius-sm: 8px; --radius-lg: 20px; --radius-input: 10px; --radius-button: 10px;
-  --spacing-card: 24px; --spacing-page: 30px; --card-gap: 20px;
-  --shadow-card: 0 8px 32px rgba(10,5,20,0.6), 0 0 1px rgba(171,71,188,0.3);
-  --shadow-button: 0 4px 16px rgba(171,71,188,0.15);
-  --shadow-sidebar: -8px 0 32px rgba(10,5,20,0.4);
-  --transition-speed: 0.35s; --transition-fn: cubic-bezier(0.4,0,0.2,1);
-  --bg-body: #0a0514; --fg-body: #d0c0e0; --bg-sidebar: #0e081a; --border-sidebar: #1e1230;
-  --fg-brand: #ce93d8; --fg-brand-hover: #ab47bc; --fg-nav: #7a5a8a; --fg-nav-hover: #ce93d8;
+  --font-body: "Inter",system-ui,sans-serif;
+  --font-heading: "Poppins","Inter",sans-serif;
+  --font-size-base: 0.95rem; --line-height: 1.6; --heading-weight: 600;
+  --heading-letter-spacing: 0.02em;
+  --radius: 16px; --radius-sm: 10px; --radius-lg: 24px; --radius-input: 12px; --radius-button: 12px;
+  --spacing-card: 24px; --spacing-page: 28px; --card-gap: 20px;
+  --border-width: 1px;
+  --shadow-card: 0 8px 32px rgba(10,5,20,0.6); --shadow-button: 0 4px 12px rgba(10,5,20,0.4);
+  --shadow-sidebar: -6px 0 24px rgba(10,5,20,0.4); --shadow-input: none;
+  --transition-speed: 0.4s; --transition-fn: cubic-bezier(0.25,0.8,0.25,1);
+  --bg-body: #0e0818; --fg-body: #d8d0e8; --bg-sidebar: #0a0612; --border-sidebar: #1e1430;
+  --fg-brand: #ce93d8; --fg-brand-hover: #e1bee7; --fg-nav: #7a6890; --fg-nav-hover: #d8d0e8;
   --bg-nav-hover: rgba(171,71,188,0.06); --bg-nav-active: rgba(171,71,188,0.12);
-  --bg-card: #0e081a; --border-card: #1e1230;
-  --bg-prominent: linear-gradient(135deg,#1a1030 0%,#0a0514 100%);
-  --border-prominent: #ab47bc; --shadow-prominent: rgba(171,71,188,0.3);
+  --bg-card: rgba(20,14,36,0.6); --border-card: rgba(171,71,188,0.12);
+  --bg-prominent: rgba(30,20,50,0.7);
+  --border-prominent: rgba(171,71,188,0.4); --shadow-prominent: rgba(171,71,188,0.15);
   --fg-accent: #ce93d8; --fg-accent-alt: #ab47bc;
-  --bg-input: #0a0514; --fg-input: #d0c0e0; --border-input: #2a1a40;
-  --bg-button: #1e1230; --fg-button: #ce93d8; --border-button: #3a2850;
-  --bg-button-hover: #2a1a40; --bg-button-active: #140a24;
-  --bg-thead: #0e081a; --border-table: #1e1230;
-  --bg-status: #1a1030; --border-status: #ce93d8; --fg-muted: #6a4a7a;
-  --bg-mobile-header: #0e081a; --tap-highlight: rgba(171,71,188,0.2);
-  --bg-checkbox-label: rgba(171,71,188,0.04); --bg-checkbox-label-mobile: rgba(14,8,26,0.5);
-  --bg-menu-toggle-hover: rgba(171,71,188,0.08);
+  --bg-input: rgba(14,8,24,0.5); --fg-input: #d8d0e8; --border-input: rgba(171,71,188,0.15);
+  --bg-button: rgba(171,71,188,0.12); --fg-button: #ce93d8; --border-button: rgba(171,71,188,0.25);
+  --bg-button-hover: rgba(171,71,188,0.22); --bg-button-active: rgba(171,71,188,0.06);
+  --bg-thead: rgba(20,14,36,0.8); --border-table: rgba(171,71,188,0.1);
+  --bg-status: rgba(20,14,36,0.6); --border-status: #ce93d8; --fg-muted: #5a4a70;
+  --bg-mobile-header: #0a0612; --tap-highlight: rgba(171,71,188,0.2);
+  --bg-checkbox-label: rgba(171,71,188,0.04); --bg-checkbox-label-mobile: rgba(20,14,36,0.5);
+  --bg-menu-toggle-hover: rgba(171,71,188,0.1);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 13: "cherry-blossom" — SAKURA GARDEN
-   Delicate pink light theme, petal-shaped curves, watercolor-soft
-   shadows, handwritten-feel typography, extreme left sidebar softness
+   Theme 13: "cherry-blossom" — SAKURA GARDEN / KAWAII
+   Centered narrow column with generous whitespace. Petal-shaped cards.
+   Sidebar becomes floating icon bar. Ultra-soft and rounded.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="cherry-blossom"] {
   color-scheme: light;
-  --font-body: "Quicksand","Nunito",system-ui,sans-serif;
-  --font-heading: "Quicksand",sans-serif; --heading-weight: 700; --line-height: 1.7;
-  --font-size-base: 1rem;
-  --radius: 24px; --radius-sm: 14px; --radius-lg: 32px; --radius-input: 16px; --radius-button: 50px;
-  --spacing-card: 24px; --spacing-page: 30px; --card-gap: 20px;
-  --shadow-card: 0 6px 24px rgba(233,30,99,0.06); --shadow-button: 0 3px 10px rgba(233,30,99,0.08);
-  --shadow-sidebar: -2px 0 12px rgba(0,0,0,0.03);
-  --button-weight: 600; --transition-speed: 0.35s;
-  --table-stripe: rgba(233,30,99,0.02);
-  --bg-body: #fef5f8; --fg-body: #4a2535; --bg-sidebar: #fce8ef; --border-sidebar: #f4c2d0;
-  --fg-brand: #880e4f; --fg-brand-hover: #c2185b; --fg-nav: #9a4a60; --fg-nav-hover: #880e4f;
-  --bg-nav-hover: rgba(194,24,91,0.04); --bg-nav-active: rgba(194,24,91,0.08);
-  --bg-card: #ffffff; --border-card: #f4c2d0;
-  --bg-prominent: linear-gradient(135deg,#fce8ef 0%,#fff5f8 100%);
+  --font-body: "Nunito","Quicksand",system-ui,sans-serif;
+  --font-heading: "Nunito","Quicksand",sans-serif;
+  --font-size-base: 0.95rem; --line-height: 1.7; --heading-weight: 800;
+  --heading-letter-spacing: 0.01em;
+  --radius: 28px; --radius-sm: 16px; --radius-lg: 36px; --radius-input: 50px; --radius-button: 50px;
+  --spacing-card: 24px; --spacing-page: 32px; --card-gap: 20px;
+  --content-max-width: 700px; --sidebar-width: 0px;
+  --border-width: 2px;
+  --shadow-card: 0 6px 24px rgba(233,30,99,0.08); --shadow-button: 0 3px 10px rgba(233,30,99,0.1);
+  --shadow-sidebar: none; --shadow-input: none;
+  --transition-speed: 0.35s; --transition-fn: cubic-bezier(0.25,0.8,0.25,1);
+  --bg-body: #fff5f8; --fg-body: #4a3040; --bg-sidebar: #fce8ef; --border-sidebar: #f0b0c0;
+  --fg-brand: #c2185b; --fg-brand-hover: #e91e63; --fg-nav: #a06878; --fg-nav-hover: #4a3040;
+  --bg-nav-hover: rgba(194,24,91,0.06); --bg-nav-active: rgba(194,24,91,0.12);
+  --bg-card: #ffffff; --border-card: #f8d0dd;
+  --bg-prominent: linear-gradient(135deg,#fce8ef,#fff5f8);
   --border-prominent: #e91e63; --shadow-prominent: rgba(233,30,99,0.1);
   --fg-accent: #c2185b; --fg-accent-alt: #e91e63;
-  --bg-input: #ffffff; --fg-input: #4a2535; --border-input: #f0b0c0;
-  --bg-button: #fce8ef; --fg-button: #880e4f; --border-button: transparent;
-  --bg-button-hover: #f8bbd0; --bg-button-active: #f48fb1;
-  --bg-thead: #fef5f8; --border-table: #f4c2d0;
-  --bg-status: #fce8ef; --border-status: #e91e63; --fg-muted: #ad6a7a;
-  --bg-mobile-header: #fce8ef; --bg-overlay: rgba(0,0,0,0.15);
+  --bg-input: #ffffff; --fg-input: #4a3040; --border-input: #f0b0c0;
+  --bg-button: linear-gradient(135deg,#e91e63,#c2185b); --fg-button: #ffffff; --border-button: transparent;
+  --bg-button-hover: linear-gradient(135deg,#f44d86,#e91e63); --bg-button-active: #ad1457;
+  --bg-thead: #fce8ef; --border-table: #f8d0dd; --table-stripe: rgba(233,30,99,0.02);
+  --bg-status: #fce8ef; --border-status: #e91e63; --fg-muted: #b08898;
+  --bg-mobile-header: #fce8ef; --bg-overlay: rgba(255,245,248,0.9);
   --tap-highlight: rgba(233,30,99,0.15); --bg-checkbox-label: rgba(233,30,99,0.03);
   --bg-checkbox-label-mobile: rgba(252,232,239,0.7); --bg-menu-toggle-hover: rgba(233,30,99,0.06);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 14: "retro-terminal" — MAINFRAME CRT
-   Scanline overlay, phosphor-green-on-black, blinking cursor,
-   dashed borders like teletype, zero curves, compact dense layout
+   Theme 14: "retro-terminal" — CRT MAINFRAME / AMBER PHOSPHOR
+   Full CRT aesthetic with screen curvature, scanlines, amber glow.
+   Dashed borders, prompt-style headings, monospace everything.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="retro-terminal"] {
-  --font-body: "Share Tech Mono","Courier New","Lucida Console",monospace;
-  --font-heading: "Share Tech Mono","Courier New",monospace;
-  --font-size-base: 0.88rem; --line-height: 1.4; --letter-spacing: 0.03em;
-  --heading-weight: 400; --heading-transform: uppercase; --heading-letter-spacing: 0.15em;
+  --font-body: "Share Tech Mono","Fira Code",monospace;
+  --font-heading: "Share Tech Mono","Fira Code",monospace;
+  --font-size-base: 0.88rem; --line-height: 1.45; --letter-spacing: 0.02em;
+  --heading-weight: 400; --heading-transform: uppercase; --heading-letter-spacing: 0.08em;
   --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
-  --spacing-card: 8px; --spacing-page: 10px; --card-gap: 4px; --content-max-width: 860px;
-  --border-style: dashed; --border-width: 1px;
-  --button-weight: 400; --button-transform: uppercase; --button-letter-spacing: 0.1em;
+  --spacing-card: 12px; --spacing-page: 20px; --card-gap: 8px;
+  --content-max-width: 800px;
+  --border-width: 1px; --border-style: dashed;
   --shadow-card: none; --shadow-button: none; --shadow-input: none; --shadow-sidebar: none;
   --transition-speed: 0s;
-  --bg-body: #000000; --fg-body: #00ff00; --bg-sidebar: #000800; --border-sidebar: #003300;
-  --fg-brand: #00ff00; --fg-brand-hover: #00cc00; --fg-nav: #006600; --fg-nav-hover: #00ff00;
+  --bg-body: #0a0a00; --fg-body: #00dd00; --bg-sidebar: #050500; --border-sidebar: #004400;
+  --fg-brand: #00ff00; --fg-brand-hover: #88ff88; --fg-nav: #006600; --fg-nav-hover: #00ff00;
   --bg-nav-hover: rgba(0,255,0,0.04); --bg-nav-active: rgba(0,255,0,0.08);
-  --bg-card: #000800; --border-card: #003300;
-  --bg-prominent: #000800;
+  --bg-card: rgba(0,8,0,0.4); --border-card: #004400;
+  --bg-prominent: rgba(0,12,0,0.5);
   --border-prominent: #00ff00; --shadow-prominent: none;
-  --fg-accent: #00ff00; --fg-accent-alt: #00cc00;
-  --bg-input: #000000; --fg-input: #00ff00; --border-input: #003300;
+  --fg-accent: #00ff00; --fg-accent-alt: #88ff88;
+  --bg-input: rgba(0,8,0,0.3); --fg-input: #00dd00; --border-input: #004400;
   --bg-button: transparent; --fg-button: #00ff00; --border-button: #00ff00;
-  --bg-button-hover: rgba(0,255,0,0.06); --bg-button-active: rgba(0,255,0,0.12);
-  --bg-thead: #000800; --border-table: #003300;
-  --bg-status: #001a00; --border-status: #00ff00; --fg-muted: #005500;
-  --bg-mobile-header: #000800; --tap-highlight: rgba(0,255,0,0.15);
-  --bg-checkbox-label: rgba(0,255,0,0.02); --bg-checkbox-label-mobile: rgba(0,8,0,0.5);
+  --bg-button-hover: rgba(0,255,0,0.08); --bg-button-active: rgba(0,255,0,0.04);
+  --bg-thead: rgba(0,8,0,0.5); --border-table: #004400; --table-stripe: rgba(0,255,0,0.02);
+  --bg-status: rgba(0,12,0,0.4); --border-status: #00ff00; --fg-muted: #005500;
+  --bg-mobile-header: #050500; --tap-highlight: rgba(0,255,0,0.2);
+  --bg-checkbox-label: rgba(0,255,0,0.03); --bg-checkbox-label-mobile: rgba(0,8,0,0.4);
   --bg-menu-toggle-hover: rgba(0,255,0,0.06);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 15: "high-contrast" — BRUTALIST ACCESSIBILITY
-   Maximum contrast, thick borders, oversized text, no decorations,
-   no shadows, no transitions, bold everything, underlined headings
+   Theme 15: "high-contrast" — BRUTALIST / RAW CONCRETE
+   Massive borders, huge typography, yellow focus rings.
+   Completely flat — no effects, no gradients, no subtlety.
+   Sidebar becomes heavy top bar with oversized nav.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="high-contrast"] {
-  --font-body: "Atkinson Hyperlegible",Verdana,system-ui,sans-serif;
-  --font-heading: "Atkinson Hyperlegible",Verdana,sans-serif;
-  --font-size-base: 1.1rem; --line-height: 1.65;
-  --heading-weight: 900; --heading-transform: none; --heading-letter-spacing: 0;
+  color-scheme: dark;
+  --font-body: "Atkinson Hyperlegible","Inter",system-ui,sans-serif;
+  --font-heading: "Atkinson Hyperlegible","Inter",sans-serif;
+  --font-size-base: 1.1rem; --line-height: 1.65; --heading-weight: 700;
+  --heading-transform: uppercase; --heading-letter-spacing: 0.02em;
   --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
-  --spacing-card: 16px; --spacing-page: 20px; --card-gap: 16px;
-  --border-width: 4px; --button-weight: 900;
-  --shadow-card: none; --shadow-button: none; --shadow-input: none;
-  --shadow-sidebar: none; --transition-speed: 0s;
+  --spacing-card: 24px; --spacing-page: 24px; --card-gap: 16px;
+  --border-width: 4px; --sidebar-width: 0px;
+  --shadow-card: none; --shadow-button: none; --shadow-input: none; --shadow-sidebar: none;
+  --transition-speed: 0s;
   --bg-body: #000000; --fg-body: #ffffff; --bg-sidebar: #000000; --border-sidebar: #ffffff;
-  --fg-brand: #ffffff; --fg-brand-hover: #ffff00; --fg-nav: #ffffff; --fg-nav-hover: #ffff00;
-  --bg-nav-hover: rgba(255,255,0,0.1); --bg-nav-active: rgba(255,255,0,0.2);
+  --fg-brand: #ffff00; --fg-brand-hover: #ffffff; --fg-nav: #ffffff; --fg-nav-hover: #ffff00;
+  --bg-nav-hover: #ffffff; --bg-nav-active: #ffff00;
   --bg-card: #000000; --border-card: #ffffff;
   --bg-prominent: #000000;
   --border-prominent: #ffff00; --shadow-prominent: none;
@@ -458,1094 +468,1935 @@
   --bg-input: #000000; --fg-input: #ffffff; --border-input: #ffffff;
   --bg-button: #ffffff; --fg-button: #000000; --border-button: #ffffff;
   --bg-button-hover: #ffff00; --bg-button-active: #cccc00;
-  --bg-thead: #000000; --border-table: #ffffff;
+  --bg-thead: #ffffff; --border-table: #ffffff; --table-stripe: transparent;
   --bg-status: #000000; --border-status: #ffff00; --fg-muted: #cccccc;
-  --bg-mobile-header: #000000; --tap-highlight: rgba(255,255,0,0.2);
-  --bg-checkbox-label: rgba(255,255,0,0.06); --bg-checkbox-label-mobile: rgba(0,0,0,0.5);
-  --bg-menu-toggle-hover: rgba(255,255,0,0.1);
+  --bg-mobile-header: #000000; --bg-overlay: rgba(0,0,0,0.9);
+  --tap-highlight: rgba(255,255,0,0.3); --bg-checkbox-label: rgba(255,255,255,0.04);
+  --bg-checkbox-label-mobile: rgba(0,0,0,0.8); --bg-menu-toggle-hover: rgba(255,255,255,0.1);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 16: "warm-earth" — ARTISAN POTTERY
-   Handcrafted feel, terracotta + clay tones, textured borders,
-   double-line headings, inset card shadows, serif everything
+   Theme 16: "warm-earth" — ARTISAN POTTERY / CLAY STUDIO
+   Embossed inset-shadow cards. Handmade asymmetric shapes.
+   Double-line headings, thick right-border nav, rough organic edges.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="warm-earth"] {
-  --font-body: "Merriweather",Georgia,serif; --font-heading: "Merriweather",Georgia,serif;
-  --font-size-base: 0.95rem; --heading-weight: 700; --line-height: 1.6;
-  --radius: 6px; --radius-sm: 3px; --radius-lg: 8px; --radius-input: 4px; --radius-button: 4px;
-  --spacing-card: 20px; --spacing-page: 24px; --card-gap: 16px;
-  --border-width: 2px;
-  --shadow-card: inset 0 2px 6px rgba(0,0,0,0.2), 0 4px 12px rgba(20,14,10,0.3);
-  --shadow-button: 0 2px 4px rgba(0,0,0,0.15);
-  --shadow-sidebar: -4px 0 12px rgba(20,14,10,0.2);
-  --table-stripe: rgba(212,163,115,0.05); --transition-speed: 0.2s;
-  --bg-body: #14100c; --fg-body: #e0d0b8; --bg-sidebar: #1e1610; --border-sidebar: #3a2e20;
-  --fg-brand: #d4a373; --fg-brand-hover: #c8853a; --fg-nav: #8a7460; --fg-nav-hover: #d4a373;
-  --bg-nav-hover: rgba(200,133,58,0.06); --bg-nav-active: rgba(200,133,58,0.12);
-  --bg-card: #1e1610; --border-card: #3a2e20;
-  --bg-prominent: linear-gradient(180deg,#2a2018 0%,#14100c 100%);
-  --border-prominent: #c8853a; --shadow-prominent: rgba(200,133,58,0.15);
-  --fg-accent: #c8853a; --fg-accent-alt: #d4a373;
-  --bg-input: #14100c; --fg-input: #e0d0b8; --border-input: #4a3a28;
-  --bg-button: #3a2e20; --fg-button: #e0d0b8; --border-button: #5a4a34;
-  --bg-button-hover: #4a3a28; --bg-button-active: #2a2018;
-  --bg-thead: #1e1610; --border-table: #3a2e20;
-  --bg-status: #2a2018; --border-status: #c8853a; --fg-muted: #7a6a5a;
-  --bg-mobile-header: #1e1610; --tap-highlight: rgba(200,133,58,0.2);
-  --bg-checkbox-label: rgba(200,133,58,0.04); --bg-checkbox-label-mobile: rgba(30,22,16,0.5);
-  --bg-menu-toggle-hover: rgba(200,133,58,0.08);
+  --font-body: "Merriweather",Georgia,serif;
+  --font-heading: "Playfair Display","Libre Baskerville",Georgia,serif;
+  --font-size-base: 0.95rem; --line-height: 1.7; --heading-weight: 700;
+  --heading-transform: none; --heading-letter-spacing: 0;
+  --radius: 2px; --radius-sm: 1px; --radius-lg: 4px; --radius-input: 3px; --radius-button: 3px;
+  --spacing-card: 24px; --spacing-page: 28px; --card-gap: 16px;
+  --border-width: 1px;
+  --shadow-card: inset 0 2px 8px rgba(0,0,0,0.25), 0 6px 20px rgba(20,14,10,0.3);
+  --shadow-button: inset 0 1px 3px rgba(0,0,0,0.2); --shadow-input: inset 0 2px 4px rgba(0,0,0,0.15);
+  --shadow-sidebar: -4px 0 16px rgba(20,14,10,0.3);
+  --transition-speed: 0.25s;
+  --bg-body: #1a140e; --fg-body: #d8c8b0; --bg-sidebar: #140e08; --border-sidebar: #2a1e14;
+  --fg-brand: #c8a060; --fg-brand-hover: #d8b878; --fg-nav: #8a7a60; --fg-nav-hover: #d8c8b0;
+  --bg-nav-hover: rgba(200,160,96,0.06); --bg-nav-active: rgba(200,160,96,0.12);
+  --bg-card: #1e1610; --border-card: #2a1e14;
+  --bg-prominent: #201812;
+  --border-prominent: #c8a060; --shadow-prominent: rgba(200,160,96,0.1);
+  --fg-accent: #c8a060; --fg-accent-alt: #d8b878;
+  --bg-input: #140e08; --fg-input: #d8c8b0; --border-input: #2a1e14;
+  --bg-button: #2a1e14; --fg-button: #d8c8b0; --border-button: #3a2e20;
+  --bg-button-hover: #342820; --bg-button-active: #1e1610;
+  --bg-thead: #1e1610; --border-table: #2a1e14; --table-stripe: rgba(200,160,96,0.03);
+  --bg-status: #201812; --border-status: #c8a060; --fg-muted: #6a5a40;
+  --bg-mobile-header: #140e08; --tap-highlight: rgba(200,160,96,0.2);
+  --bg-checkbox-label: rgba(200,160,96,0.04); --bg-checkbox-label-mobile: rgba(30,22,16,0.5);
+  --bg-menu-toggle-hover: rgba(200,160,96,0.08);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 17: "arctic" — SCANDINAVIAN MINIMALISM
-   Ultra-clean light theme, almost no borders, thin-weight type,
-   generous whitespace, left sidebar, tiny uppercase labels
+   Theme 17: "arctic" — SCANDINAVIAN MINIMAL / MUJI
+   Near-invisible UI. Extreme whitespace. Whisper-thin lines.
+   Sidebar hidden on desktop. Content is a clean centered column.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="arctic"] {
   color-scheme: light;
-  --font-body: "Roboto","Helvetica Neue",system-ui,sans-serif;
-  --font-heading: "Roboto",sans-serif;
-  --font-size-base: 0.95rem; --heading-weight: 300; --heading-letter-spacing: 0.06em;
-  --heading-transform: uppercase; --line-height: 1.55;
-  --radius: 4px; --radius-sm: 2px; --radius-lg: 6px; --radius-input: 3px; --radius-button: 3px;
-  --spacing-card: 20px; --spacing-page: 32px; --card-gap: 16px;
-  --border-width: 1px;
+  --font-body: "Inter",system-ui,sans-serif;
+  --font-heading: "Inter",system-ui,sans-serif;
+  --font-size-base: 0.92rem; --line-height: 1.7; --heading-weight: 300;
+  --heading-transform: uppercase; --heading-letter-spacing: 0.1em;
+  --radius: 2px; --radius-sm: 1px; --radius-lg: 3px; --radius-input: 2px; --radius-button: 2px;
+  --spacing-card: 32px 0; --spacing-page: 48px 32px; --card-gap: 0;
+  --content-max-width: 680px; --sidebar-width: 0px;
+  --border-width: 0; --border-style: none;
   --shadow-card: none; --shadow-button: none; --shadow-input: none; --shadow-sidebar: none;
-  --button-weight: 400; --button-transform: uppercase; --button-letter-spacing: 0.06em;
-  --table-stripe: rgba(0,0,0,0.015); --transition-speed: 0.2s;
-  --bg-body: #f2f5f8; --fg-body: #2a3a4a; --bg-sidebar: #e8edf2; --border-sidebar: #d0d8e0;
-  --fg-brand: #1a2a3a; --fg-brand-hover: #0277bd; --fg-nav: #5a6a7a; --fg-nav-hover: #1a2a3a;
-  --bg-nav-hover: rgba(2,119,189,0.04); --bg-nav-active: rgba(2,119,189,0.08);
-  --bg-card: #ffffff; --border-card: #e0e6ec;
-  --bg-prominent: #ffffff;
-  --border-prominent: #0277bd; --shadow-prominent: rgba(2,119,189,0.08);
-  --fg-accent: #0277bd; --fg-accent-alt: #0288d1;
-  --bg-input: #ffffff; --fg-input: #2a3a4a; --border-input: #d0d8e0;
-  --bg-button: #e8edf2; --fg-button: #2a3a4a; --border-button: #d0d8e0;
-  --bg-button-hover: #d0d8e0; --bg-button-active: #c0c8d0;
-  --bg-thead: transparent; --border-table: #e0e6ec;
-  --bg-status: #e8edf2; --border-status: #0277bd; --fg-muted: #8a9aaa;
-  --bg-mobile-header: #e8edf2; --bg-overlay: rgba(0,0,0,0.15);
-  --tap-highlight: rgba(2,119,189,0.15); --bg-checkbox-label: rgba(2,119,189,0.03);
-  --bg-checkbox-label-mobile: rgba(232,237,242,0.7); --bg-menu-toggle-hover: rgba(2,119,189,0.06);
+  --transition-speed: 0.3s;
+  --bg-body: #fafbfc; --fg-body: #2a2e34; --bg-sidebar: #fafbfc; --border-sidebar: transparent;
+  --fg-brand: #2a2e34; --fg-brand-hover: #5e9ed6; --fg-nav: #8a909a; --fg-nav-hover: #2a2e34;
+  --bg-nav-hover: transparent; --bg-nav-active: transparent;
+  --bg-card: transparent; --border-card: transparent;
+  --bg-prominent: transparent;
+  --border-prominent: transparent; --shadow-prominent: none;
+  --fg-accent: #5e9ed6; --fg-accent-alt: #7ab8e0;
+  --bg-input: transparent; --fg-input: #2a2e34; --border-input: transparent;
+  --bg-button: transparent; --fg-button: #5e9ed6; --border-button: #5e9ed6;
+  --bg-button-hover: rgba(94,158,214,0.06); --bg-button-active: rgba(94,158,214,0.12);
+  --bg-thead: transparent; --border-table: #e4e8ec; --table-stripe: transparent;
+  --bg-status: transparent; --border-status: #5e9ed6; --fg-muted: #a0a8b0;
+  --bg-mobile-header: #fafbfc; --bg-overlay: rgba(250,251,252,0.95);
+  --tap-highlight: rgba(94,158,214,0.15); --bg-checkbox-label: transparent;
+  --bg-checkbox-label-mobile: rgba(250,251,252,0.8); --bg-menu-toggle-hover: rgba(94,158,214,0.06);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 18: "neon" — 8-BIT ARCADE
-   Pixel font, zero curves, thick neon borders, scanline feel,
-   outlined buttons, glitch text-shadow, retro game UI
+   Theme 18: "neon" — 8-BIT ARCADE / PIXEL ART
+   Hard pixel shadows, step animations, retro game borders.
+   Everything blocky with offset drop-shadows. Press Start 2P font.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="neon"] {
   --font-body: "Press Start 2P","Share Tech Mono",monospace;
   --font-heading: "Press Start 2P",monospace;
-  --font-size-base: 0.72rem; --line-height: 2; --letter-spacing: 0.03em;
-  --heading-weight: 400; --heading-transform: uppercase; --heading-letter-spacing: 0.06em;
+  --font-size-base: 0.7rem; --line-height: 1.8; --letter-spacing: 0;
+  --heading-weight: 400; --heading-transform: uppercase; --heading-letter-spacing: 0.04em;
   --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
-  --spacing-card: 16px; --spacing-page: 20px; --card-gap: 12px;
-  --border-width: 3px;
-  --button-transform: uppercase; --button-letter-spacing: 0.06em; --button-weight: 400;
-  --shadow-card: 4px 4px 0 rgba(57,255,20,0.2);
-  --shadow-button: 3px 3px 0 rgba(57,255,20,0.3);
-  --shadow-sidebar: none; --transition-speed: 0s;
-  --bg-body: #0a0a0a; --fg-body: #e0e0e0; --bg-sidebar: #050505; --border-sidebar: #39ff14;
-  --fg-brand: #39ff14; --fg-brand-hover: #ff073a; --fg-nav: #666; --fg-nav-hover: #39ff14;
-  --bg-nav-hover: rgba(57,255,20,0.04); --bg-nav-active: rgba(57,255,20,0.08);
-  --bg-card: #0f0f0f; --border-card: #39ff14;
-  --bg-prominent: #0f0f0f;
+  --spacing-card: 16px; --spacing-page: 20px; --card-gap: 16px;
+  --border-width: 4px;
+  --shadow-card: 8px 8px 0 rgba(57,255,20,0.2); --shadow-button: 4px 4px 0 rgba(57,255,20,0.3);
+  --shadow-input: 3px 3px 0 rgba(57,255,20,0.15); --shadow-sidebar: none;
+  --transition-speed: 0s;
+  --bg-body: #0a0a0a; --fg-body: #39ff14; --bg-sidebar: #050505; --border-sidebar: #39ff14;
+  --fg-brand: #ff073a; --fg-brand-hover: #39ff14; --fg-nav: #1a8a0e; --fg-nav-hover: #39ff14;
+  --bg-nav-hover: rgba(57,255,20,0.06); --bg-nav-active: rgba(57,255,20,0.12);
+  --bg-card: #0e0e0e; --border-card: #39ff14;
+  --bg-prominent: #0e0e0e;
   --border-prominent: #ff073a; --shadow-prominent: none;
   --fg-accent: #39ff14; --fg-accent-alt: #ff073a;
-  --bg-input: #0a0a0a; --fg-input: #e0e0e0; --border-input: #39ff14;
-  --bg-button: transparent; --fg-button: #39ff14; --border-button: #39ff14;
-  --bg-button-hover: rgba(57,255,20,0.1); --bg-button-active: rgba(57,255,20,0.2);
-  --bg-thead: #050505; --border-table: #39ff14;
-  --bg-status: #0f0f0f; --border-status: #ff073a; --fg-muted: #444;
-  --bg-mobile-header: #050505; --tap-highlight: rgba(57,255,20,0.15);
-  --bg-checkbox-label: rgba(57,255,20,0.02); --bg-checkbox-label-mobile: rgba(10,10,10,0.5);
-  --bg-menu-toggle-hover: rgba(255,7,58,0.08);
+  --bg-input: #050505; --fg-input: #39ff14; --border-input: #39ff14;
+  --bg-button: #0e0e0e; --fg-button: #39ff14; --border-button: #39ff14;
+  --bg-button-hover: #1a1a1a; --bg-button-active: #050505;
+  --bg-thead: #0e0e0e; --border-table: #39ff14; --table-stripe: rgba(57,255,20,0.03);
+  --bg-status: #0e0e0e; --border-status: #ff073a; --fg-muted: #1a6a0e;
+  --bg-mobile-header: #050505; --bg-overlay: rgba(0,0,0,0.9);
+  --tap-highlight: rgba(57,255,20,0.3); --bg-checkbox-label: rgba(57,255,20,0.04);
+  --bg-checkbox-label-mobile: rgba(14,14,14,0.7); --bg-menu-toggle-hover: rgba(57,255,20,0.08);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 19: "paper" — BROADSHEET NEWSPAPER
-   Column-width layout, drop-cap typography, serif everything,
-   rule lines between sections, masthead-style heading, left sidebar
+   Theme 19: "paper" — BROADSHEET NEWSPAPER / EDITORIAL
+   Multi-column text flow with rule lines between sections.
+   Serif everything. Drop caps. Masthead headings. Left sidebar.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="paper"] {
   color-scheme: light;
-  --font-body: Georgia,"Times New Roman","Noto Serif",serif;
-  --font-heading: "Playfair Display",Georgia,serif;
-  --font-size-base: 1.05rem; --line-height: 1.75; --heading-weight: 700;
-  --heading-letter-spacing: -0.02em;
+  --font-body: "Libre Baskerville","Crimson Text",Georgia,serif;
+  --font-heading: "Playfair Display","Libre Baskerville",Georgia,serif;
+  --font-size-base: 0.95rem; --line-height: 1.65; --heading-weight: 700;
+  --heading-transform: none; --heading-letter-spacing: -0.01em;
   --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
-  --spacing-card: 24px; --spacing-page: 36px; --card-gap: 24px; --content-max-width: 740px;
+  --spacing-card: 20px 0; --spacing-page: 32px; --card-gap: 0;
+  --content-max-width: 740px; --sidebar-width: 200px;
   --border-width: 1px;
   --shadow-card: none; --shadow-button: none; --shadow-input: none; --shadow-sidebar: none;
-  --table-stripe: rgba(0,0,0,0.02); --transition-speed: 0.15s;
-  --bg-body: #f5f0e6; --fg-body: #2a2520; --bg-sidebar: #ede5d8; --border-sidebar: #c8bca8;
-  --fg-brand: #2a2520; --fg-brand-hover: #8b4513; --fg-nav: #5a5040; --fg-nav-hover: #2a2520;
+  --transition-speed: 0.2s;
+  --bg-body: #f5f0e6; --fg-body: #2a2520; --bg-sidebar: #ebe6dc; --border-sidebar: #c8c0b0;
+  --fg-brand: #2a2520; --fg-brand-hover: #8b4513; --fg-nav: #6a6050; --fg-nav-hover: #2a2520;
   --bg-nav-hover: rgba(139,69,19,0.04); --bg-nav-active: rgba(139,69,19,0.08);
-  --bg-card: #faf5ec; --border-card: #c8bca8;
-  --bg-prominent: #faf5ec;
-  --border-prominent: #8b4513; --shadow-prominent: none;
-  --fg-accent: #8b4513; --fg-accent-alt: #a0522d;
-  --bg-input: #faf5ec; --fg-input: #2a2520; --border-input: #b8ac98;
-  --bg-button: #ede5d8; --fg-button: #2a2520; --border-button: #b8ac98;
-  --bg-button-hover: #ddd5c8; --bg-button-active: #c8c0b0;
-  --bg-thead: transparent; --border-table: #c8bca8;
-  --bg-status: #ede5d8; --border-status: #8b4513; --fg-muted: #7a7060;
-  --bg-mobile-header: #ede5d8; --bg-overlay: rgba(0,0,0,0.2);
+  --bg-card: transparent; --border-card: #c8c0b0;
+  --bg-prominent: transparent;
+  --border-prominent: #2a2520; --shadow-prominent: none;
+  --fg-accent: #8b4513; --fg-accent-alt: #a05220;
+  --bg-input: #faf6ee; --fg-input: #2a2520; --border-input: #c8c0b0;
+  --bg-button: #2a2520; --fg-button: #f5f0e6; --border-button: #2a2520;
+  --bg-button-hover: #4a4030; --bg-button-active: #1a1510;
+  --bg-thead: transparent; --border-table: #c8c0b0; --table-stripe: transparent;
+  --bg-status: transparent; --border-status: #8b4513; --fg-muted: #8a8070;
+  --bg-mobile-header: #ebe6dc; --bg-overlay: rgba(245,240,230,0.9);
   --tap-highlight: rgba(139,69,19,0.15); --bg-checkbox-label: rgba(139,69,19,0.03);
-  --bg-checkbox-label-mobile: rgba(237,229,216,0.7); --bg-menu-toggle-hover: rgba(139,69,19,0.06);
+  --bg-checkbox-label-mobile: rgba(235,230,220,0.7); --bg-menu-toggle-hover: rgba(139,69,19,0.06);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 20: "slate" — COMMAND CENTER / DASHBOARD
-   Professional system-UI, medium density, subtle card elevation,
-   data-dashboard feel, compact tables, focus-ring interactions
+   Theme 20: "slate" — MISSION CONTROL / DASHBOARD
+   Dense grid layout. Status indicators everywhere. Compact forms.
+   Sidebar as narrow control strip. Data-oriented dark display.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="slate"] {
-  --font-body: system-ui,-apple-system,"Segoe UI",sans-serif;
-  --font-heading: system-ui,-apple-system,sans-serif; --heading-weight: 600;
-  --font-size-base: 0.93rem; --line-height: 1.5;
-  --radius: 8px; --radius-sm: 4px; --radius-lg: 10px; --radius-input: 6px; --radius-button: 6px;
-  --spacing-card: 16px; --spacing-page: 20px; --card-gap: 12px;
+  --font-body: "Roboto","Inter",system-ui,sans-serif;
+  --font-heading: "Roboto","Inter",sans-serif;
+  --font-size-base: 0.88rem; --line-height: 1.45; --heading-weight: 500;
+  --heading-transform: uppercase; --heading-letter-spacing: 0.06em;
+  --radius: 6px; --radius-sm: 4px; --radius-lg: 8px; --radius-input: 4px; --radius-button: 4px;
+  --spacing-card: 14px; --spacing-page: 16px; --card-gap: 10px;
+  --content-max-width: 1400px; --sidebar-width: 56px;
   --border-width: 1px;
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-button: 0 1px 2px rgba(0,0,0,0.08);
-  --shadow-sidebar: -2px 0 8px rgba(0,0,0,0.1);
-  --table-stripe: rgba(116,185,255,0.03); --transition-speed: 0.15s;
-  --bg-body: #1a2030; --fg-body: #c8d4e0; --bg-sidebar: #141a28; --border-sidebar: #2a3648;
-  --fg-brand: #e0e8f0; --fg-brand-hover: #74b9ff; --fg-nav: #6a7a90; --fg-nav-hover: #c8d4e0;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.2); --shadow-button: none;
+  --shadow-sidebar: -2px 0 8px rgba(0,0,0,0.15); --shadow-input: none;
+  --transition-speed: 0.15s;
+  --bg-body: #1a1e24; --fg-body: #c8d0dc; --bg-sidebar: #14181e; --border-sidebar: #2a3040;
+  --fg-brand: #74b9ff; --fg-brand-hover: #a4d4ff; --fg-nav: #6080a0; --fg-nav-hover: #c8d0dc;
   --bg-nav-hover: rgba(116,185,255,0.06); --bg-nav-active: rgba(116,185,255,0.12);
-  --bg-card: #1e2838; --border-card: #2a3648;
-  --bg-prominent: linear-gradient(180deg,#222e40 0%,#1a2030 100%);
-  --border-prominent: #74b9ff; --shadow-prominent: rgba(116,185,255,0.15);
-  --fg-accent: #74b9ff; --fg-accent-alt: #a29bfe;
-  --bg-input: #141a28; --fg-input: #c8d4e0; --border-input: #3a4a60;
-  --bg-button: #2a3648; --fg-button: #e0e8f0; --border-button: #3a4a60;
-  --bg-button-hover: #3a4a60; --bg-button-active: #222e40;
-  --bg-thead: #1e2838; --border-table: #2a3648;
-  --bg-status: #222e40; --border-status: #74b9ff; --fg-muted: #5a6a80;
-  --bg-mobile-header: #141a28; --tap-highlight: rgba(116,185,255,0.2);
-  --bg-checkbox-label: rgba(116,185,255,0.04); --bg-checkbox-label-mobile: rgba(20,26,40,0.5);
+  --bg-card: #1e2430; --border-card: #2a3040;
+  --bg-prominent: #1e2836;
+  --border-prominent: #74b9ff; --shadow-prominent: rgba(116,185,255,0.08);
+  --fg-accent: #74b9ff; --fg-accent-alt: #a4d4ff;
+  --bg-input: #14181e; --fg-input: #c8d0dc; --border-input: #2a3040;
+  --bg-button: #2a3040; --fg-button: #c8d0dc; --border-button: #3a4050;
+  --bg-button-hover: #344050; --bg-button-active: #1e2430;
+  --bg-thead: #14181e; --border-table: #2a3040; --table-stripe: rgba(116,185,255,0.02);
+  --bg-status: #1e2836; --border-status: #74b9ff; --fg-muted: #5a6878;
+  --bg-mobile-header: #14181e; --tap-highlight: rgba(116,185,255,0.2);
+  --bg-checkbox-label: rgba(116,185,255,0.04); --bg-checkbox-label-mobile: rgba(30,36,48,0.5);
   --bg-menu-toggle-hover: rgba(116,185,255,0.08);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 21: "rose-gold" — ART DECO LUXURY
-   Thin-weight uppercase type, metallic accents, outlined buttons
-   that fill on hover, borderless cards with bottom rules, geometric
+   Theme 21: "rose-gold" — ART DECO / GATSBY LUXURY
+   Geometric patterns with ultra-thin gold lines. Wide letter-spacing.
+   Architectural layout. Sidebar as elegant side panel.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="rose-gold"] {
-  --font-body: "Lato","Helvetica Neue",system-ui,sans-serif;
-  --font-heading: "Lato",sans-serif;
-  --font-size-base: 0.95rem; --line-height: 1.55;
-  --heading-weight: 200; --heading-letter-spacing: 0.1em; --heading-transform: uppercase;
+  --font-body: "Lato","Inter",system-ui,sans-serif;
+  --font-heading: "Playfair Display","Libre Baskerville",Georgia,serif;
+  --font-size-base: 0.93rem; --line-height: 1.6; --heading-weight: 400;
+  --heading-transform: uppercase; --heading-letter-spacing: 0.14em;
   --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
-  --spacing-card: 24px; --spacing-page: 28px; --card-gap: 20px;
+  --spacing-card: 28px; --spacing-page: 36px; --card-gap: 24px;
   --border-width: 1px;
-  --shadow-card: none; --shadow-button: none; --shadow-input: none; --shadow-sidebar: none;
-  --button-weight: 300; --button-letter-spacing: 0.1em; --button-transform: uppercase;
+  --shadow-card: none; --shadow-button: none; --shadow-input: none;
+  --shadow-sidebar: -1px 0 0 rgba(180,150,120,0.15);
   --transition-speed: 0.3s;
-  --bg-body: #14100e; --fg-body: #e8d8d0; --bg-sidebar: #1a1410; --border-sidebar: #3a2820;
-  --fg-brand: #d4a07a; --fg-brand-hover: #c08050; --fg-nav: #8a6a5a; --fg-nav-hover: #d4a07a;
-  --bg-nav-hover: rgba(192,128,80,0.05); --bg-nav-active: rgba(192,128,80,0.1);
-  --bg-card: #14100e; --border-card: #3a2820;
-  --bg-prominent: #14100e;
-  --border-prominent: #c08050; --shadow-prominent: none;
-  --fg-accent: #c08050; --fg-accent-alt: #d4a07a;
-  --bg-input: #14100e; --fg-input: #e8d8d0; --border-input: #4a3828;
-  --bg-button: transparent; --fg-button: #d4a07a; --border-button: #d4a07a;
-  --bg-button-hover: #d4a07a; --bg-button-active: #c08050;
-  --bg-thead: #14100e; --border-table: #3a2820;
-  --bg-status: #1e1610; --border-status: #c08050; --fg-muted: #7a6050;
-  --bg-mobile-header: #1a1410; --tap-highlight: rgba(192,128,80,0.2);
-  --bg-checkbox-label: rgba(192,128,80,0.04); --bg-checkbox-label-mobile: rgba(26,20,16,0.5);
-  --bg-menu-toggle-hover: rgba(192,128,80,0.08);
+  --bg-body: #14100e; --fg-body: #d8ccc0; --bg-sidebar: #100c0a; --border-sidebar: #2a2018;
+  --fg-brand: #c8a878; --fg-brand-hover: #e0c8a0; --fg-nav: #7a6a58; --fg-nav-hover: #d8ccc0;
+  --bg-nav-hover: rgba(200,168,120,0.04); --bg-nav-active: rgba(200,168,120,0.08);
+  --bg-card: #18140e; --border-card: #2a2018;
+  --bg-prominent: #18140e;
+  --border-prominent: #c8a878; --shadow-prominent: none;
+  --fg-accent: #c8a878; --fg-accent-alt: #e0c8a0;
+  --bg-input: #100c0a; --fg-input: #d8ccc0; --border-input: #2a2018;
+  --bg-button: transparent; --fg-button: #c8a878; --border-button: #c8a878;
+  --bg-button-hover: rgba(200,168,120,0.08); --bg-button-active: rgba(200,168,120,0.04);
+  --bg-thead: #18140e; --border-table: #2a2018; --table-stripe: transparent;
+  --bg-status: #18140e; --border-status: #c8a878; --fg-muted: #5a5040;
+  --bg-mobile-header: #100c0a; --tap-highlight: rgba(200,168,120,0.2);
+  --bg-checkbox-label: rgba(200,168,120,0.04); --bg-checkbox-label-mobile: rgba(24,20,14,0.5);
+  --bg-menu-toggle-hover: rgba(200,168,120,0.06);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 22: "emerald" — JEWEL BOX
-   Rich jewel tones, gold + emerald, serif headings with gold accent bar,
-   thick header borders, card hover reveals, gemstone-like depth
+   Theme 22: "emerald" — JEWEL BOX / TREASURE VAULT
+   Rich dark background with gem-like glowing elements. Faceted card
+   shapes. Ornate gold-and-emerald borders. Left sidebar.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="emerald"] {
-  --font-body: "Source Sans 3","Fira Sans",system-ui,sans-serif;
+  --font-body: "Lato","Roboto",system-ui,sans-serif;
   --font-heading: "Libre Baskerville","Crimson Text",Georgia,serif;
-  --font-size-base: 0.95rem; --heading-weight: 700; --line-height: 1.55;
-  --radius: 4px; --radius-sm: 2px; --radius-lg: 6px; --radius-input: 3px; --radius-button: 3px;
-  --spacing-card: 20px; --spacing-page: 24px; --card-gap: 16px;
-  --border-width: 2px;
-  --shadow-card: 0 6px 24px rgba(0,20,10,0.5); --shadow-button: 0 2px 8px rgba(0,0,0,0.15);
-  --shadow-sidebar: -4px 0 16px rgba(0,15,5,0.3);
-  --table-stripe: rgba(80,200,120,0.03); --transition-speed: 0.25s;
-  --bg-body: #060e08; --fg-body: #c0e0c8; --bg-sidebar: #0a1a10; --border-sidebar: #143020;
-  --fg-brand: #50c878; --fg-brand-hover: #ffd700; --fg-nav: #4a8a5a; --fg-nav-hover: #50c878;
-  --bg-nav-hover: rgba(80,200,120,0.06); --bg-nav-active: rgba(80,200,120,0.12);
-  --bg-card: #0a1a10; --border-card: #143020;
-  --bg-prominent: linear-gradient(135deg,#143020 0%,#060e08 100%);
-  --border-prominent: #ffd700; --shadow-prominent: rgba(255,215,0,0.15);
-  --fg-accent: #50c878; --fg-accent-alt: #ffd700;
-  --bg-input: #060e08; --fg-input: #c0e0c8; --border-input: #1e4030;
-  --bg-button: #143020; --fg-button: #c0e0c8; --border-button: #1e5030;
-  --bg-button-hover: #1e4030; --bg-button-active: #0a1a10;
-  --bg-thead: #0a1a10; --border-table: #143020;
-  --bg-status: #143020; --border-status: #50c878; --fg-muted: #3a7a4a;
-  --bg-mobile-header: #0a1a10; --tap-highlight: rgba(80,200,120,0.2);
-  --bg-checkbox-label: rgba(80,200,120,0.04); --bg-checkbox-label-mobile: rgba(10,26,16,0.5);
-  --bg-menu-toggle-hover: rgba(80,200,120,0.08);
+  --font-size-base: 0.95rem; --line-height: 1.6; --heading-weight: 700;
+  --heading-transform: none; --heading-letter-spacing: 0;
+  --radius: 4px; --radius-sm: 2px; --radius-lg: 6px; --radius-input: 4px; --radius-button: 4px;
+  --spacing-card: 24px; --spacing-page: 28px; --card-gap: 16px;
+  --border-width: 2px; --sidebar-width: 210px;
+  --shadow-card: 0 4px 20px rgba(0,10,0,0.5), inset 0 1px 0 rgba(100,200,100,0.05);
+  --shadow-button: 0 2px 8px rgba(0,10,0,0.3);
+  --shadow-sidebar: -4px 0 16px rgba(0,10,0,0.3); --shadow-input: none;
+  --transition-speed: 0.3s;
+  --bg-body: #060e08; --fg-body: #c0d8c0; --bg-sidebar: #040a04; --border-sidebar: #143020;
+  --fg-brand: #4caf50; --fg-brand-hover: #81c784; --fg-nav: #4a7a4a; --fg-nav-hover: #c0d8c0;
+  --bg-nav-hover: rgba(76,175,80,0.06); --bg-nav-active: rgba(76,175,80,0.12);
+  --bg-card: #0a180a; --border-card: #143020;
+  --bg-prominent: linear-gradient(135deg,#0a200a,#060e08);
+  --border-prominent: #4caf50; --shadow-prominent: rgba(76,175,80,0.12);
+  --fg-accent: #4caf50; --fg-accent-alt: #ffd700;
+  --bg-input: #060e08; --fg-input: #c0d8c0; --border-input: #143020;
+  --bg-button: #143020; --fg-button: #c0d8c0; --border-button: #1a4028;
+  --bg-button-hover: #1a4028; --bg-button-active: #0a180a;
+  --bg-thead: #0a180a; --border-table: #143020; --table-stripe: rgba(76,175,80,0.03);
+  --bg-status: #0a200a; --border-status: #4caf50; --fg-muted: #4a6a48;
+  --bg-mobile-header: #040a04; --tap-highlight: rgba(76,175,80,0.2);
+  --bg-checkbox-label: rgba(76,175,80,0.04); --bg-checkbox-label-mobile: rgba(10,24,10,0.5);
+  --bg-menu-toggle-hover: rgba(76,175,80,0.08);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 23: "coffee" — COZY CAFÉ
-   Warm brown tones, rounded corners, comfortable spacing,
-   soft inset inputs, nav pills, decorative underline headings
+   Theme 23: "coffee" — COZY CAFÉ / READING ROOM
+   Book-like layout with wide margins. Warm paper texture.
+   Sidebar as bookshelf-style nav with pill items. Comfortable reading.
    ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="coffee"] {
-  --font-body: "Cabin","Nunito",system-ui,sans-serif;
-  --font-heading: "Cabin",sans-serif; --heading-weight: 700; --line-height: 1.6;
-  --font-size-base: 1rem;
-  --radius: 12px; --radius-sm: 6px; --radius-lg: 16px; --radius-input: 8px; --radius-button: 8px;
-  --spacing-card: 20px; --spacing-page: 24px; --card-gap: 16px;
+  --font-body: "Cabin","Source Sans 3",system-ui,sans-serif;
+  --font-heading: "Playfair Display","Libre Baskerville",Georgia,serif;
+  --font-size-base: 1rem; --line-height: 1.7; --heading-weight: 700;
+  --heading-transform: none; --heading-letter-spacing: 0;
+  --radius: 12px; --radius-sm: 8px; --radius-lg: 16px; --radius-input: 8px; --radius-button: 8px;
+  --spacing-card: 24px; --spacing-page: 32px; --card-gap: 16px;
+  --content-max-width: 800px;
   --border-width: 1px;
-  --shadow-card: 0 4px 16px rgba(20,14,8,0.3); --shadow-button: 0 2px 6px rgba(0,0,0,0.1);
-  --shadow-sidebar: -4px 0 12px rgba(20,14,8,0.2);
-  --table-stripe: rgba(180,140,80,0.04); --transition-speed: 0.25s;
-  --bg-body: #14100a; --fg-body: #e0d4c0; --bg-sidebar: #1e1810; --border-sidebar: #342818;
-  --fg-brand: #c49a6c; --fg-brand-hover: #8b6914; --fg-nav: #8a7458; --fg-nav-hover: #c49a6c;
-  --bg-nav-hover: rgba(139,105,20,0.06); --bg-nav-active: rgba(139,105,20,0.12);
-  --bg-card: #1e1810; --border-card: #342818;
-  --bg-prominent: linear-gradient(180deg,#2a2014 0%,#14100a 100%);
-  --border-prominent: #8b6914; --shadow-prominent: rgba(139,105,20,0.15);
-  --fg-accent: #c49a6c; --fg-accent-alt: #8b6914;
-  --bg-input: #14100a; --fg-input: #e0d4c0; --border-input: #443828;
-  --bg-button: #342818; --fg-button: #e0d4c0; --border-button: #4a3a24;
-  --bg-button-hover: #443828; --bg-button-active: #2a2014;
-  --bg-thead: #1e1810; --border-table: #342818;
-  --bg-status: #2a2014; --border-status: #c49a6c; --fg-muted: #7a6a50;
-  --bg-mobile-header: #1e1810; --tap-highlight: rgba(139,105,20,0.2);
-  --bg-checkbox-label: rgba(139,105,20,0.04); --bg-checkbox-label-mobile: rgba(30,24,16,0.5);
-  --bg-menu-toggle-hover: rgba(139,105,20,0.08);
+  --shadow-card: 0 2px 8px rgba(20,14,8,0.3); --shadow-button: none;
+  --shadow-sidebar: -4px 0 12px rgba(20,14,8,0.2); --shadow-input: inset 0 1px 3px rgba(0,0,0,0.1);
+  --transition-speed: 0.25s;
+  --bg-body: #1c1410; --fg-body: #e0d0c0; --bg-sidebar: #16100c; --border-sidebar: #2a1e14;
+  --fg-brand: #d4a574; --fg-brand-hover: #e8c098; --fg-nav: #8a7060; --fg-nav-hover: #e0d0c0;
+  --bg-nav-hover: rgba(212,165,116,0.06); --bg-nav-active: rgba(212,165,116,0.12);
+  --bg-card: #221a14; --border-card: #2a1e14;
+  --bg-prominent: #261e16;
+  --border-prominent: #d4a574; --shadow-prominent: rgba(212,165,116,0.08);
+  --fg-accent: #d4a574; --fg-accent-alt: #e8c098;
+  --bg-input: #1c1410; --fg-input: #e0d0c0; --border-input: #2a1e14;
+  --bg-button: #2a1e14; --fg-button: #e0d0c0; --border-button: #3a2e20;
+  --bg-button-hover: #342820; --bg-button-active: #221a14;
+  --bg-thead: #221a14; --border-table: #2a1e14; --table-stripe: rgba(212,165,116,0.03);
+  --bg-status: #261e16; --border-status: #d4a574; --fg-muted: #6a5a4a;
+  --bg-mobile-header: #16100c; --tap-highlight: rgba(212,165,116,0.2);
+  --bg-checkbox-label: rgba(212,165,116,0.04); --bg-checkbox-label-mobile: rgba(34,26,20,0.5);
+  --bg-menu-toggle-hover: rgba(212,165,116,0.08);
 }
 
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   STRUCTURAL CSS — Per-theme layout, decoration, shape, animation
-   These go far beyond custom-property swaps. Each theme reshapes the
-   page fundamentally — different sidebar positions, card geometries,
-   heading treatments, button behaviours, and interaction patterns.
-   Inspired by CSS Zen Garden: same HTML, radically different design.
+   STRUCTURAL OVERRIDES — Radical Layout Paradigms
+   Each theme completely transforms the page structure via CSS only.
    ═══════════════════════════════════════════════════════════════════════ */
 
 
-/* ── THEME 2: BAUHAUS STUDIO ──────────────────────────────────────────
-   Left sidebar, Mondrian color-block cards, thick black borders,
-   yellow table headers, geometric red accent bars on headings
-   ────────────────────────────────────────────────────────────────────── */
+/* ═══════ THEME 2: BAUHAUS — Mondrian asymmetric grid ════════════════
+   Sidebar becomes horizontal top bar. Content in asymmetric grid with
+   thick black dividers. Some cards span multiple columns/rows.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="light"] .app-layout { flex-direction: column; }
 [data-theme="light"] .sidebar {
-  right: auto; left: 0;
-  border-left: none; border-right: 4px solid #111;
+  position: relative; width: 100%; height: auto;
+  flex-direction: row; align-items: center;
+  border-left: none; border-bottom: 6px solid #111;
+  top: auto; right: auto; left: auto; bottom: auto;
+  background: #111;
 }
-[data-theme="light"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
+[data-theme="light"] .sidebar-header { border-bottom: none; padding: 12px 24px; }
+[data-theme="light"] .sidebar-header .brand {
+  font-size: 1.6em; font-weight: 900; color: #ffd600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+[data-theme="light"] .sidebar-nav {
+  flex-direction: row; padding: 0; overflow-x: auto; overflow-y: hidden;
+}
 [data-theme="light"] .sidebar-nav a {
-  border-right: none; border-left: 4px solid transparent;
-  text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-size: 0.85em;
+  padding: 14px 24px; font-size: 0.9em; white-space: nowrap;
+  border-right: 3px solid #333; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em; color: #fff;
 }
-[data-theme="light"] .sidebar-nav a:hover { border-left-color: #d32f2f; }
-[data-theme="light"] h2 {
-  position: relative; padding-left: 16px; margin-bottom: 16px;
-}
-[data-theme="light"] h2::before {
-  content: ""; position: absolute; left: 0; top: 0; bottom: 0;
-  width: 6px; background: #d32f2f;
+[data-theme="light"] .sidebar-nav a:hover { background: #d32f2f; color: #fff; }
+[data-theme="light"] .main-wrapper { margin-right: 0; }
+[data-theme="light"] .page {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-auto-rows: minmax(180px, auto);
+  gap: 6px; padding: 6px; max-width: 100%;
+  background: #111;
 }
 [data-theme="light"] .card {
-  border-width: 3px; border-color: #111;
-  transition: transform 0.1s;
+  margin: 0; border-radius: 0; border: none;
+  padding: 28px; position: relative;
 }
-[data-theme="light"] .card:hover { transform: translateX(4px); }
-[data-theme="light"] .card:nth-child(3n+1) { border-top: 6px solid #d32f2f; }
-[data-theme="light"] .card:nth-child(3n+2) { border-top: 6px solid #1565c0; }
-[data-theme="light"] .card:nth-child(3n) { border-top: 6px solid #ffd600; }
-[data-theme="light"] thead th { background: #ffd600; color: #111; font-weight: 900; }
+[data-theme="light"] .card:nth-child(1) {
+  grid-column: 1 / 3; grid-row: 1 / 3;
+  background: #ffd600; color: #111;
+}
+[data-theme="light"] .card:nth-child(1) h2 { color: #111; }
+[data-theme="light"] .card:nth-child(2) { background: #d32f2f; color: #fff; }
+[data-theme="light"] .card:nth-child(2) h2 { color: #fff; }
+[data-theme="light"] .card:nth-child(3) { background: #1565c0; color: #fff; grid-row: 2 / 4; }
+[data-theme="light"] .card:nth-child(3) h2 { color: #fff; }
+[data-theme="light"] .card:nth-child(4) { background: #ffffff; color: #111; grid-column: 1 / 2; }
+[data-theme="light"] .card:nth-child(5) { background: #f5f0e8; color: #111; grid-column: 2 / 4; }
+[data-theme="light"] .card:nth-child(n+6) { background: #ffffff; color: #111; }
+[data-theme="light"] .grid-2 {
+  display: contents;
+}
+[data-theme="light"] h2 {
+  font-size: 1.8em; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.06em; margin-bottom: 20px;
+}
 [data-theme="light"] .prominent-card {
-  border: 4px solid #1565c0; background: #ffffff;
+  grid-column: 1 / 3; grid-row: 1 / 3;
+  background: #ffd600 !important; border: none;
 }
-[data-theme="light"] button:not(.menu-toggle) { font-weight: 900; letter-spacing: 0.04em; }
+[data-theme="light"] button:not(.menu-toggle) {
+  background: #111; color: #fff; border: none; padding: 14px 28px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+}
+[data-theme="light"] button:not(.menu-toggle):hover { background: #d32f2f; }
+[data-theme="light"] thead th {
+  background: #111; color: #ffd600; font-weight: 700;
+  text-transform: uppercase; padding: 10px;
+}
 @media (max-width: 768px) {
-  [data-theme="light"] .sidebar { right: 0; left: auto; border-right: none; border-left: 4px solid #111; }
-  [data-theme="light"] .main-wrapper { margin-left: 0; }
+  [data-theme="light"] .sidebar {
+    position: fixed; width: 240px; height: 100%;
+    flex-direction: column; border-bottom: none;
+    right: 0; top: 0; bottom: 0; left: auto;
+    transform: translateX(100%); border-left: 6px solid #111;
+  }
+  [data-theme="light"] .sidebar.open { transform: translateX(0); }
+  [data-theme="light"] .sidebar-nav { flex-direction: column; }
+  [data-theme="light"] .sidebar-nav a { border-right: none; }
+  [data-theme="light"] .page {
+    display: block; background: #f5f0e8; padding: 8px;
+  }
+  [data-theme="light"] .card { margin-bottom: 6px; }
+  [data-theme="light"] .card:nth-child(n) {
+    grid-column: auto; grid-row: auto;
+    background: #ffffff; color: #111;
+  }
+  [data-theme="light"] .card:nth-child(n) h2 { color: #111; }
 }
 
-/* ── THEME 3: BLUEPRINT / DRAFTING TABLE ──────────────────────────────
-   Grid-paper background, technical annotation style, coordinate markers,
-   open outlined buttons, blueprint-cyan on dark blue
-   ────────────────────────────────────────────────────────────────────── */
-[data-theme="solarized-dark"] .page::before {
-  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-  background:
-    linear-gradient(rgba(42,80,96,0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(42,80,96,0.12) 1px, transparent 1px);
-  background-size: 20px 20px;
+
+/* ═══════ THEME 3: BLUEPRINT — Continuous technical document ═════════
+   No card boundaries. One long scrolling schematic document with
+   section markers, grid-paper background, and margin annotations.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="solarized-dark"] .app-layout { flex-direction: column; }
+[data-theme="solarized-dark"] .sidebar {
+  position: fixed; bottom: 0; top: auto; left: 0; right: 0;
+  width: 100%; height: 32px;
+  flex-direction: row; align-items: center;
+  border-left: none; border-top: 1px solid #2a5060;
+  z-index: 100;
 }
-[data-theme="solarized-dark"] .card {
-  border: 1px solid #2a5060; border-radius: 0;
-  position: relative;
+[data-theme="solarized-dark"] .sidebar-header {
+  border-bottom: none; padding: 0 12px;
 }
-[data-theme="solarized-dark"] .card::before {
-  content: "┌"; position: absolute; top: -2px; left: 4px;
-  font-size: 0.7em; color: var(--fg-accent); opacity: 0.5;
+[data-theme="solarized-dark"] .sidebar-header .brand {
+  font-size: 0.7em; color: #b58900;
+  text-transform: uppercase; letter-spacing: 0.12em;
 }
-[data-theme="solarized-dark"] h2 {
-  color: var(--fg-accent); font-size: 0.85em;
-  border-bottom: 1px solid #2a5060; padding-bottom: 4px;
-}
-[data-theme="solarized-dark"] button:not(.menu-toggle) {
-  background: transparent; border: 1px solid var(--fg-accent);
-}
-[data-theme="solarized-dark"] button:not(.menu-toggle):hover {
-  background: rgba(181,137,0,0.1);
+[data-theme="solarized-dark"] .sidebar-nav {
+  flex-direction: row; padding: 0; overflow-x: auto; overflow-y: hidden;
 }
 [data-theme="solarized-dark"] .sidebar-nav a {
-  font-size: 0.82em; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 6px 14px; font-size: 0.68em;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  border-right: 1px solid #2a5060; white-space: nowrap;
+}
+[data-theme="solarized-dark"] .main-wrapper {
+  margin-right: 0; margin-bottom: 32px;
+}
+[data-theme="solarized-dark"] body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1;
+  background:
+    linear-gradient(rgba(42,80,96,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42,80,96,0.06) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+}
+[data-theme="solarized-dark"] .page {
+  max-width: 800px; margin: 0 auto;
+  padding: 40px 40px 40px 80px; position: relative;
+  counter-reset: section-counter;
+}
+[data-theme="solarized-dark"] .page::before {
+  content: ""; position: absolute; left: 60px; top: 0; bottom: 0;
+  border-left: 1px dashed rgba(42,80,96,0.3);
+}
+[data-theme="solarized-dark"] .card {
+  background: transparent; border: none; border-radius: 0;
+  margin: 0; padding: 24px 0; position: relative;
+  counter-increment: section-counter;
+}
+[data-theme="solarized-dark"] .card::before {
+  content: "§" counter(section-counter);
+  position: absolute; left: -60px; top: 24px;
+  font-size: 0.65em; color: #586e75;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  width: 50px; text-align: right;
+}
+[data-theme="solarized-dark"] .card + .card {
+  border-top: 1px dashed rgba(42,80,96,0.2);
+}
+[data-theme="solarized-dark"] h2 {
+  font-size: 0.75em; color: #b58900;
+  text-transform: uppercase; letter-spacing: 0.14em;
+  margin-bottom: 16px;
+}
+[data-theme="solarized-dark"] .grid-2 { display: block; }
+[data-theme="solarized-dark"] .prominent-card {
+  background: transparent; border: none; border-left: 3px solid #b58900;
+  border-radius: 0; padding-left: 20px;
+}
+[data-theme="solarized-dark"] button:not(.menu-toggle) {
+  background: transparent; border: 1px solid #b58900;
+  font-size: 0.72em; text-transform: uppercase; letter-spacing: 0.1em; padding: 4px 16px;
 }
 [data-theme="solarized-dark"] thead th {
-  font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.1em;
+  font-size: 0.68em; text-transform: uppercase; letter-spacing: 0.14em;
+  color: #b58900; border-bottom: 1px solid #2a5060;
+}
+[data-theme="solarized-dark"] input:not([type="checkbox"]),
+[data-theme="solarized-dark"] select {
+  background: rgba(0,43,54,0.5); border: 1px solid #2a5060;
+  font-size: 0.78em;
+}
+@media (max-width: 768px) {
+  [data-theme="solarized-dark"] .sidebar {
+    position: fixed; width: 240px; height: 100%;
+    flex-direction: column; border-top: none;
+    right: 0; top: 0; bottom: 0; left: auto;
+    transform: translateX(100%); border-left: 1px solid #2a5060;
+  }
+  [data-theme="solarized-dark"] .sidebar.open { transform: translateX(0); }
+  [data-theme="solarized-dark"] .sidebar-nav { flex-direction: column; }
+  [data-theme="solarized-dark"] .main-wrapper { margin-bottom: 0; }
+  [data-theme="solarized-dark"] .page { padding: 20px 12px 20px 48px; }
 }
 
-/* ── THEME 4: JAPANESE WOODBLOCK / WASHI ──────────────────────────────
-   Left sidebar, generous whitespace, calligraphic italic headings,
-   bottom-border-only inputs, floating cards with paper-edge feel
-   ────────────────────────────────────────────────────────────────────── */
+
+/* ═══════ THEME 4: WASHI — Vertical scroll, no cards, flowing text ═══
+   Sidebar becomes a minimal floating pill at bottom. Content is one
+   continuous vertical scroll with no card boundaries, just typography
+   and whitespace. Like reading a zen scroll.
+   ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="solarized-light"] .sidebar {
-  right: auto; left: 0;
-  border-left: none; border-right: 1px solid var(--border-sidebar);
+  position: fixed; top: auto; bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: auto; max-width: 580px; height: auto;
+  flex-direction: row; align-items: center;
+  border: none; background: rgba(250,246,238,0.92);
+  border-radius: 24px 24px 0 0; padding: 0 8px;
+  box-shadow: 0 -2px 20px rgba(0,0,0,0.06);
+  backdrop-filter: blur(10px); z-index: 100;
 }
-[data-theme="solarized-light"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
+[data-theme="solarized-light"] .sidebar-header {
+  border-bottom: none; padding: 8px 16px;
+}
+[data-theme="solarized-light"] .sidebar-header .brand {
+  font-size: 0.85em; font-style: italic; color: #8b6914;
+}
+[data-theme="solarized-light"] .sidebar-nav {
+  flex-direction: row; padding: 0; overflow-x: auto; overflow-y: hidden;
+}
 [data-theme="solarized-light"] .sidebar-nav a {
-  border-right: none; border-left: 2px solid transparent;
-  font-style: italic;
+  padding: 8px 14px; font-size: 0.82em; white-space: nowrap;
+  font-style: italic; border-right: none; color: #8a8a70;
 }
-[data-theme="solarized-light"] .sidebar-nav a:hover { border-left-color: var(--fg-accent); }
-[data-theme="solarized-light"] h2 {
-  font-style: italic; font-size: 1.6em; margin-bottom: 20px;
-  border-bottom: none; position: relative; padding-bottom: 12px;
-}
-[data-theme="solarized-light"] h2::after {
-  content: ""; position: absolute; bottom: 0; left: 0;
-  width: 60px; height: 2px; background: var(--fg-accent);
+[data-theme="solarized-light"] .sidebar-nav a:hover { color: #8b6914; }
+[data-theme="solarized-light"] .main-wrapper { margin-right: 0; margin-bottom: 52px; }
+[data-theme="solarized-light"] .page {
+  max-width: 580px; margin: 0 auto; padding: 80px 24px 60px;
 }
 [data-theme="solarized-light"] .card {
-  border: none; border-bottom: 1px solid var(--border-card);
-  border-radius: 0; box-shadow: none; padding: 28px 0;
+  background: transparent; border: none; margin: 0; border-radius: 0;
+  padding: 48px 0;
+}
+[data-theme="solarized-light"] .card + .card::before {
+  content: ""; display: block; width: 60px; height: 1px;
+  background: #d0c8b4; margin: 0 auto 48px;
+}
+[data-theme="solarized-light"] .grid-2 { display: block; }
+[data-theme="solarized-light"] h2 {
+  font-family: "Playfair Display",Georgia,serif;
+  font-style: italic; font-weight: 400; font-size: 2.2em;
+  margin-bottom: 28px; color: #3a3a30; letter-spacing: -0.02em;
+  line-height: 1.15; text-align: center;
+}
+[data-theme="solarized-light"] .prominent-card {
+  background: transparent; border: none; border-radius: 0;
+  padding: 48px 0; box-shadow: none;
 }
 [data-theme="solarized-light"] input:not([type="checkbox"]),
 [data-theme="solarized-light"] select {
-  border-top: none; border-left: none; border-right: none;
-  border-radius: 0; background: transparent;
-  border-bottom: 1px solid var(--border-input);
+  border: none; border-bottom: 1px solid #d0c8b8;
+  border-radius: 0; background: transparent; padding: 14px 0;
 }
-[data-theme="solarized-light"] input:focus,
-[data-theme="solarized-light"] select:focus { border-bottom-color: var(--fg-accent); outline: none; }
-[data-theme="solarized-light"] .prominent-card {
-  border: none; border-left: 3px solid var(--border-prominent);
-  border-radius: 0; padding-left: 28px;
+[data-theme="solarized-light"] button:not(.menu-toggle) {
+  background: transparent; border: 1px solid #8b6914;
+  color: #8b6914; padding: 14px 36px; font-style: italic;
+}
+[data-theme="solarized-light"] button:not(.menu-toggle):hover {
+  background: #8b6914; color: #faf6ee;
+}
+[data-theme="solarized-light"] table { font-size: 0.88em; }
+[data-theme="solarized-light"] th {
+  color: #8b6914; font-style: italic; font-weight: 400;
 }
 @media (max-width: 768px) {
-  [data-theme="solarized-light"] .sidebar { right: 0; left: auto; border-right: none; border-left: 1px solid var(--border-sidebar); }
-  [data-theme="solarized-light"] .main-wrapper { margin-left: 0; }
+  [data-theme="solarized-light"] .sidebar {
+    position: fixed; width: 240px; max-width: none; height: 100%;
+    flex-direction: column; border-radius: 0;
+    right: 0; top: 0; bottom: auto; left: auto;
+    transform: translateX(100%); border-left: 1px solid #d0c8b8;
+  }
+  [data-theme="solarized-light"] .sidebar.open { transform: translateX(0); }
+  [data-theme="solarized-light"] .sidebar-nav { flex-direction: column; }
+  [data-theme="solarized-light"] .main-wrapper { margin-bottom: 0; }
 }
 
-/* ── THEME 5: FROSTED GLASS / AURORA ──────────────────────────────────
-   Backdrop-blur cards, floating pill buttons with glow, gradient body,
-   ethereal heading style, nav items spaced as floating pills
-   ────────────────────────────────────────────────────────────────────── */
+
+/* ═══════ THEME 5: NORD — Masonry/staggered floating glass panels ════
+   Cards become frosted glass panels at varying offsets, some wider,
+   some narrower, creating an asymmetric masonry-like feel. Content
+   floats in a misty void.
+   ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="nord"] body {
-  background: linear-gradient(160deg, #242933 0%, #1a2030 40%, #2e3440 100%);
-}
-[data-theme="nord"] .card {
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(136,192,208,0.15);
-}
-[data-theme="nord"] .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 48px rgba(0,0,0,0.3), 0 0 20px rgba(136,192,208,0.08);
+  background: linear-gradient(160deg, #1a1e26, #16202e 40%, #242933);
+  background-attachment: fixed;
 }
 [data-theme="nord"] .sidebar {
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-left-color: rgba(136,192,208,0.08);
 }
 [data-theme="nord"] .sidebar-nav a {
-  margin: 3px 10px; border-radius: 12px; border-right: none;
-  text-align: center; font-size: 0.9em;
+  margin: 4px 10px; border-radius: 50px; border-right: none;
+  text-align: center; font-size: 0.82em; padding: 10px 16px;
+  font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
 }
-[data-theme="nord"] .sidebar-nav a:hover { background: rgba(136,192,208,0.12); }
+[data-theme="nord"] .sidebar-nav a:hover {
+  background: rgba(136,192,208,0.12);
+}
+[data-theme="nord"] .sidebar-header .brand {
+  font-weight: 200; letter-spacing: 0.12em; text-transform: uppercase;
+}
+[data-theme="nord"] .page {
+  column-count: 2; column-gap: 20px;
+  max-width: 1100px; padding: 24px;
+}
+[data-theme="nord"] .card {
+  break-inside: avoid; display: inline-block; width: 100%;
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(136,192,208,0.1);
+  margin-bottom: 20px;
+  transition: transform 0.4s cubic-bezier(.25,.8,.25,1), box-shadow 0.4s;
+}
+[data-theme="nord"] .card:nth-child(odd) {
+  border-radius: 24px 8px 24px 8px;
+}
+[data-theme="nord"] .card:nth-child(even) {
+  border-radius: 8px 24px 8px 24px;
+}
+[data-theme="nord"] .card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 30px rgba(136,192,208,0.06);
+}
+[data-theme="nord"] .grid-2 { display: block; column-count: 1; }
 [data-theme="nord"] h2 {
-  font-weight: 300; letter-spacing: 0.1em; text-transform: uppercase;
+  font-weight: 200; letter-spacing: 0.14em; text-transform: uppercase;
+  font-size: 0.82em; color: rgba(216,222,233,0.6);
 }
-[data-theme="nord"] button:not(.menu-toggle) {
-  border: 1px solid rgba(136,192,208,0.3); padding: 10px 28px;
-}
-[data-theme="nord"] button:not(.menu-toggle):hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(136,192,208,0.2);
+[data-theme="nord"] h2::after {
+  content: ""; display: block; width: 40px; height: 2px; margin-top: 10px;
+  background: linear-gradient(90deg, rgba(136,192,208,0.4), transparent);
 }
 [data-theme="nord"] .prominent-card {
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(136,192,208,0.3);
+  break-inside: avoid; column-span: all;
+  backdrop-filter: blur(20px); border: 1px solid rgba(136,192,208,0.2);
+  border-radius: 16px;
+}
+[data-theme="nord"] button:not(.menu-toggle) {
+  padding: 12px 28px; border-radius: 50px;
+  backdrop-filter: blur(8px);
+}
+[data-theme="nord"] input:not([type="checkbox"]),
+[data-theme="nord"] select {
+  border-radius: 50px; padding: 12px 20px;
+  backdrop-filter: blur(8px);
+}
+@media (max-width: 768px) {
+  [data-theme="nord"] .page { column-count: 1; }
 }
 
-/* ── THEME 6: GOTHIC CATHEDRAL ────────────────────────────────────────
-   Ornate serif headings with double-underline, stained-glass gradient
-   cards, heavy drop shadows, left-border accent, opulent spacing
-   ────────────────────────────────────────────────────────────────────── */
-[data-theme="dracula"] h2 {
-  font-family: "Playfair Display","Libre Baskerville",Georgia,serif;
-  font-size: 1.5em; font-weight: 700;
-  border-bottom: 3px double var(--fg-accent); padding-bottom: 10px;
+
+/* ═══════ THEME 6: DRACULA — Cathedral/gothic arched panels ══════════
+   Sidebar becomes ornate top header. Cards are tall narrow panels
+   placed side by side with pointed-arch-style top borders. Feels
+   like stained glass windows or cathedral alcoves.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="dracula"] .app-layout { flex-direction: column; }
+[data-theme="dracula"] .sidebar {
+  position: relative; width: 100%; height: auto;
+  flex-direction: row; align-items: center;
+  border-left: none; border-bottom: 3px solid #2e2940;
+  top: auto; right: auto; left: auto; bottom: auto;
+  background: linear-gradient(180deg, #0e0c16, #14121e);
+}
+[data-theme="dracula"] .sidebar-header {
+  border-bottom: none; padding: 14px 24px;
+}
+[data-theme="dracula"] .sidebar-header .brand {
+  font-family: "Playfair Display",Georgia,serif;
+  font-size: 1.4em; font-weight: 700; font-style: italic; color: #bd93f9;
+}
+[data-theme="dracula"] .sidebar-nav {
+  flex-direction: row; padding: 0; overflow-x: auto; overflow-y: hidden;
+}
+[data-theme="dracula"] .sidebar-nav a {
+  padding: 14px 20px; font-size: 0.88em; white-space: nowrap;
+  border-right: none; font-style: italic;
+  border-bottom: 3px solid transparent;
+  font-family: "Playfair Display",Georgia,serif;
+}
+[data-theme="dracula"] .sidebar-nav a:hover { border-bottom-color: #bd93f9; }
+[data-theme="dracula"] .main-wrapper { margin-right: 0; }
+[data-theme="dracula"] .page {
+  display: flex; flex-wrap: wrap; gap: 0;
+  max-width: 100%; padding: 0;
+  align-items: stretch;
 }
 [data-theme="dracula"] .card {
-  border-left: 4px solid var(--fg-accent-alt);
-  transition: box-shadow var(--transition-speed), border-color var(--transition-speed);
+  flex: 1 1 240px; min-height: 400px; margin: 0;
+  border-radius: 0; border: none;
+  border-right: 2px solid #2e2940;
+  padding: 40px 24px;
+  display: flex; flex-direction: column;
+  position: relative;
 }
+[data-theme="dracula"] .card::before {
+  content: ""; position: absolute; top: 0; left: 20%; right: 20%;
+  height: 60px;
+  background: radial-gradient(ellipse at top, rgba(189,147,249,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+[data-theme="dracula"] .card:last-child { border-right: none; }
 [data-theme="dracula"] .card:hover {
-  box-shadow: 0 16px 56px rgba(0,0,0,0.6), 0 0 0 1px var(--fg-accent);
-  border-left-color: var(--fg-accent);
+  background: rgba(189,147,249,0.03);
+}
+[data-theme="dracula"] .grid-2 { display: contents; }
+[data-theme="dracula"] h2 {
+  font-family: "Playfair Display",Georgia,serif;
+  font-size: 1.4em; font-weight: 700; font-style: italic;
+  text-align: center; padding-bottom: 16px; margin-bottom: 20px;
+  border-bottom: 3px double #bd93f9;
 }
 [data-theme="dracula"] .prominent-card {
-  border-left: 6px solid var(--border-prominent);
-  border-top: none; border-right: none; border-bottom: none;
+  flex: 2 1 400px; border-right: 2px solid #bd93f9;
+  background: linear-gradient(180deg, rgba(30,24,48,0.5), transparent);
 }
-[data-theme="dracula"] .sidebar-nav a:hover {
-  padding-left: 24px;
-  transition: padding-left 0.3s;
+[data-theme="dracula"] button:not(.menu-toggle) {
+  font-style: italic; letter-spacing: 0.02em;
 }
 [data-theme="dracula"] thead th {
   font-family: "Playfair Display",Georgia,serif;
   font-style: italic; font-weight: 400;
+  border-bottom: 2px solid #2e2940;
+}
+@media (max-width: 768px) {
+  [data-theme="dracula"] .sidebar {
+    position: fixed; width: 240px; height: 100%;
+    flex-direction: column; border-bottom: none;
+    right: 0; top: 0; bottom: 0; transform: translateX(100%);
+    border-left: 2px solid #2e2940;
+  }
+  [data-theme="dracula"] .sidebar.open { transform: translateX(0); }
+  [data-theme="dracula"] .sidebar-nav { flex-direction: column; }
+  [data-theme="dracula"] .page { display: block; padding: 16px; }
+  [data-theme="dracula"] .card {
+    min-height: auto; border-right: none;
+    border-bottom: 2px solid #2e2940; margin-bottom: 0;
+  }
 }
 
-/* ── THEME 7: HACKER TERMINAL / IDE ───────────────────────────────────
-   Line-number left borders, syntax-colored elements, cursor-blink focus,
-   tab-bar-style nav, no decoration, pure function
-   ────────────────────────────────────────────────────────────────────── */
-[data-theme="monokai"] .card {
-  border: none; border-left: 3px solid #3e3d32;
-  padding-left: 12px;
+
+/* ═══════ THEME 7: MONOKAI — Terminal split panes (tmux) ═════════════
+   Sidebar becomes tab bar at top. Page splits into bordered panes
+   like a terminal multiplexer. Dense, no rounded corners, pipe chars.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="monokai"] .app-layout { flex-direction: column; }
+[data-theme="monokai"] .sidebar {
+  position: relative; width: 100%; height: auto;
+  flex-direction: row; align-items: stretch;
+  border-left: none; border-bottom: 1px solid #3e3d32;
+  top: auto; right: auto; left: auto; bottom: auto;
 }
-[data-theme="monokai"] .card:hover { border-left-color: var(--fg-accent); }
-[data-theme="monokai"] h2 {
-  font-size: 0.85em; color: #66d9ef;
+[data-theme="monokai"] .sidebar-header {
+  border-bottom: none; padding: 4px 10px; display: flex; align-items: center;
 }
-[data-theme="monokai"] h2::before { content: "// "; color: #75715e; }
+[data-theme="monokai"] .sidebar-header .brand {
+  font-size: 0.72em; color: #a6e22e;
+}
+[data-theme="monokai"] .sidebar-nav {
+  flex-direction: row; padding: 0; overflow-x: auto; overflow-y: hidden;
+}
 [data-theme="monokai"] .sidebar-nav a {
-  border-right: none; border-bottom: 1px solid #3e3d32;
-  font-size: 0.82em; padding: 6px 12px;
+  padding: 4px 14px; font-size: 0.72em; white-space: nowrap;
+  border-right: 1px solid #3e3d32; background: #1e1f1a; color: #75715e;
 }
-[data-theme="monokai"] .sidebar-nav a:hover {
-  background: rgba(166,226,46,0.06);
-  border-bottom-color: var(--fg-accent);
+[data-theme="monokai"] .sidebar-nav a:hover { background: #272822; color: #f8f8f2; }
+[data-theme="monokai"] .main-wrapper { margin-right: 0; }
+[data-theme="monokai"] .page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto;
+  gap: 0; max-width: 100%; padding: 0;
 }
-[data-theme="monokai"] button:not(.menu-toggle) {
-  background: transparent; border: 1px solid #3e3d32;
+[data-theme="monokai"] .card {
+  border: 1px solid #3e3d32; border-radius: 0;
+  margin: 0; padding: 6px 8px;
+  position: relative; overflow: auto;
+  font-size: 0.82em;
 }
-[data-theme="monokai"] button:not(.menu-toggle):hover { border-color: var(--fg-accent); }
-[data-theme="monokai"] input:focus,
-[data-theme="monokai"] select:focus {
-  border-color: var(--fg-accent); outline: 1px solid var(--fg-accent);
-  outline-offset: -1px;
+[data-theme="monokai"] .card::before {
+  content: "─ " attr(class) " "; display: block;
+  font-size: 0.65em; color: #75715e; border-bottom: 1px solid #3e3d32;
+  padding-bottom: 2px; margin-bottom: 4px;
+  text-transform: uppercase; letter-spacing: 0.06em;
 }
-[data-theme="monokai"] thead {
-  text-transform: uppercase; letter-spacing: 0.08em;
-  font-size: 0.78em; color: #f92672;
+[data-theme="monokai"] .grid-2 {
+  display: contents;
 }
 [data-theme="monokai"] .prominent-card {
-  border-left: 3px solid #f92672; border-top: none; border-right: none; border-bottom: none;
+  grid-column: 1 / -1;
+  border-left: 3px solid #f92672; background: #1e1f1a;
+}
+[data-theme="monokai"] h2 {
+  font-size: 0.72em; color: #66d9ef; margin-bottom: 6px;
+}
+[data-theme="monokai"] h2::before { content: "// "; color: #75715e; }
+[data-theme="monokai"] button:not(.menu-toggle) {
+  background: transparent; border: 1px solid #3e3d32;
+  font-size: 0.72em; padding: 3px 10px;
+}
+[data-theme="monokai"] button:not(.menu-toggle):hover { border-color: #a6e22e; color: #a6e22e; }
+[data-theme="monokai"] input:not([type="checkbox"]),
+[data-theme="monokai"] select {
+  background: #272822; border: 1px solid #3e3d32; font-size: 0.78em;
+}
+[data-theme="monokai"] thead th {
+  font-size: 0.68em; color: #f92672;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+@media (max-width: 768px) {
+  [data-theme="monokai"] .sidebar {
+    position: fixed; width: 240px; height: 100%;
+    flex-direction: column; border-bottom: none;
+    right: 0; top: 0; bottom: 0; transform: translateX(100%);
+    border-left: 1px solid #3e3d32;
+  }
+  [data-theme="monokai"] .sidebar.open { transform: translateX(0); }
+  [data-theme="monokai"] .sidebar-nav { flex-direction: column; }
+  [data-theme="monokai"] .page { grid-template-columns: 1fr; }
 }
 
-/* ── THEME 8: NEON DYSTOPIA ───────────────────────────────────────────
-   Clip-path cut corners, skewed headings, animated glow pulsing,
-   outlined-only buttons, glitch text shadow, scanline overlay
-   ────────────────────────────────────────────────────────────────────── */
-[data-theme="cyberpunk"] .card {
-  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
-  border: 2px solid rgba(255,0,255,0.3);
+
+/* ═══════ THEME 8: CYBERPUNK — Angled 3D perspective, glitch, HUD ════
+   Cards are skewed panels in a perspective container, like a holographic
+   heads-up display. Scanline overlay, corner cut-outs, neon edges.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="cyberpunk"] body::after {
+  content: ""; position: fixed; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, #ff00ff, #00ffff, transparent);
+  z-index: 10000; pointer-events: none;
+  animation: cyberpunk-scan 3s linear infinite;
 }
-[data-theme="cyberpunk"] .card:hover {
-  border-color: #ff00ff;
-  box-shadow: 0 0 30px rgba(255,0,255,0.2), 0 0 80px rgba(0,255,255,0.05);
+@keyframes cyberpunk-scan {
+  0% { top: 0; } 100% { top: 100vh; }
 }
-[data-theme="cyberpunk"] h2 {
-  transform: skewX(-3deg);
-  text-shadow: 2px 2px #ff00ff, -1px -1px #00ffff;
-}
-[data-theme="cyberpunk"] button:not(.menu-toggle) {
-  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
-  padding: 10px 24px; background: transparent;
-}
-[data-theme="cyberpunk"] button:not(.menu-toggle):hover {
-  background: rgba(255,0,255,0.15);
-  box-shadow: 0 0 16px rgba(255,0,255,0.4);
-}
-[data-theme="cyberpunk"] .sidebar-nav a {
-  border-right: none; text-transform: uppercase;
-  letter-spacing: 0.12em; font-size: 0.82em;
-}
-[data-theme="cyberpunk"] .sidebar-nav a:hover {
-  text-shadow: 0 0 10px var(--fg-accent);
-}
-[data-theme="cyberpunk"] .prominent-card {
-  animation: cyberpunk-glow 2s ease-in-out infinite alternate;
+[data-theme="cyberpunk"] .page {
+  perspective: 1200px; max-width: 1100px;
 }
 [data-theme="cyberpunk"] .page::before {
   content: ""; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
-  background: repeating-linear-gradient(0deg, rgba(255,0,255,0.02) 0px, transparent 1px, transparent 4px);
+  background: repeating-linear-gradient(0deg,
+    rgba(255,0,255,0.012) 0px, transparent 1px, transparent 4px);
+}
+[data-theme="cyberpunk"] .card {
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+  border: 2px solid rgba(255,0,255,0.2);
+  transform: rotateY(-1deg) rotateX(0.5deg);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+[data-theme="cyberpunk"] .card:nth-child(even) {
+  transform: rotateY(1deg) rotateX(-0.5deg);
+}
+[data-theme="cyberpunk"] .card:hover {
+  transform: rotateY(0) rotateX(0) scale(1.02);
+  border-color: #ff00ff;
+  box-shadow: 0 0 40px rgba(255,0,255,0.15), inset 0 0 20px rgba(255,0,255,0.03);
+}
+[data-theme="cyberpunk"] h2 {
+  font-family: "Orbitron",sans-serif;
+  transform: skewX(-2deg);
+  text-shadow: 2px 2px rgba(255,0,255,0.4), -1px -1px rgba(0,255,255,0.4);
+  font-size: 0.88em;
+}
+[data-theme="cyberpunk"] .sidebar-nav a {
+  border-right: none; text-transform: uppercase;
+  letter-spacing: 0.14em; font-size: 0.75em;
+  font-family: "Rajdhani",sans-serif;
+}
+[data-theme="cyberpunk"] .sidebar-nav a:hover {
+  text-shadow: 0 0 12px rgba(255,0,255,0.6); color: #ff00ff;
+}
+[data-theme="cyberpunk"] .sidebar-header .brand {
+  font-family: "Orbitron",sans-serif; font-weight: 900;
+  text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.88em;
+}
+[data-theme="cyberpunk"] button:not(.menu-toggle) {
+  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  padding: 10px 28px; background: transparent;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  font-family: "Rajdhani",sans-serif; font-weight: 600;
+}
+[data-theme="cyberpunk"] .prominent-card {
+  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
+  border: 2px solid rgba(0,255,255,0.3);
+  animation: cyberpunk-glow 2s ease-in-out infinite alternate;
 }
 @keyframes cyberpunk-glow {
-  from { box-shadow: 0 0 10px rgba(255,0,255,0.2), 0 0 20px rgba(0,255,255,0.1); }
-  to   { box-shadow: 0 0 20px rgba(255,0,255,0.4), 0 0 40px rgba(0,255,255,0.2); }
+  from { box-shadow: 0 0 15px rgba(255,0,255,0.15); }
+  to   { box-shadow: 0 0 25px rgba(255,0,255,0.25), 0 0 50px rgba(0,255,255,0.1); }
+}
+[data-theme="cyberpunk"] thead th {
+  color: #00ffff; text-transform: uppercase; letter-spacing: 0.1em;
+  font-size: 0.75em; font-family: "Rajdhani",sans-serif;
 }
 
-/* ── THEME 9: DEEP SEA BIOLUMINESCENCE ────────────────────────────────
-   Undulating organic shapes, cards with asymmetric blob radius,
-   glowing accent borders, floating hover, centered headings,
-   wave-like rhythm in spacing
-   ────────────────────────────────────────────────────────────────────── */
+
+/* ═══════ THEME 9: OCEAN — Circular portholes / bubble layout ════════
+   Cards become circular/oval viewport windows. Content is clipped
+   to rounded shapes like looking through submarine portholes.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="ocean"] body {
+  background: linear-gradient(180deg, #040e18, #061420 50%, #08182a);
+  background-attachment: fixed;
+}
+[data-theme="ocean"] .page {
+  display: flex; flex-wrap: wrap;
+  justify-content: center; align-items: flex-start;
+  gap: 24px; max-width: 1200px; padding: 32px;
+}
 [data-theme="ocean"] .card {
-  border-radius: 28px 8px 28px 8px;
-  border: 1px solid rgba(77,208,225,0.15);
-  position: relative; overflow: visible;
+  border-radius: 50%; width: 340px; height: 340px;
+  display: flex; flex-direction: column; justify-content: center;
+  align-items: center; text-align: center;
+  border: 3px solid rgba(77,208,225,0.15);
+  overflow: hidden; padding: 40px;
+  box-shadow: inset 0 0 40px rgba(0,10,20,0.5), 0 0 20px rgba(77,208,225,0.04);
+  transition: all 0.5s cubic-bezier(.23,1,.32,1);
+  position: relative;
 }
 [data-theme="ocean"] .card::after {
-  content: ""; position: absolute; bottom: -2px; left: 20%; right: 20%;
-  height: 4px; background: linear-gradient(90deg, transparent, rgba(77,208,225,0.2), transparent);
-  border-radius: 50%;
+  content: ""; position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px;
+  border-radius: 50%; border: 1px solid rgba(77,208,225,0.06);
+  pointer-events: none;
 }
 [data-theme="ocean"] .card:hover {
-  transform: translateY(-6px) rotate(-0.5deg);
-  box-shadow: 0 20px 50px rgba(0,20,40,0.6), 0 0 30px rgba(77,208,225,0.08);
+  transform: scale(1.08);
+  box-shadow: inset 0 0 40px rgba(0,10,20,0.3), 0 0 40px rgba(77,208,225,0.1);
+  border-color: rgba(77,208,225,0.3);
 }
-[data-theme="ocean"] h2 { text-align: center; font-weight: 800; }
-[data-theme="ocean"] button:not(.menu-toggle) {
-  border: none; padding: 12px 32px;
-  background: linear-gradient(135deg, #0e2a3a 0%, #143a50 100%);
-}
-[data-theme="ocean"] button:not(.menu-toggle):hover {
-  box-shadow: 0 4px 20px rgba(77,208,225,0.2);
-  transform: translateY(-2px);
-}
-[data-theme="ocean"] .sidebar-nav a {
-  margin: 4px 8px; border-radius: 16px; border-right: none;
-  text-align: center;
+[data-theme="ocean"] .grid-2 { display: contents; }
+[data-theme="ocean"] h2 {
+  text-align: center; font-weight: 700; font-size: 1em;
+  color: #4dd0e1;
 }
 [data-theme="ocean"] .prominent-card {
-  border-radius: 32px 12px 32px 12px;
-  border: 2px solid rgba(0,188,212,0.3);
+  width: 440px; height: 440px;
+  border: 3px solid rgba(0,188,212,0.25);
+  border-radius: 50%;
+}
+[data-theme="ocean"] .sidebar-nav a {
+  margin: 5px 10px; border-radius: 20px; border-right: none;
+  text-align: center; font-size: 0.85em; padding: 10px 16px;
+}
+[data-theme="ocean"] .sidebar-header .brand { font-weight: 700; }
+[data-theme="ocean"] button:not(.menu-toggle) {
+  border: none; border-radius: 50px; padding: 10px 28px;
+  background: linear-gradient(135deg, rgba(8,24,40,0.8), rgba(13,39,65,0.8));
+}
+[data-theme="ocean"] input:not([type="checkbox"]),
+[data-theme="ocean"] select {
+  border-radius: 50px; padding: 10px 16px; width: auto;
+}
+[data-theme="ocean"] table { font-size: 0.78em; }
+[data-theme="ocean"] .scrollable-content { max-height: 200px; }
+@media (max-width: 768px) {
+  [data-theme="ocean"] .card { width: 280px; height: 280px; padding: 30px; }
+  [data-theme="ocean"] .prominent-card { width: 300px; height: 300px; }
 }
 
-/* ── THEME 10: ENCHANTED WOODLAND ─────────────────────────────────────
-   Left-accent cards like tree bark, leaf emoji markers, organic shapes,
-   earthy double-line borders on tables, italic serif nav
-   ────────────────────────────────────────────────────────────────────── */
-[data-theme="forest"] .card {
-  border-left: 5px solid var(--fg-accent);
-  border-radius: 2px 10px 10px 2px;
+
+/* ═══════ THEME 10: FOREST — Vertical timeline with vine connector ═══
+   Cards hang off a vertical line like a timeline, alternating L/R.
+   A green "vine" runs down the center connecting everything.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="forest"] .sidebar {
+  right: auto; left: 0;
+  border-left: none; border-right: 1px solid #1a3018;
+  background: linear-gradient(180deg, #081208, #0a160a);
 }
-[data-theme="forest"] .card:hover {
-  border-left-color: #a5d6a7;
-  box-shadow: 0 8px 24px rgba(0,12,0,0.4);
-}
-[data-theme="forest"] h2 {
-  font-style: italic; position: relative; padding-left: 28px;
-}
-[data-theme="forest"] h2::before {
-  content: "❦"; position: absolute; left: 0; color: var(--fg-accent);
-  font-style: normal;
-}
-[data-theme="forest"] thead th {
-  border-bottom: 3px double var(--fg-accent);
-  background: transparent; font-style: italic;
-}
+[data-theme="forest"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
 [data-theme="forest"] .sidebar-nav a {
+  border-right: none; border-left: 3px solid transparent;
   font-family: "Crimson Text",Georgia,serif; font-style: italic;
 }
-[data-theme="forest"] button:not(.menu-toggle) {
-  border-radius: 2px 8px 8px 2px;
+[data-theme="forest"] .sidebar-nav a:hover { border-left-color: #81c784; }
+[data-theme="forest"] .sidebar-header .brand {
+  font-family: "Playfair Display",Georgia,serif; font-style: italic;
 }
-[data-theme="forest"] .prominent-card {
-  border-left: 6px solid var(--border-prominent);
-  border-top: none; border-right: none; border-bottom: none;
-  border-radius: 0 8px 8px 0;
+[data-theme="forest"] .page {
+  max-width: 900px; position: relative; padding: 40px 24px;
 }
-
-/* ── THEME 11: DESERT MIRAGE ──────────────────────────────────────────
-   Top-border-only cards (like heat shimmer), gradient buttons,
-   layered warm shadows, sand-drift heading underlines
-   ────────────────────────────────────────────────────────────────────── */
-[data-theme="sunset"] .card {
-  border: none; border-top: 4px solid var(--fg-accent);
-  border-radius: 4px 4px 16px 16px;
-}
-[data-theme="sunset"] .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 48px rgba(30,10,0,0.6);
-}
-[data-theme="sunset"] h2 {
-  position: relative; padding-bottom: 12px;
-}
-[data-theme="sunset"] h2::after {
-  content: ""; position: absolute; bottom: 0; left: 0;
-  width: 80px; height: 3px;
-  background: linear-gradient(90deg, var(--fg-accent), var(--fg-accent-alt));
+[data-theme="forest"] .page::before {
+  content: ""; position: absolute; left: 50%; top: 0; bottom: 0;
+  width: 3px; transform: translateX(-50%);
+  background: linear-gradient(180deg, #2a4a28, #81c784, #2a4a28);
   border-radius: 2px;
 }
-[data-theme="sunset"] button:not(.menu-toggle) {
-  background: linear-gradient(135deg, #4a2010 0%, #6a3018 100%);
-  border: none; border-radius: 12px;
+[data-theme="forest"] .grid-2 { display: block; }
+[data-theme="forest"] .card {
+  width: 42%; position: relative;
+  border-left: 4px solid #2a4a28; border-radius: 2px 12px 12px 2px;
+  padding: 20px 20px 20px 24px; margin-bottom: 24px;
 }
-[data-theme="sunset"] button:not(.menu-toggle):hover {
-  background: linear-gradient(135deg, #5a3018 0%, #7a4020 100%);
+[data-theme="forest"] .card::after {
+  content: ""; position: absolute; top: 24px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #81c784; border: 3px solid #0a160a;
 }
-[data-theme="sunset"] .prominent-card {
-  border-top: 5px solid var(--border-prominent);
-  border-left: none; border-right: none; border-bottom: none;
-  border-radius: 4px 4px 16px 16px;
+[data-theme="forest"] .card:nth-child(odd) {
+  margin-left: 0; margin-right: auto;
+}
+[data-theme="forest"] .card:nth-child(odd)::after {
+  right: -8%; /* adjust for 42% width - connector to center line */
+}
+[data-theme="forest"] .card:nth-child(even) {
+  margin-left: auto; margin-right: 0;
+}
+[data-theme="forest"] .card:nth-child(even)::after {
+  left: -8%;
+}
+[data-theme="forest"] .card:hover {
+  border-left-color: #81c784;
+  box-shadow: 0 8px 24px rgba(0,12,0,0.5);
+}
+[data-theme="forest"] h2 {
+  font-style: italic; font-size: 1.2em; color: #a5d6a7;
+}
+[data-theme="forest"] .prominent-card {
+  width: 60%; margin-left: 20% !important; margin-right: 20% !important;
+  border-left: 4px solid #66bb6a; border-radius: 12px;
+  background: linear-gradient(135deg, rgba(10,22,10,0.9), rgba(8,18,8,0.9));
+}
+[data-theme="forest"] .prominent-card::after { display: none; }
+[data-theme="forest"] thead th {
+  font-style: italic; font-weight: 400;
+  font-family: "Crimson Text",Georgia,serif;
+}
+[data-theme="forest"] button:not(.menu-toggle) { border-radius: 2px 10px 10px 2px; }
+@media (max-width: 768px) {
+  [data-theme="forest"] .sidebar {
+    right: 0; left: auto; border-right: none; border-left: 1px solid #1a3018;
+  }
+  [data-theme="forest"] .main-wrapper { margin-left: 0; }
+  [data-theme="forest"] .page::before { left: 16px; transform: none; }
+  [data-theme="forest"] .card { width: auto; margin-left: 32px !important; margin-right: 0 !important; }
+  [data-theme="forest"] .card::after { left: -24px !important; right: auto !important; }
+  [data-theme="forest"] .prominent-card { width: auto; margin-left: 32px !important; margin-right: 0 !important; }
 }
 
-/* ── THEME 12: COSMIC NEBULA ──────────────────────────────────────────
-   Gradient text headings, focus glow rings, floating nav pills,
-   card glow aura on hover, cosmic shimmer
-   ────────────────────────────────────────────────────────────────────── */
+
+/* ═══════ THEME 11: SUNSET — Full-bleed horizontal bands ═════════════
+   No cards at all. Full viewport-width alternating color bands.
+   Each section is a horizontal stripe across the entire screen.
+   Fixed bottom nav. Content feels like a one-page marketing site.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="sunset"] .app-layout { flex-direction: column; }
+[data-theme="sunset"] .sidebar {
+  position: fixed; bottom: 0; top: auto; left: 0; right: 0;
+  width: 100%; height: 48px;
+  flex-direction: row; align-items: center;
+  border-left: none; border-top: 1px solid #3a2010;
+  background: linear-gradient(180deg, #1a0e08, #120a06);
+  z-index: 100;
+}
+[data-theme="sunset"] .sidebar-header { border-bottom: none; padding: 0 16px; }
+[data-theme="sunset"] .sidebar-header .brand { font-size: 0.88em; font-weight: 700; color: #ff8a65; }
+[data-theme="sunset"] .sidebar-nav {
+  flex-direction: row; padding: 0; overflow-x: auto; overflow-y: hidden;
+  justify-content: center; flex: 1;
+}
+[data-theme="sunset"] .sidebar-nav a {
+  padding: 12px 20px; font-size: 0.88em; white-space: nowrap; border-right: none;
+}
+[data-theme="sunset"] .main-wrapper { margin-right: 0; margin-bottom: 48px; }
+[data-theme="sunset"] .page { max-width: 100%; padding: 0; }
+[data-theme="sunset"] .card {
+  border: none; border-radius: 0; margin: 0;
+  padding: 48px 10vw; min-height: 50vh;
+  display: flex; flex-direction: column; justify-content: center;
+}
+[data-theme="sunset"] .card:nth-child(odd) { background: rgba(30,16,8,0.6); }
+[data-theme="sunset"] .card:nth-child(even) { background: rgba(26,14,8,0.85); }
+[data-theme="sunset"] .grid-2 { display: block; }
+[data-theme="sunset"] h2 {
+  font-size: 2em; font-weight: 200; letter-spacing: 0.04em;
+}
+[data-theme="sunset"] h2::after {
+  content: ""; display: block; width: 80px; height: 3px; margin-top: 12px;
+  background: linear-gradient(90deg, #ff8a65, transparent);
+}
+[data-theme="sunset"] .prominent-card {
+  min-height: 60vh; padding: 64px 10vw;
+  background: linear-gradient(135deg, rgba(60,30,10,0.6), rgba(26,14,8,0.9)) !important;
+  border-left: 6px solid #ff8a65;
+}
+[data-theme="sunset"] button:not(.menu-toggle) {
+  border: none; border-radius: 8px; padding: 14px 32px; font-size: 1em;
+}
+@media (max-width: 768px) {
+  [data-theme="sunset"] .sidebar {
+    position: fixed; width: 240px; height: 100%;
+    flex-direction: column; border-top: none;
+    right: 0; top: 0; bottom: 0; left: auto;
+    transform: translateX(100%); border-left: 1px solid #3a2010;
+  }
+  [data-theme="sunset"] .sidebar.open { transform: translateX(0); }
+  [data-theme="sunset"] .sidebar-nav { flex-direction: column; }
+  [data-theme="sunset"] .main-wrapper { margin-bottom: 0; }
+  [data-theme="sunset"] .card { padding: 24px 16px; min-height: auto; }
+}
+
+
+/* ═══════ THEME 12: NEBULA — Floating scattered galaxy ═══════════════
+   Cards float at different positions/rotations in a deep space void.
+   Some overlap, some are tilted, creating a cosmic scatter effect.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="midnight-purple"] .page {
+  position: relative; min-height: 100vh;
+  max-width: 100%; padding: 32px;
+}
+[data-theme="midnight-purple"] .card {
+  border: 1px solid rgba(171,71,188,0.15);
+  position: relative;
+  transition: transform 0.4s, box-shadow 0.4s;
+}
+[data-theme="midnight-purple"] .card:nth-child(1) {
+  transform: rotate(-1deg); margin-left: 5%;
+}
+[data-theme="midnight-purple"] .card:nth-child(2) {
+  transform: rotate(0.8deg); margin-left: 15%; width: 80%;
+}
+[data-theme="midnight-purple"] .card:nth-child(3) {
+  transform: rotate(-0.5deg); margin-left: 2%; width: 70%;
+}
+[data-theme="midnight-purple"] .card:nth-child(4) {
+  transform: rotate(1.2deg); margin-left: 20%; width: 75%;
+}
+[data-theme="midnight-purple"] .card:nth-child(5) {
+  transform: rotate(-0.8deg); margin-left: 8%;
+}
+[data-theme="midnight-purple"] .card:hover {
+  transform: rotate(0) scale(1.03) !important;
+  z-index: 10;
+  box-shadow: 0 20px 60px rgba(10,5,20,0.7), 0 0 30px rgba(171,71,188,0.08);
+}
+[data-theme="midnight-purple"] .grid-2 { display: block; }
 [data-theme="midnight-purple"] h2 {
   background: linear-gradient(135deg, #ce93d8, #ab47bc, #e1bee7);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-size: 1.4em;
-}
-[data-theme="midnight-purple"] .card:hover {
-  box-shadow: 0 12px 40px rgba(10,5,20,0.7), 0 0 20px rgba(171,71,188,0.1);
-  transform: translateY(-4px);
-}
-[data-theme="midnight-purple"] input:focus,
-[data-theme="midnight-purple"] select:focus,
-[data-theme="midnight-purple"] textarea:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(171,71,188,0.3), 0 0 16px rgba(171,71,188,0.1);
-}
-[data-theme="midnight-purple"] .sidebar-nav a {
-  margin: 3px 10px; border-radius: 10px; border-right: none;
-}
-[data-theme="midnight-purple"] .sidebar-nav a:hover { background: rgba(171,71,188,0.12); }
-[data-theme="midnight-purple"] button:not(.menu-toggle):hover {
-  box-shadow: 0 4px 16px rgba(171,71,188,0.25);
-  transform: translateY(-2px);
+  font-size: 1.4em; font-weight: 600;
 }
 [data-theme="midnight-purple"] .prominent-card {
-  border: 1px solid rgba(171,71,188,0.4);
-  box-shadow: 0 0 30px rgba(171,71,188,0.08);
+  transform: none !important; margin-left: 0 !important;
+  width: 100% !important;
+  border: 1px solid rgba(171,71,188,0.3);
+  box-shadow: 0 0 60px rgba(171,71,188,0.06);
 }
+[data-theme="midnight-purple"] .sidebar-nav a {
+  margin: 3px 10px; border-radius: 12px; border-right: none;
+  text-align: center;
+}
+[data-theme="midnight-purple"] .sidebar-header .brand { color: #ce93d8; }
+[data-theme="midnight-purple"] button:not(.menu-toggle) { border-radius: 12px; padding: 10px 28px; }
+[data-theme="midnight-purple"] input:not([type="checkbox"]),
+[data-theme="midnight-purple"] select { border-radius: 12px; }
 
-/* ── THEME 13: SAKURA GARDEN ──────────────────────────────────────────
-   Left sidebar, extreme curves, petal-shaped cards, soft rounded
-   everything, decorative pink bar under headings, floating buttons
-   ────────────────────────────────────────────────────────────────────── */
+
+/* ═══════ THEME 13: SAKURA — Mobile app / iOS card list ══════════════
+   Floating pill dock at bottom. Content as rounded full-width list
+   items grouped in "card groups" — like iOS Settings. No traditional
+   card grid. Everything is stacked vertically with group labels.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="cherry-blossom"] .app-layout { flex-direction: column; align-items: center; }
 [data-theme="cherry-blossom"] .sidebar {
-  right: auto; left: 0;
-  border-left: none; border-right: 1px solid var(--border-sidebar);
+  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+  width: auto; max-width: 420px; height: auto;
+  flex-direction: row; align-items: center;
+  border: none; background: rgba(252,232,239,0.92);
+  border-radius: 50px; padding: 0 6px;
+  box-shadow: 0 4px 24px rgba(233,30,99,0.12);
+  backdrop-filter: blur(20px); z-index: 100;
 }
-[data-theme="cherry-blossom"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
+[data-theme="cherry-blossom"] .sidebar-header {
+  border-bottom: none; padding: 6px 12px;
+}
+[data-theme="cherry-blossom"] .sidebar-header .brand {
+  font-size: 0.82em; font-weight: 800; color: #c2185b;
+}
+[data-theme="cherry-blossom"] .sidebar-nav {
+  flex-direction: row; padding: 0; gap: 2px;
+  overflow-x: auto; overflow-y: hidden;
+}
 [data-theme="cherry-blossom"] .sidebar-nav a {
-  border-right: none; border-left: 3px solid transparent;
-  margin: 2px 8px; border-radius: 16px;
+  padding: 6px 12px; font-size: 0.75em; white-space: nowrap;
+  border-right: none; border-radius: 50px; font-weight: 600;
 }
-[data-theme="cherry-blossom"] .sidebar-nav a:hover {
-  border-left-color: var(--fg-accent); background: rgba(194,24,91,0.04);
-}
+[data-theme="cherry-blossom"] .sidebar-nav a:hover { background: rgba(194,24,91,0.08); }
+[data-theme="cherry-blossom"] .main-wrapper { margin-right: 0; margin-bottom: 72px; width: 100%; }
+[data-theme="cherry-blossom"] .page { max-width: 520px; margin: 0 auto; padding: 16px; }
 [data-theme="cherry-blossom"] .card {
-  border-radius: 28px 10px 28px 10px;
-  border: 1px solid #f0b0c0;
+  border-radius: 16px; margin-bottom: 8px;
+  border: none; padding: 16px 20px;
+  box-shadow: 0 1px 3px rgba(233,30,99,0.06);
 }
-[data-theme="cherry-blossom"] .card:hover {
-  box-shadow: 0 10px 32px rgba(233,30,99,0.1);
-  transform: translateY(-3px);
+[data-theme="cherry-blossom"] .card + .card { border-radius: 16px; }
+[data-theme="cherry-blossom"] .grid-2 {
+  display: block;
 }
-[data-theme="cherry-blossom"] h2::after {
-  content: ""; display: block; width: 50px; height: 3px; margin-top: 8px;
-  background: linear-gradient(90deg, var(--fg-accent), transparent);
-  border-radius: 2px;
+[data-theme="cherry-blossom"] .grid-2 > .card:first-child {
+  border-radius: 16px 16px 4px 4px; margin-bottom: 1px;
 }
-[data-theme="cherry-blossom"] button:not(.menu-toggle) {
-  padding: 10px 32px; border: none;
+[data-theme="cherry-blossom"] .grid-2 > .card:last-child {
+  border-radius: 4px 4px 16px 16px;
 }
-[data-theme="cherry-blossom"] button:not(.menu-toggle):hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(233,30,99,0.15);
+[data-theme="cherry-blossom"] h2 {
+  font-size: 0.78em; text-transform: uppercase; letter-spacing: 0.06em;
+  color: #c2185b; font-weight: 600; margin-bottom: 8px;
 }
 [data-theme="cherry-blossom"] .prominent-card {
-  border-radius: 32px 12px 32px 12px;
-  border: 2px solid var(--border-prominent);
-  background: linear-gradient(135deg, #fce8ef, #fff5f8);
+  border-radius: 20px; border: none;
+  background: linear-gradient(135deg, #fce4ec, #fce8ef);
+}
+[data-theme="cherry-blossom"] button:not(.menu-toggle) {
+  border: none; border-radius: 12px; padding: 12px 28px; font-weight: 700;
+  width: 100%;
+}
+[data-theme="cherry-blossom"] input:not([type="checkbox"]),
+[data-theme="cherry-blossom"] select {
+  border-radius: 12px; padding: 12px 16px; border: 1px solid #f0b0c0;
 }
 @media (max-width: 768px) {
-  [data-theme="cherry-blossom"] .sidebar { right: 0; left: auto; border-right: none; border-left: 1px solid var(--border-sidebar); }
-  [data-theme="cherry-blossom"] .main-wrapper { margin-left: 0; }
+  [data-theme="cherry-blossom"] .sidebar {
+    position: fixed; width: 240px; max-width: none; height: 100%;
+    flex-direction: column; border-radius: 0;
+    right: 0; top: 0; bottom: auto; left: auto;
+    transform: translateX(100%); border-left: 1px solid #f8d0dd;
+  }
+  [data-theme="cherry-blossom"] .sidebar.open { transform: translateX(0); }
+  [data-theme="cherry-blossom"] .sidebar-nav { flex-direction: column; }
+  [data-theme="cherry-blossom"] .main-wrapper { margin-bottom: 0; }
 }
 
-/* ── THEME 14: MAINFRAME CRT ─────────────────────────────────────────
-   CRT scanline overlay, bracket-wrapped buttons, prefix prompts,
-   dashed borders everywhere, phosphor glow, blinking focus
-   ────────────────────────────────────────────────────────────────────── */
+
+/* ═══════ THEME 14: CRT — DOS text UI with box-drawing borders ═══════
+   Full terminal emulation. Sidebar becomes function-key bar at bottom.
+   Cards are box-drawn panels like a DOS dialog. Everything monospace.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="retro-terminal"] .app-layout { flex-direction: column; }
+[data-theme="retro-terminal"] .sidebar {
+  position: fixed; bottom: 0; top: auto; left: 0; right: 0;
+  width: 100%; height: 28px;
+  flex-direction: row; align-items: center;
+  border-left: none; border-top: 1px solid #004400;
+  z-index: 100; background: #000800;
+}
+[data-theme="retro-terminal"] .sidebar-header {
+  border-bottom: none; padding: 0 8px;
+}
+[data-theme="retro-terminal"] .sidebar-header .brand {
+  font-size: 0.7em; color: #00ff00;
+}
+[data-theme="retro-terminal"] .sidebar-header .brand::before { content: "$ "; }
+[data-theme="retro-terminal"] .sidebar-nav {
+  flex-direction: row; padding: 0;
+}
+[data-theme="retro-terminal"] .sidebar-nav a {
+  padding: 4px 12px; font-size: 0.68em; white-space: nowrap;
+  text-transform: uppercase; letter-spacing: 0.1em; border-right: none;
+  counter-increment: fnkey;
+}
+[data-theme="retro-terminal"] .sidebar-nav a::before {
+  content: "F" counter(fnkey) "=";
+  color: #005500;
+}
+[data-theme="retro-terminal"] .sidebar-nav { counter-reset: fnkey; }
+[data-theme="retro-terminal"] .main-wrapper { margin-right: 0; margin-bottom: 28px; }
+[data-theme="retro-terminal"] body {
+  text-shadow: 0 0 4px rgba(0,255,0,0.12);
+}
 [data-theme="retro-terminal"] .page::before {
   content: ""; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
-  background: repeating-linear-gradient(0deg, rgba(0,255,0,0.03) 0px, transparent 1px, transparent 3px);
+  background: repeating-linear-gradient(0deg,
+    rgba(0,255,0,0.02) 0px, transparent 1px, transparent 3px);
 }
-[data-theme="retro-terminal"] .card { border-style: dashed; }
-[data-theme="retro-terminal"] h2 { font-size: 0.88em; }
+[data-theme="retro-terminal"] .page::after {
+  content: ""; position: fixed; inset: 0; z-index: 9998; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.35) 100%);
+}
+[data-theme="retro-terminal"] .page { max-width: 80ch; }
+[data-theme="retro-terminal"] .grid-2 { display: block; }
+[data-theme="retro-terminal"] .card {
+  border: 1px dashed #004400; border-radius: 0;
+  position: relative; padding: 12px;
+}
+[data-theme="retro-terminal"] h2 { font-size: 0.82em; }
 [data-theme="retro-terminal"] h2::before { content: "> "; color: #005500; }
 [data-theme="retro-terminal"] button:not(.menu-toggle) {
-  background: transparent;
+  background: transparent; border: 1px dashed #00ff00;
 }
 [data-theme="retro-terminal"] button:not(.menu-toggle)::before { content: "[ "; }
 [data-theme="retro-terminal"] button:not(.menu-toggle)::after { content: " ]"; }
-[data-theme="retro-terminal"] .sidebar-nav a {
-  text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8em;
-  border-right: none;
-}
-[data-theme="retro-terminal"] .sidebar-nav a::before { content: "→ "; }
-[data-theme="retro-terminal"] input:focus,
-[data-theme="retro-terminal"] select:focus {
-  outline: 1px dashed #00ff00; outline-offset: 2px;
-  box-shadow: 0 0 8px rgba(0,255,0,0.15);
+[data-theme="retro-terminal"] button:not(.menu-toggle):hover {
+  background: rgba(0,255,0,0.06); text-shadow: 0 0 8px rgba(0,255,0,0.3);
 }
 [data-theme="retro-terminal"] .prominent-card {
-  border: 1px dashed #00ff00;
-  box-shadow: inset 0 0 20px rgba(0,255,0,0.03);
+  border: 1px solid #00ff00; background: rgba(0,8,0,0.5);
 }
-[data-theme="retro-terminal"] .sidebar-header .brand::before { content: "$ "; }
+[data-theme="retro-terminal"] thead th {
+  font-size: 0.72em; text-transform: uppercase; letter-spacing: 0.1em;
+  border-bottom: 1px dashed #004400;
+}
+[data-theme="retro-terminal"] input:not([type="checkbox"]),
+[data-theme="retro-terminal"] select {
+  border: 1px solid #004400; background: transparent; border-radius: 0;
+}
+@media (max-width: 768px) {
+  [data-theme="retro-terminal"] .sidebar {
+    position: fixed; width: 240px; height: 100%;
+    flex-direction: column; border-top: none;
+    right: 0; top: 0; bottom: 0; left: auto;
+    transform: translateX(100%); border-left: 1px dashed #004400;
+  }
+  [data-theme="retro-terminal"] .sidebar.open { transform: translateX(0); }
+  [data-theme="retro-terminal"] .sidebar-nav { flex-direction: column; counter-reset: fnkey; }
+  [data-theme="retro-terminal"] .main-wrapper { margin-bottom: 0; }
+}
 
-/* ── THEME 15: BRUTALIST ACCESSIBILITY ────────────────────────────────
-   Inverted buttons (white on black), massive focus outlines,
-   uppercase nav, underlined headings, thick card borders, no effects
-   ────────────────────────────────────────────────────────────────────── */
-[data-theme="high-contrast"] *:focus {
-  outline: 4px solid #ffff00 !important; outline-offset: 3px;
+
+/* ═══════ THEME 15: BRUTALIST — Raw poster/broadsheet ════════════════
+   Top header bar. Content as overlapping, oversized typographic blocks.
+   No card borders. Text is massive and raw. Like a punk zine layout.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="high-contrast"] .app-layout { flex-direction: column; }
+[data-theme="high-contrast"] .sidebar {
+  position: relative; width: 100%; height: auto;
+  flex-direction: row; align-items: center; flex-wrap: wrap;
+  border-left: none; border-bottom: 8px solid #ffff00;
+  top: auto; right: auto; left: auto; bottom: auto;
+  background: #000;
 }
-[data-theme="high-contrast"] .card {
-  border-width: 4px; border-color: #ffffff;
+[data-theme="high-contrast"] .sidebar-header {
+  border-bottom: none; padding: 12px 20px;
 }
-[data-theme="high-contrast"] h2 {
-  text-decoration: underline; text-decoration-thickness: 4px;
-  text-underline-offset: 6px; text-decoration-color: #ffff00;
-  font-size: 1.4em;
+[data-theme="high-contrast"] .sidebar-header .brand {
+  font-size: 2em; font-weight: 700; text-transform: uppercase; color: #ffff00;
 }
-[data-theme="high-contrast"] button:not(.menu-toggle) {
-  border-width: 3px; font-weight: 900; text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-[data-theme="high-contrast"] button:not(.menu-toggle):hover {
-  background: #ffff00; color: #000000; border-color: #ffff00;
+[data-theme="high-contrast"] .sidebar-nav {
+  flex-direction: row; padding: 0; flex-wrap: wrap;
 }
 [data-theme="high-contrast"] .sidebar-nav a {
-  text-transform: uppercase; font-weight: 700; font-size: 1em;
-  border-right: none; border-bottom: 2px solid #ffffff;
+  padding: 12px 20px; font-size: 1.1em; white-space: nowrap;
+  text-transform: uppercase; font-weight: 700; border-right: none; color: #fff;
 }
 [data-theme="high-contrast"] .sidebar-nav a:hover {
-  background: #ffff00; color: #000000;
+  background: #ffff00; color: #000;
+}
+[data-theme="high-contrast"] .main-wrapper { margin-right: 0; }
+[data-theme="high-contrast"] .page { max-width: 100%; padding: 0; }
+[data-theme="high-contrast"] .card {
+  border: none; border-radius: 0; margin: 0;
+  padding: 40px 48px;
+  border-bottom: 4px solid #fff;
+}
+[data-theme="high-contrast"] .card:nth-child(odd) { padding-left: 10vw; }
+[data-theme="high-contrast"] .card:nth-child(even) { padding-left: 5vw; padding-right: 15vw; }
+[data-theme="high-contrast"] .grid-2 { display: block; }
+[data-theme="high-contrast"] h2 {
+  font-size: 3em; font-weight: 700;
+  text-transform: uppercase; line-height: 0.95;
+  margin-bottom: 24px;
+  text-decoration: underline; text-decoration-thickness: 6px;
+  text-underline-offset: 8px; text-decoration-color: #ffff00;
 }
 [data-theme="high-contrast"] .prominent-card {
-  border: 4px solid #ffff00; background: #000000;
+  background: #ffff00; color: #000; border: none;
+  padding: 48px;
+}
+[data-theme="high-contrast"] .prominent-card h2 { color: #000; text-decoration-color: #000; }
+[data-theme="high-contrast"] *:focus-visible {
+  outline: 4px solid #ffff00 !important; outline-offset: 3px;
+}
+[data-theme="high-contrast"] button:not(.menu-toggle) {
+  border: 4px solid #fff; font-weight: 700;
+  text-transform: uppercase; font-size: 1.1em; padding: 14px 28px;
+}
+[data-theme="high-contrast"] button:not(.menu-toggle):hover {
+  background: #ffff00; color: #000; border-color: #ffff00;
 }
 [data-theme="high-contrast"] thead th {
-  background: #ffffff; color: #000000; font-weight: 900;
+  background: #fff; color: #000; font-weight: 700; font-size: 1em;
+}
+[data-theme="high-contrast"] input:not([type="checkbox"]),
+[data-theme="high-contrast"] select {
+  border: 3px solid #fff; font-size: 1.1em;
+}
+@media (max-width: 768px) {
+  [data-theme="high-contrast"] .sidebar {
+    position: fixed; width: 260px; height: 100%;
+    flex-direction: column; flex-wrap: nowrap; border-bottom: none;
+    right: 0; top: 0; bottom: 0; transform: translateX(100%);
+    border-left: 8px solid #ffff00;
+  }
+  [data-theme="high-contrast"] .sidebar.open { transform: translateX(0); }
+  [data-theme="high-contrast"] .sidebar-nav { flex-direction: column; flex-wrap: nowrap; }
+  [data-theme="high-contrast"] h2 { font-size: 1.8em; }
+  [data-theme="high-contrast"] .card { padding: 24px 16px; }
 }
 
-/* ── THEME 16: ARTISAN POTTERY ────────────────────────────────────────
-   Inset-shadow cards (embossed look), double-line headings,
-   thick right-border nav hover, italic table headers, rough edges
-   ────────────────────────────────────────────────────────────────────── */
+
+/* ═══════ THEME 16: POTTERY — Embossed tile mosaic ═══════════════════
+   Cards become tiles in a tight masonry grid with deep embossed
+   shadows. Irregular alternating sizes. Handmade, wonky feel.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="warm-earth"] .page {
+  column-count: 3; column-gap: 12px;
+  max-width: 1100px; padding: 16px;
+}
 [data-theme="warm-earth"] .card {
-  box-shadow: inset 0 2px 8px rgba(0,0,0,0.2), 0 4px 16px rgba(20,14,10,0.3);
-  border-radius: 2px 8px 2px 8px;
+  break-inside: avoid; display: inline-block; width: 100%;
+  border-radius: 3px 14px 3px 14px;
+  box-shadow: inset 0 3px 10px rgba(0,0,0,0.25), 0 6px 20px rgba(20,14,10,0.35);
+  margin-bottom: 12px; position: relative;
 }
+[data-theme="warm-earth"] .card::after {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(200,160,96,0.15), transparent);
+}
+[data-theme="warm-earth"] .card:hover {
+  box-shadow: inset 0 3px 10px rgba(0,0,0,0.15), 0 10px 32px rgba(20,14,10,0.45);
+  transform: translateY(-2px) rotate(-0.3deg);
+}
+[data-theme="warm-earth"] .grid-2 { display: block; column-count: 1; }
 [data-theme="warm-earth"] h2 {
-  border-bottom: 3px double var(--fg-accent); padding-bottom: 8px;
-  font-style: italic;
+  font-style: italic; font-size: 1.2em;
+  border-bottom: 3px double #3a2e20; padding-bottom: 8px;
 }
-[data-theme="warm-earth"] .sidebar-nav a:hover {
-  border-right: 5px solid var(--fg-accent);
+[data-theme="warm-earth"] .prominent-card {
+  column-span: all;
+  border-left: 8px solid #c8a060;
+  border-radius: 0 14px 14px 0;
+}
+[data-theme="warm-earth"] .sidebar-header .brand {
+  font-family: "Playfair Display",Georgia,serif; font-style: italic;
 }
 [data-theme="warm-earth"] thead th {
   font-style: italic; font-weight: 400;
-  border-bottom: 3px double var(--fg-accent);
+  font-family: "Playfair Display",Georgia,serif;
 }
 [data-theme="warm-earth"] button:not(.menu-toggle) {
+  border-radius: 2px 10px 2px 10px;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+}
+[data-theme="warm-earth"] input:not([type="checkbox"]),
+[data-theme="warm-earth"] select {
   border-radius: 2px 8px 2px 8px;
-}
-[data-theme="warm-earth"] .prominent-card {
-  border-left: 5px solid var(--border-prominent);
-  border-top: none; border-right: none; border-bottom: none;
-  border-radius: 0 8px 8px 0;
-  box-shadow: inset 0 2px 8px rgba(0,0,0,0.15), 0 6px 20px rgba(20,14,10,0.35);
-}
-
-/* ── THEME 17: SCANDINAVIAN MINIMALISM ────────────────────────────────
-   Left sidebar, almost invisible cards (borderless), clean flat surfaces,
-   tiny uppercase labels, generous whitespace, ultra-thin everything
-   ────────────────────────────────────────────────────────────────────── */
-[data-theme="arctic"] .sidebar {
-  right: auto; left: 0;
-  border-left: none; border-right: 1px solid var(--border-sidebar);
-}
-[data-theme="arctic"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
-[data-theme="arctic"] .sidebar-nav a {
-  border-right: none; border-left: 2px solid transparent;
-  font-size: 0.88em; text-transform: uppercase; letter-spacing: 0.06em;
-}
-[data-theme="arctic"] .sidebar-nav a:hover { border-left-color: var(--fg-accent); }
-[data-theme="arctic"] .card {
-  border: none; background: #ffffff;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-}
-[data-theme="arctic"] .card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-[data-theme="arctic"] h2 {
-  font-weight: 300; font-size: 0.9em;
-  letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--fg-muted);
-}
-[data-theme="arctic"] .prominent-card {
-  border: none; border-top: 2px solid var(--border-prominent);
-  border-radius: 0; background: #ffffff;
-}
-[data-theme="arctic"] button:not(.menu-toggle) {
-  font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.06em;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
 }
 @media (max-width: 768px) {
-  [data-theme="arctic"] .sidebar { right: 0; left: auto; border-right: none; border-left: 1px solid var(--border-sidebar); }
-  [data-theme="arctic"] .main-wrapper { margin-left: 0; }
+  [data-theme="warm-earth"] .page { column-count: 1; }
 }
 
-/* ── THEME 18: 8-BIT ARCADE ──────────────────────────────────────────
-   Hard-shadow offset cards (pixel art feel), glitch text-shadow,
-   bracketed buttons, LED-border glow, pixel-perfect sharpness
-   ────────────────────────────────────────────────────────────────────── */
+
+/* ═══════ THEME 17: ARCTIC — Invisible; typographic whitespace only ═══
+   Top centered nav bar. No card borders or backgrounds at all. Pure
+   content marked only by whitespace and subtle horizontal rules.
+   Ultra-minimal, nearly invisible UI.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="arctic"] .sidebar {
+  position: fixed; top: 0; left: 50%; transform: translateX(-50%);
+  width: auto; max-width: 680px; height: auto;
+  flex-direction: row; align-items: center;
+  border: none; background: rgba(250,251,252,0.85);
+  backdrop-filter: blur(10px); padding: 0 16px; z-index: 100;
+}
+[data-theme="arctic"] .sidebar-header {
+  border-bottom: none; padding: 10px 16px;
+}
+[data-theme="arctic"] .sidebar-header .brand {
+  font-weight: 300; font-size: 0.85em;
+  text-transform: uppercase; letter-spacing: 0.12em;
+}
+[data-theme="arctic"] .sidebar-nav {
+  flex-direction: row; padding: 0; overflow-x: auto; overflow-y: hidden;
+}
+[data-theme="arctic"] .sidebar-nav a {
+  padding: 10px 14px; font-size: 0.75em; white-space: nowrap;
+  text-transform: uppercase; letter-spacing: 0.08em; font-weight: 300;
+  border-right: none; color: #8a909a;
+}
+[data-theme="arctic"] .sidebar-nav a:hover { color: #2a2e34; }
+[data-theme="arctic"] .main-wrapper { margin-right: 0; padding-top: 44px; }
+[data-theme="arctic"] .page {
+  max-width: 600px; margin: 0 auto; padding: 60px 20px;
+}
+[data-theme="arctic"] .card {
+  background: transparent; border: none; margin: 0; border-radius: 0;
+  padding: 40px 0;
+}
+[data-theme="arctic"] .card + .card {
+  border-top: 1px solid #e8ecf0;
+}
+[data-theme="arctic"] .grid-2 { display: block; }
+[data-theme="arctic"] h2 {
+  font-weight: 300; font-size: 0.78em; color: #8a909a;
+  text-transform: uppercase; letter-spacing: 0.12em;
+}
+[data-theme="arctic"] .prominent-card {
+  background: transparent; border: none; padding: 40px 0;
+}
+[data-theme="arctic"] button:not(.menu-toggle) {
+  font-size: 0.78em; text-transform: uppercase; letter-spacing: 0.1em;
+  font-weight: 300;
+}
+[data-theme="arctic"] input:not([type="checkbox"]),
+[data-theme="arctic"] select {
+  border: none; border-bottom: 1px solid #d4d8dc;
+  border-radius: 0; padding: 10px 0; background: transparent;
+}
+[data-theme="arctic"] table { font-size: 0.85em; }
+[data-theme="arctic"] th {
+  font-weight: 300; text-transform: uppercase; letter-spacing: 0.08em;
+  font-size: 0.78em; color: #8a909a;
+}
+@media (max-width: 768px) {
+  [data-theme="arctic"] .sidebar {
+    position: fixed; width: 240px; max-width: none; height: 100%;
+    flex-direction: column; backdrop-filter: none;
+    right: 0; top: 0; bottom: 0; left: auto;
+    transform: translateX(100%); background: #fafbfc;
+    border-left: 1px solid #e4e8ec;
+  }
+  [data-theme="arctic"] .sidebar.open { transform: translateX(0); }
+  [data-theme="arctic"] .sidebar-nav { flex-direction: column; }
+  [data-theme="arctic"] .main-wrapper { padding-top: 0; }
+}
+
+
+/* ═══════ THEME 18: ARCADE — 8-bit pixel window manager ══════════════
+   Cards become retro OS windows with title bars, minimize/close buttons.
+   Pixel-art borders, hard drop shadows, bitmap feel.
+   ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="neon"] .card {
-  box-shadow: 6px 6px 0 rgba(57,255,20,0.15);
-  border: 3px solid #39ff14;
+  border: 4px solid #39ff14; border-radius: 0;
+  position: relative;
+  padding-top: 36px;
+  box-shadow: 8px 8px 0 rgba(57,255,20,0.2);
+  image-rendering: pixelated;
+}
+[data-theme="neon"] .card::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0;
+  height: 28px; background: #39ff14;
+  border-bottom: 4px solid #1a1a1a;
+}
+[data-theme="neon"] .card::after {
+  content: "_ □ ✕"; position: absolute; top: 4px; right: 8px;
+  font-size: 0.6em; color: #1a1a1a; letter-spacing: 6px; font-weight: 700;
+  z-index: 1;
 }
 [data-theme="neon"] .card:hover {
-  box-shadow: 8px 8px 0 rgba(57,255,20,0.25), 0 0 12px rgba(57,255,20,0.1);
-}
-[data-theme="neon"] h2 {
-  text-shadow: 3px 3px #ff073a, -2px -2px #39ff14;
-  font-size: 0.9em;
-}
-[data-theme="neon"] button:not(.menu-toggle) {
-  background: transparent;
-  box-shadow: 4px 4px 0 rgba(57,255,20,0.2);
-}
-[data-theme="neon"] button:not(.menu-toggle):hover {
-  box-shadow: 6px 6px 0 rgba(57,255,20,0.3);
+  box-shadow: 10px 10px 0 rgba(57,255,20,0.3);
   transform: translate(-2px, -2px);
 }
-[data-theme="neon"] .sidebar-nav a {
-  text-transform: uppercase; letter-spacing: 0.06em;
-  border-right: none; font-size: 0.7em;
+[data-theme="neon"] .card:nth-child(even)::before { background: #ff073a; }
+[data-theme="neon"] h2 {
+  font-size: 0.62em; text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-shadow: 2px 2px #ff073a;
 }
-[data-theme="neon"] .sidebar-nav a:hover {
-  background: rgba(57,255,20,0.06);
-  text-shadow: 0 0 6px #39ff14;
-}
+[data-theme="neon"] .grid-2 { display: block; }
 [data-theme="neon"] .prominent-card {
-  border: 3px solid #ff073a;
-  box-shadow: 6px 6px 0 rgba(255,7,58,0.2);
+  border: 4px solid #ff073a;
+  box-shadow: 8px 8px 0 rgba(255,7,58,0.2);
+  padding-top: 36px;
 }
-[data-theme="neon"] thead th { color: #ff073a; }
+[data-theme="neon"] .prominent-card::before { background: #ff073a; }
+[data-theme="neon"] button:not(.menu-toggle) {
+  box-shadow: 4px 4px 0 rgba(57,255,20,0.3);
+  font-size: 0.62em; padding: 6px 14px; border-radius: 0;
+}
+[data-theme="neon"] .sidebar-nav a {
+  text-transform: uppercase; letter-spacing: 0.04em;
+  border-right: none; font-size: 0.58em; padding: 8px 10px;
+}
+[data-theme="neon"] .sidebar-header .brand { font-size: 0.62em; text-transform: uppercase; }
+[data-theme="neon"] thead th {
+  color: #ff073a; font-size: 0.58em;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+[data-theme="neon"] input:not([type="checkbox"]),
+[data-theme="neon"] select {
+  border: 3px solid #39ff14; font-size: 0.65em; border-radius: 0;
+}
+[data-theme="neon"] table { font-size: 0.68em; }
 
-/* ── THEME 19: BROADSHEET NEWSPAPER ───────────────────────────────────
-   Left sidebar, narrow column, horizontal rules between cards,
-   masthead-style headings, italic serif nav, no card borders
-   ────────────────────────────────────────────────────────────────────── */
+
+/* ═══════ THEME 19: NEWSPAPER — Multi-column editorial ═══════════════
+   Left sidebar with serif editorial nav. Content flows in newspaper-
+   style CSS columns. No visible cards — content flows like print.
+   ═══════════════════════════════════════════════════════════════════════ */
 [data-theme="paper"] .sidebar {
   right: auto; left: 0;
-  border-left: none; border-right: 1px solid var(--border-sidebar);
+  border-left: none; border-right: 1px solid #c8c0b0;
 }
 [data-theme="paper"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
 [data-theme="paper"] .sidebar-nav a {
   border-right: none; border-left: 2px solid transparent;
-  font-family: Georgia,serif; font-style: italic;
+  font-family: Georgia,serif; font-style: italic; font-size: 0.88em;
+}
+[data-theme="paper"] .sidebar-nav a:hover { border-left-color: #8b4513; }
+[data-theme="paper"] .sidebar-header .brand {
+  font-family: "Playfair Display",Georgia,serif;
+  font-size: 1.3em; font-weight: 700;
+}
+[data-theme="paper"] .page {
+  column-count: 3; column-gap: 28px;
+  column-rule: 1px solid #c8c0b0;
+  max-width: 1100px; padding: 32px;
 }
 [data-theme="paper"] .card {
-  border: none; border-radius: 0;
-  border-bottom: 1px solid var(--border-card);
-  padding: 24px 0;
+  break-inside: avoid; display: inline-block; width: 100%;
+  border: none; border-radius: 0; background: transparent;
+  margin: 0 0 20px; padding: 0;
   box-shadow: none;
 }
-[data-theme="paper"] .card + .card { padding-top: 24px; }
-[data-theme="paper"] h2 {
-  font-size: 1.8em; line-height: 1.2;
-  border-bottom: 2px solid #2a2520; padding-bottom: 8px;
+[data-theme="paper"] .card + .card::before {
+  content: ""; display: block; border-top: 1px solid #c8c0b0;
   margin-bottom: 16px;
 }
+[data-theme="paper"] .grid-2 { display: block; column-count: 1; }
+[data-theme="paper"] h2 {
+  font-family: "Playfair Display",Georgia,serif;
+  font-size: 1.8em; line-height: 1.1;
+  border-bottom: 3px solid #2a2520; padding-bottom: 8px;
+  margin-bottom: 12px; letter-spacing: -0.02em;
+}
 [data-theme="paper"] .prominent-card {
-  border: none; border-top: 4px double #2a2520; border-bottom: 2px solid #2a2520;
-  border-radius: 0; padding: 24px 0;
+  column-span: all;
+  border: none; border-top: 4px double #2a2520;
+  border-bottom: 2px solid #2a2520;
+  border-radius: 0; padding: 20px 0; background: transparent;
+  margin-bottom: 20px;
 }
-[data-theme="paper"] button:not(.menu-toggle) {
-  font-family: Georgia,serif;
-}
+[data-theme="paper"] button:not(.menu-toggle) { font-family: Georgia,serif; }
 [data-theme="paper"] thead th {
   font-family: "Playfair Display",Georgia,serif;
-  font-style: italic; font-weight: 400; font-size: 0.9em;
+  font-style: italic; font-weight: 400;
+}
+[data-theme="paper"] input:not([type="checkbox"]),
+[data-theme="paper"] select {
+  border: 1px solid #c8c0b0; background: #faf6ee;
 }
 @media (max-width: 768px) {
-  [data-theme="paper"] .sidebar { right: 0; left: auto; border-right: none; border-left: 1px solid var(--border-sidebar); }
+  [data-theme="paper"] .sidebar {
+    right: 0; left: auto; border-right: none; border-left: 1px solid #c8c0b0;
+  }
   [data-theme="paper"] .main-wrapper { margin-left: 0; }
+  [data-theme="paper"] .page { column-count: 1; }
 }
 
-/* ── THEME 20: COMMAND CENTER / DASHBOARD ─────────────────────────────
-   Subtle card elevation, focus-ring interactions, compact forms,
-   pill-shaped nav hover, status-indicator borders
-   ────────────────────────────────────────────────────────────────────── */
-[data-theme="slate"] .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.05);
+
+/* ═══════ THEME 20: DASHBOARD — Icon sidebar + dense auto-fit grid ═══
+   Narrow icon-only sidebar that expands on hover. Content in a dense
+   auto-fit grid with minimal gaps and compact info density.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="slate"] .sidebar {
+  width: 52px; overflow: hidden;
+  transition: width 0.2s ease;
+}
+[data-theme="slate"] .sidebar:hover { width: 200px; }
+[data-theme="slate"] .sidebar-header { padding: 10px 6px; text-align: center; }
+[data-theme="slate"] .sidebar-header .brand {
+  font-size: 0.72em; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  overflow: hidden; white-space: nowrap;
 }
 [data-theme="slate"] .sidebar-nav a {
-  border-right: none; margin: 1px 6px; border-radius: 6px;
-  font-size: 0.9em;
+  padding: 8px 6px; font-size: 0.72em; white-space: nowrap;
+  border-right: none; margin: 1px 3px; border-radius: 4px;
+  text-transform: uppercase; letter-spacing: 0.04em; overflow: hidden;
 }
 [data-theme="slate"] .sidebar-nav a:hover { background: rgba(116,185,255,0.08); }
-[data-theme="slate"] input:focus,
-[data-theme="slate"] select:focus {
-  border-color: var(--fg-accent);
-  box-shadow: 0 0 0 3px rgba(116,185,255,0.15);
-  outline: none;
+[data-theme="slate"] .main-wrapper { margin-right: 52px; }
+[data-theme="slate"] .page {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 8px; padding: 8px; align-items: start; max-width: 100%;
 }
+[data-theme="slate"] .card {
+  margin: 0; padding: 10px; font-size: 0.85em;
+}
+[data-theme="slate"] .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+[data-theme="slate"] .grid-2 { display: contents; }
 [data-theme="slate"] h2 {
-  font-size: 1.1em; display: flex; align-items: center; gap: 8px;
+  font-size: 0.78em; display: flex; align-items: center; gap: 6px;
 }
 [data-theme="slate"] h2::before {
   content: ""; display: inline-block; width: 4px; height: 1em;
-  background: var(--fg-accent); border-radius: 2px; flex-shrink: 0;
+  background: #74b9ff; border-radius: 2px;
 }
 [data-theme="slate"] .prominent-card {
-  border: 1px solid var(--border-prominent);
-  border-left: 4px solid var(--border-prominent);
+  grid-column: 1 / -1;
+  border-left: 4px solid #74b9ff;
+}
+[data-theme="slate"] thead th {
+  font-size: 0.72em; text-transform: uppercase; letter-spacing: 0.06em;
+}
+@media (max-width: 768px) {
+  [data-theme="slate"] .sidebar { width: 240px; }
+  [data-theme="slate"] .sidebar:hover { width: 240px; }
+  [data-theme="slate"] .main-wrapper { margin-right: 0; }
+  [data-theme="slate"] .page { grid-template-columns: 1fr; }
 }
 
-/* ── THEME 21: ART DECO LUXURY ────────────────────────────────────────
-   Zero radius, thin-weight headings, outlined buttons that invert
-   on hover, borderless cards with bottom rule, geometric patterns
-   ────────────────────────────────────────────────────────────────────── */
-[data-theme="rose-gold"] .card {
-  border: none; border-bottom: 1px solid var(--border-card);
-  border-radius: 0; padding: 24px 0;
+
+/* ═══════ THEME 21: ART DECO — Layered overlapping panels ════════════
+   Cards overlap each other with staggered negative margins, creating
+   a layered/depth effect like theater curtains or art deco facades.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="rose-gold"] .page {
+  max-width: 800px; padding: 32px; position: relative;
 }
+[data-theme="rose-gold"] .card {
+  border: 1px solid #2a2018; border-radius: 0; margin: 0;
+  padding: 32px; position: relative;
+  margin-bottom: -16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+[data-theme="rose-gold"] .card:nth-child(odd) {
+  margin-left: 0; margin-right: 40px;
+  z-index: 1;
+}
+[data-theme="rose-gold"] .card:nth-child(even) {
+  margin-left: 40px; margin-right: 0;
+  z-index: 2;
+}
+[data-theme="rose-gold"] .card:hover {
+  z-index: 10 !important;
+  transform: scale(1.02);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+[data-theme="rose-gold"] .card:last-child { margin-bottom: 0; }
+[data-theme="rose-gold"] .grid-2 { display: block; }
 [data-theme="rose-gold"] h2 {
-  font-weight: 200; font-size: 1.1em;
-  letter-spacing: 0.12em; text-transform: uppercase;
-  position: relative; padding-bottom: 10px;
+  font-weight: 400; font-size: 1em;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  font-family: "Playfair Display",Georgia,serif;
+  position: relative; padding-bottom: 12px;
 }
 [data-theme="rose-gold"] h2::after {
   content: ""; position: absolute; bottom: 0; left: 0;
-  width: 40px; height: 1px; background: var(--fg-accent);
-}
-[data-theme="rose-gold"] button:not(.menu-toggle) {
-  background: transparent; border: 1px solid var(--fg-accent);
-  color: var(--fg-accent); padding: 10px 28px;
-}
-[data-theme="rose-gold"] button:not(.menu-toggle):hover {
-  background: var(--fg-accent); color: var(--bg-body);
-}
-[data-theme="rose-gold"] .sidebar-nav a {
-  letter-spacing: 0.08em; text-transform: uppercase;
-  font-size: 0.82em; font-weight: 300; border-right: none;
-}
-[data-theme="rose-gold"] .sidebar-nav a:hover {
-  letter-spacing: 0.1em;
-  transition: letter-spacing 0.3s;
+  width: 40px; height: 1px; background: #c8a878;
 }
 [data-theme="rose-gold"] .prominent-card {
-  border: 1px solid var(--border-prominent); border-radius: 0;
-  padding: 24px;
+  border: 2px solid #c8a878; z-index: 5 !important;
+  margin-left: 0 !important; margin-right: 0 !important;
+}
+[data-theme="rose-gold"] .sidebar-nav a {
+  letter-spacing: 0.1em; text-transform: uppercase;
+  font-size: 0.78em; font-weight: 300; border-right: none;
+}
+[data-theme="rose-gold"] .sidebar-header .brand {
+  text-transform: uppercase; letter-spacing: 0.12em;
+  font-weight: 300; font-size: 0.82em;
+  font-family: "Playfair Display",Georgia,serif;
+}
+[data-theme="rose-gold"] button:not(.menu-toggle) {
+  background: transparent; border: 1px solid #c8a878;
+  color: #c8a878; text-transform: uppercase; letter-spacing: 0.08em;
+}
+[data-theme="rose-gold"] button:not(.menu-toggle):hover {
+  background: #c8a878; color: #14100e;
 }
 [data-theme="rose-gold"] thead th {
   text-transform: uppercase; letter-spacing: 0.1em;
-  font-weight: 300; font-size: 0.82em;
+  font-weight: 300; font-size: 0.78em; color: #c8a878;
+}
+[data-theme="rose-gold"] input:not([type="checkbox"]),
+[data-theme="rose-gold"] select {
+  border: none; border-bottom: 1px solid #2a2018;
+  background: transparent; padding: 10px 0; border-radius: 0;
 }
 
-/* ── THEME 22: JEWEL BOX ─────────────────────────────────────────────
-   Gold accent bar on headings, thick emerald table headers,
-   card hover border-reveal, serif heading contrast
-   ────────────────────────────────────────────────────────────────────── */
-[data-theme="emerald"] h2 {
-  position: relative; padding-left: 18px;
-  font-family: "Libre Baskerville","Crimson Text",Georgia,serif;
+
+/* ═══════ THEME 22: JEWEL BOX — Book spread, two-page layout ════════
+   Left sidebar as spine. Content in a two-column book spread with
+   a visible center gutter. Like an open book lying flat.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="emerald"] .sidebar {
+  right: auto; left: 0;
+  border-left: none; border-right: 3px solid #ffd700;
+  background: linear-gradient(180deg, #040a04, #060e08);
 }
-[data-theme="emerald"] h2::before {
-  content: ""; position: absolute; left: 0; top: 2px; bottom: 2px;
-  width: 4px; background: var(--fg-accent-alt); border-radius: 2px;
+[data-theme="emerald"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
+[data-theme="emerald"] .sidebar-nav a {
+  border-right: none; border-left: 3px solid transparent;
+}
+[data-theme="emerald"] .sidebar-nav a:hover { border-left-color: #4caf50; }
+[data-theme="emerald"] .sidebar-header .brand {
+  color: #ffd700; font-family: "Libre Baskerville",Georgia,serif;
+}
+[data-theme="emerald"] .page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0; max-width: 1100px; padding: 0;
+  position: relative;
+}
+[data-theme="emerald"] .page::before {
+  content: ""; position: absolute; left: 50%; top: 0; bottom: 0;
+  width: 4px; transform: translateX(-50%);
+  background: linear-gradient(180deg, #ffd700, #4caf50, #ffd700);
+  z-index: 5;
 }
 [data-theme="emerald"] .card {
-  border: 2px solid #143020;
-  transition: border-color var(--transition-speed);
+  margin: 0; border: none; border-radius: 0;
+  border-bottom: 1px solid #143020;
+  padding: 24px 32px;
 }
-[data-theme="emerald"] .card:hover { border-color: var(--fg-accent); }
-[data-theme="emerald"] thead th {
-  border-bottom: 3px solid var(--fg-accent);
+[data-theme="emerald"] .card:nth-child(odd) { padding-right: 40px; }
+[data-theme="emerald"] .card:nth-child(even) { padding-left: 40px; }
+[data-theme="emerald"] .card:hover {
+  background: rgba(76,175,80,0.03);
+}
+[data-theme="emerald"] .grid-2 { display: contents; }
+[data-theme="emerald"] h2 {
   font-family: "Libre Baskerville",Georgia,serif;
-  font-weight: 700;
+  font-size: 1.2em; position: relative; padding-left: 18px;
 }
-[data-theme="emerald"] button:not(.menu-toggle) {
-  border-radius: 2px;
+[data-theme="emerald"] h2::before {
+  content: ""; position: absolute; left: 0; top: 4px; bottom: 4px;
+  width: 4px; background: #ffd700; border-radius: 2px;
 }
 [data-theme="emerald"] .prominent-card {
-  border: 2px solid var(--fg-accent-alt);
-  background: linear-gradient(135deg, #143020, #060e08);
+  grid-column: 1 / -1;
+  border-bottom: 2px solid #ffd700;
+  background: linear-gradient(135deg, #0a200a, #060e08);
+  padding: 32px;
 }
-[data-theme="emerald"] .sidebar-nav a:hover {
-  border-right-color: var(--fg-accent);
+[data-theme="emerald"] thead th {
+  border-bottom: 2px solid #ffd700;
+  font-family: "Libre Baskerville",Georgia,serif;
+  color: #ffd700;
+}
+[data-theme="emerald"] button:not(.menu-toggle) { border: 2px solid #143020; }
+[data-theme="emerald"] button:not(.menu-toggle):hover { border-color: #4caf50; }
+@media (max-width: 768px) {
+  [data-theme="emerald"] .sidebar {
+    right: 0; left: auto; border-right: none; border-left: 3px solid #ffd700;
+  }
+  [data-theme="emerald"] .main-wrapper { margin-left: 0; }
+  [data-theme="emerald"] .page { grid-template-columns: 1fr; }
+  [data-theme="emerald"] .page::before { display: none; }
+  [data-theme="emerald"] .card:nth-child(odd) { padding-right: 16px; }
+  [data-theme="emerald"] .card:nth-child(even) { padding-left: 16px; }
 }
 
-/* ── THEME 23: COZY CAFÉ ─────────────────────────────────────────────
-   Nav pills, decorative heading underline, warm inset inputs,
-   soft hover effects, rounded everything, comfortable reading
-   ────────────────────────────────────────────────────────────────────── */
+
+/* ═══════ THEME 23: CAFÉ — Chalkboard menu, no cards ═════════════════
+   No visible card containers. Content listed directly on a textured
+   dark background, like a café chalkboard. Hand-drawn feel with
+   chalk-like typography and decorative dividers.
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="coffee"] body {
+  background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='6' height='6' fill='%231a120c'/%3E%3Crect width='1' height='1' x='2' y='3' fill='%231e150e' opacity='0.3'/%3E%3C/svg%3E");
+}
 [data-theme="coffee"] .sidebar-nav a {
   margin: 3px 8px; border-radius: 10px; border-right: none;
+  padding: 10px 14px; font-size: 0.88em;
 }
-[data-theme="coffee"] .sidebar-nav a:hover {
-  background: rgba(139,105,20,0.1);
+[data-theme="coffee"] .sidebar-header .brand {
+  font-family: "Playfair Display",Georgia,serif; font-size: 1.1em;
 }
+[data-theme="coffee"] .page { max-width: 700px; padding: 32px 24px; }
+[data-theme="coffee"] .card {
+  background: transparent; border: none; border-radius: 0;
+  margin: 0; padding: 28px 0;
+  box-shadow: none;
+}
+[data-theme="coffee"] .card + .card::before {
+  content: "~ ✦ ~"; display: block; text-align: center;
+  color: rgba(212,165,116,0.3); font-size: 0.8em;
+  letter-spacing: 0.5em; margin-bottom: 28px;
+}
+[data-theme="coffee"] .grid-2 { display: block; }
 [data-theme="coffee"] h2 {
-  position: relative; padding-bottom: 10px;
+  font-family: "Playfair Display",Georgia,serif;
+  font-size: 1.6em; text-align: center; font-style: italic;
+  color: #d4a574; margin-bottom: 16px;
 }
 [data-theme="coffee"] h2::after {
-  content: ""; display: block; width: 36px; height: 3px; margin-top: 8px;
-  background: var(--fg-accent); border-radius: 2px;
+  content: ""; display: block; width: 60px; height: 2px;
+  margin: 12px auto 0; background: rgba(212,165,116,0.3);
 }
-[data-theme="coffee"] .card:hover {
-  box-shadow: 0 8px 24px rgba(20,14,8,0.4);
-  transform: translateY(-2px);
+[data-theme="coffee"] .prominent-card {
+  border: none; background: transparent;
+  padding: 32px 0; box-shadow: none;
+  border-top: 2px solid rgba(212,165,116,0.2);
+  border-bottom: 2px solid rgba(212,165,116,0.2);
+}
+[data-theme="coffee"] button:not(.menu-toggle) {
+  border: 1px solid rgba(212,165,116,0.3);
+  border-radius: 8px; background: transparent;
+}
+[data-theme="coffee"] button:not(.menu-toggle):hover {
+  background: rgba(212,165,116,0.1);
 }
 [data-theme="coffee"] input:not([type="checkbox"]),
 [data-theme="coffee"] select,
 [data-theme="coffee"] textarea {
-  background: rgba(52,40,24,0.3);
+  background: transparent; border: none;
+  border-bottom: 1px solid rgba(212,165,116,0.3);
+  border-radius: 0; padding: 12px 0;
 }
-[data-theme="coffee"] button:not(.menu-toggle) {
-  border: none;
-}
-[data-theme="coffee"] .prominent-card {
-  border: none; border-left: 4px solid var(--border-prominent);
-  border-radius: 0 12px 12px 0;
-}
+[data-theme="coffee"] table { font-size: 0.88em; }
+[data-theme="coffee"] th { color: #d4a574; font-style: italic; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Shared Utilities — Theme Picker, Defunct Banner
+   ═══════════════════════════════════════════════════════════════════════ */
 
 /* Theme Picker */
-.theme-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-top: 8px; }
-.theme-swatch { cursor: pointer; border: 2px solid var(--border-card); border-radius: var(--radius-sm); padding: 8px 10px; text-align: center; font-size: 0.85em; transition: border-color var(--transition-speed) var(--transition-fn), transform var(--transition-speed) var(--transition-fn); background: var(--bg-card); color: var(--fg-body); }
-.theme-swatch:hover { transform: scale(1.03); border-color: var(--fg-accent); }
-.theme-swatch.active { border-color: var(--fg-accent); box-shadow: 0 0 8px var(--shadow-prominent); font-weight: 700; }
+.theme-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px; margin-top: 8px;
+}
+.theme-swatch {
+  cursor: pointer;
+  border: 2px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  text-align: center;
+  font-size: 0.85em;
+  transition: border-color var(--transition-speed) var(--transition-fn),
+              transform var(--transition-speed) var(--transition-fn);
+  background: var(--bg-card);
+  color: var(--fg-body);
+}
+.theme-swatch:hover {
+  transform: scale(1.03);
+  border-color: var(--fg-accent);
+}
+.theme-swatch.active {
+  border-color: var(--fg-accent);
+  box-shadow: 0 0 8px var(--shadow-prominent);
+  font-weight: 700;
+}
 
 /* Defunct Banner */
-.defunct-banner { background: #3a1a1a; border: 1px solid #c44; border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: var(--card-gap); color: #faa; text-align: center; font-weight: 600; }
+.defunct-banner {
+  background: #3a1a1a;
+  border: 1px solid #c44;
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  margin-bottom: var(--card-gap);
+  color: #faa;
+  text-align: center;
+  font-weight: 600;
+}

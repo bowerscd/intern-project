@@ -6,40 +6,71 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:#0d1117; color:#c9d1d9; font-family:system-ui,-apple-system,sans-serif; height:100vh; overflow:hidden; display:flex; }
-#sidebar { width:280px; min-width:280px; background:#161b22; border-right:1px solid #30363d; display:flex; flex-direction:column; }
-#sidebar h2 { padding:16px; font-size:14px; color:#8b949e; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid #30363d; }
-#flow-list { flex:1; overflow-y:auto; }
-.flow-item { padding:10px 16px; cursor:pointer; border-left:3px solid transparent; font-size:13px; transition:background .1s; }
-.flow-item:hover { background:#1c2128; }
-.flow-item.active { background:#1c2128; border-left-color:#58a6ff; color:#58a6ff; }
-.flow-item .count { color:#8b949e; font-size:11px; margin-left:4px; }
+
+/* ── sidebar ───────────────────────────────────────────────────── */
+#sidebar { width:270px; min-width:270px; background:#161b22; border-right:1px solid #30363d; display:flex; flex-direction:column; overflow:hidden; }
+.sb-section { padding:12px 16px 6px; font-size:10px; color:#8b949e; text-transform:uppercase; letter-spacing:1px; }
+#sidebar-scroll { flex:1; overflow-y:auto; padding-bottom:12px; }
+
+.sb-item { padding:8px 16px; cursor:pointer; border-left:3px solid transparent; font-size:13px; transition:background .1s; display:flex; justify-content:space-between; align-items:center; }
+.sb-item:hover { background:#1c2128; }
+.sb-item.active { background:#1c2128; border-left-color:#58a6ff; color:#58a6ff; }
+.sb-item .cnt { color:#484f58; font-size:11px; }
+.sb-item.active .cnt { color:#58a6ff80; }
+
+/* theme badge */
+#theme-badge { margin:4px 16px 8px; padding:7px 10px; background:#1c2128; border:1px solid #30363d; border-radius:6px; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:border-color .15s; }
+#theme-badge:hover { border-color:#58a6ff; }
+#theme-badge .lbl { color:#8b949e; font-size:10px; text-transform:uppercase; letter-spacing:.6px; }
+#theme-badge .val { color:#e6edf3; font-weight:600; }
+#theme-badge .hint { color:#484f58; font-size:10px; }
+
+/* run picker */
+#run-picker { margin:8px 16px; padding:7px 10px; background:#0d1117; border:1px solid #30363d; border-radius:6px; color:#c9d1d9; font-size:12px; font-family:monospace; cursor:pointer; width:calc(100% - 32px); }
+#run-picker:hover { border-color:#58a6ff; }
+#run-picker option { background:#0d1117; color:#c9d1d9; }
+
+/* ── main area ─────────────────────────────────────────────────── */
 #main { flex:1; display:flex; flex-direction:column; min-width:0; }
-#topbar { padding:12px 20px; background:#161b22; border-bottom:1px solid #30363d; display:flex; align-items:center; justify-content:space-between; }
-#topbar h1 { font-size:16px; font-weight:600; }
-#step-info { color:#8b949e; font-size:13px; }
-#viewer { flex:1; display:flex; align-items:center; justify-content:center; overflow:auto; position:relative; padding:20px; }
+#topbar { padding:10px 20px; background:#161b22; border-bottom:1px solid #30363d; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+#topbar .left { display:flex; align-items:baseline; gap:10px; min-width:0; }
+#topbar h1 { font-size:15px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#topbar .pos { color:#8b949e; font-size:12px; white-space:nowrap; }
+#theme-tag { background:#1c2128; border:1px solid #30363d; border-radius:4px; padding:3px 8px; font-size:11px; color:#8b949e; white-space:nowrap; }
+
+#viewer { flex:1; display:flex; align-items:center; justify-content:center; overflow:auto; padding:16px; }
 #viewer img { max-width:100%; max-height:100%; object-fit:contain; border-radius:6px; border:1px solid #30363d; }
-#bottom { padding:12px 20px; background:#161b22; border-top:1px solid #30363d; text-align:center; }
-#dots { display:flex; justify-content:center; gap:6px; margin-bottom:8px; flex-wrap:wrap; }
-.dot { width:10px; height:10px; border-radius:50%; background:#30363d; cursor:pointer; transition:background .15s; }
+
+#bottom { padding:10px 20px; background:#161b22; border-top:1px solid #30363d; text-align:center; }
+#dots { display:flex; justify-content:center; gap:5px; margin-bottom:6px; flex-wrap:wrap; }
+.dot { width:9px; height:9px; border-radius:50%; background:#30363d; cursor:pointer; transition:background .12s; }
 .dot.active { background:#58a6ff; }
 .dot:hover { background:#58a6ff80; }
 #caption { color:#8b949e; font-size:12px; }
-#help { position:fixed; bottom:12px; right:12px; background:#30363d; padding:8px 12px; border-radius:6px; font-size:11px; color:#8b949e; pointer-events:none; }
+
+/* ── help ──────────────────────────────────────────────────────── */
+#help { position:fixed; bottom:12px; right:12px; background:#30363d; padding:8px 12px; border-radius:6px; font-size:11px; color:#8b949e; pointer-events:none; line-height:1.7; }
 #help kbd { background:#0d1117; padding:1px 5px; border-radius:3px; font-family:monospace; color:#c9d1d9; }
 #loading { display:flex; align-items:center; justify-content:center; height:100vh; width:100%; color:#8b949e; font-size:18px; }
 </style>
 </head>
 <body>
+
 <div id="loading">Scanning screenshots…</div>
+
 <div id="sidebar" style="display:none">
-  <h2>Workflows</h2>
-  <div id="flow-list"></div>
+  <div id="sidebar-scroll">
+    <!-- populated dynamically -->
+  </div>
 </div>
+
 <div id="main" style="display:none">
   <div id="topbar">
-    <h1 id="flow-title"></h1>
-    <span id="step-info"></span>
+    <div class="left">
+      <h1 id="tl-title"></h1>
+      <span class="pos" id="step-info"></span>
+    </div>
+    <span id="theme-tag"></span>
   </div>
   <div id="viewer">
     <img id="img" src="" alt="">
@@ -49,78 +80,142 @@ body { background:#0d1117; color:#c9d1d9; font-family:system-ui,-apple-system,sa
     <div id="caption"></div>
   </div>
 </div>
+
 <div id="help" style="display:none">
-  <kbd>&larr;</kbd><kbd>&rarr;</kbd> step &nbsp;
-  <kbd>&uarr;</kbd><kbd>&darr;</kbd> workflow
+  <kbd>←</kbd><kbd>→</kbd> image &nbsp;
+  <kbd>↑</kbd><kbd>↓</kbd> timeline<br>
+  <kbd>Space</kbd> next theme (same image)
 </div>
 
 <script>
 /**
- * Visual Timeline Viewer
+ * Visual Timeline Viewer — unified theme navigation for ALL flows
  *
- * Usage: serve this file from a screenshot output directory using any
- * static file server, e.g.:
+ * Serves from the parent screenshots/ directory.  Auto-discovers
+ * timestamped run directories (YYYYMMDD_HHMMSS/) and defaults to the
+ * latest.  A dropdown lets you switch between runs.
  *
- *   cd screenshots/20260308_201503
- *   python3 -m http.server 9876 --bind 127.0.0.1
- *   open http://127.0.0.1:9876/viewer.html
+ * Within a run, every flow has per-theme directories:
+ *   {flow_name}_t{NN}_{theme}/001_screenshot.png …
  *
- * The viewer auto-discovers flow directories and their PNG files by
- * fetching the directory listing from the dev server.
+ * Navigation:
+ *   Left / Right  → images within current timeline
+ *   Up / Down     → switch timeline
+ *   Space         → cycle theme (works for ALL timelines)
  */
 
 const FLOW_LABELS = {
   "01_account_registration": "Account Registration & Approval",
-  "02_account_claim": "Account Claim",
-  "03_mealbot": "Mealbot Usage",
-  "04_happy_hour": "Happy Hour Lifecycle",
+  "02_account_claim":        "Account Claim",
+  "03_mealbot":              "Mealbot Usage",
+  "04_happy_hour":           "Happy Hour Lifecycle",
   "05_account_self_service": "Account Self-Service",
-  "06_defunct_account": "Defunct Account (Read-only)",
-  "07_login_rejection": "Login Rejection",
-  "08_public_pages": "Public Pages & Redirects",
-  "09_admin_dashboard": "Admin Dashboard",
-  "10_disaster_recovery": "Disaster Recovery",
-  "11_mobile_views": "Mobile Responsive Views",
-  "12_theme_showcase": "Theme Showcase",
+  "06_defunct_account":      "Defunct Account (Read-only)",
+  "07_login_rejection":      "Login Rejection",
+  "08_public_pages":         "Public Pages & Redirects",
+  "09_admin_dashboard":      "Admin Dashboard",
+  "10_disaster_recovery":    "Disaster Recovery",
+  "11_mobile_views":         "Mobile Responsive Views",
+  "12_theme_showcase":       "Theme Showcase",
 };
 
-async function discoverFlows() {
-  // Fetch the directory listing from the dev server and parse hrefs
-  const resp = await fetch("./");
-  const html = await resp.text();
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, "text/html");
-  const links = Array.from(doc.querySelectorAll("a"));
-  const dirs = links
-    .map(a => a.getAttribute("href"))
-    .filter(h => h && h.endsWith("/") && /^\d{2}_/.test(h))
-    .map(h => h.replace(/\/$/, ""))
-    .sort();
-  const flows = {};
-  for (const dir of dirs) {
-    const r = await fetch(`./${dir}/`);
-    const h = await r.text();
-    const d = parser.parseFromString(h, "text/html");
-    const images = Array.from(d.querySelectorAll("a"))
-      .map(a => a.getAttribute("href"))
-      .filter(f => f && f.endsWith(".png"))
-      .sort();
-    if (images.length > 0) {
-      flows[dir] = {
-        label: FLOW_LABELS[dir] || dir.replace(/_/g, " ").replace(/^\d+\s*/, ""),
-        images,
-      };
-    }
-  }
-  return flows;
+/* ── helpers ───────────────────────────────────────────────────── */
+async function fetchDirLinks(url) {
+  const r = await fetch(url);
+  const html = await r.text();
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  return Array.from(doc.querySelectorAll("a"))
+    .map(a => a.getAttribute("href")).filter(Boolean);
 }
 
+function parseImages(files) {
+  return files.filter(f => f.endsWith(".png")).sort().map(f => ({
+    file: f,
+    bare: f.replace(/^\d+_/, "").replace(/\.png$/, ""),
+    name: f.replace(/^\d+_/, "").replace(/\.png$/, "").replace(/_/g, " "),
+  }));
+}
+
+/* ── discover runs ─────────────────────────────────────────────── */
+async function discoverRuns() {
+  const links = await fetchDirLinks("./");
+  return links
+    .filter(h => h.endsWith("/") && /^\d{8}_\d{6}\/$/.test(h))
+    .map(h => h.replace(/\/$/, ""))
+    .sort()
+    .reverse();  // newest first
+}
+
+/* ── discover flows within a run ───────────────────────────────── */
+async function discoverFlows(runDir) {
+  const links = await fetchDirLinks(`./${runDir}/`);
+  const allDirs = links
+    .filter(h => h.endsWith("/") && /^\d{2}_/.test(h))
+    .map(h => h.replace(/\/$/, ""))
+    .sort();
+
+  const DIR_RE = /^(.+)_t(\d{2})_(.+)$/;
+  const flowMap = new Map();
+
+  for (const d of allDirs) {
+    const m = DIR_RE.exec(d);
+    if (!m) continue;
+    const [, flowName, themeIdxStr, themeName] = m;
+    const themeIdx = parseInt(themeIdxStr, 10);
+    if (!flowMap.has(flowName)) flowMap.set(flowName, { themes: new Map() });
+    flowMap.get(flowName).themes.set(themeIdx, { dir: d, name: themeName.replace(/-/g, " ") });
+  }
+
+  // Global theme list from first flow
+  const themes = [];
+  for (const [, info] of flowMap) {
+    if (info.themes.size > 0) {
+      const sorted = Array.from(info.themes.entries()).sort((a, b) => a[0] - b[0]);
+      for (const [idx, t] of sorted) themes.push({ idx, dir: t.dir, name: t.name });
+      break;
+    }
+  }
+
+  // Build timelines
+  const timelines = [];
+  for (const [flowName, info] of flowMap) {
+    if (info.themes.size === 0) continue;
+    const sortedThemes = Array.from(info.themes.entries()).sort((a, b) => a[0] - b[0]);
+    const firstDir = sortedThemes[0][1].dir;
+    const fl = await fetchDirLinks(`./${runDir}/${firstDir}/`);
+    const images = parseImages(fl);
+    if (images.length === 0) continue;
+
+    const themeDirs = {};
+    for (const [idx, t] of sortedThemes) themeDirs[idx] = t.dir;
+
+    timelines.push({
+      flowName,
+      label: FLOW_LABELS[flowName] || flowName.replace(/_/g, " ").replace(/^\d+\s*/, ""),
+      images,
+      themeDirs,
+    });
+  }
+
+  return { timelines, themes };
+}
+
+/* ── main ──────────────────────────────────────────────────────── */
 async function main() {
-  const DATA = await discoverFlows();
-  const flowKeys = Object.keys(DATA);
-  if (flowKeys.length === 0) {
+  const runs = await discoverRuns();
+
+  if (runs.length === 0) {
     document.getElementById("loading").textContent =
-      "No screenshot directories found. Serve this file from a screenshot output directory.";
+      "No screenshot runs found. Serve this file from the screenshots/ directory.";
+    return;
+  }
+
+  let currentRun = runs[0];
+  let { timelines, themes } = await discoverFlows(currentRun);
+
+  if (timelines.length === 0) {
+    document.getElementById("loading").textContent =
+      "No flow directories found in " + currentRun;
     return;
   }
 
@@ -129,53 +224,139 @@ async function main() {
   document.getElementById("main").style.display = "flex";
   document.getElementById("help").style.display = "block";
 
-  let flowIdx = 0, stepIdx = 0;
-  const flowList = document.getElementById("flow-list");
-  const flowTitle = document.getElementById("flow-title");
-  const stepInfo = document.getElementById("step-info");
-  const img = document.getElementById("img");
-  const dots = document.getElementById("dots");
-  const caption = document.getElementById("caption");
+  let tlIdx = 0;
+  let imgIdx = 0;
+  let themeIdx = 0;
 
-  flowKeys.forEach((key, i) => {
-    const d = document.createElement("div");
-    d.className = "flow-item";
-    d.innerHTML = DATA[key].label + '<span class="count">(' + DATA[key].images.length + ")</span>";
-    d.onclick = () => { flowIdx = i; stepIdx = 0; render(); };
-    flowList.appendChild(d);
-  });
+  const sideScroll = document.getElementById("sidebar-scroll");
+  const tlTitle    = document.getElementById("tl-title");
+  const stepInfo   = document.getElementById("step-info");
+  const themeTag   = document.getElementById("theme-tag");
+  const imgEl      = document.getElementById("img");
+  const dotsEl     = document.getElementById("dots");
+  const captionEl  = document.getElementById("caption");
+
+  let sidebarItems = [];
+
+  function buildSidebar() {
+    sideScroll.innerHTML = "";
+    sidebarItems = [];
+
+    // Run picker
+    const runSection = document.createElement("div");
+    runSection.className = "sb-section";
+    runSection.textContent = "Run";
+    sideScroll.appendChild(runSection);
+
+    const sel = document.createElement("select");
+    sel.id = "run-picker";
+    for (const r of runs) {
+      const opt = document.createElement("option");
+      opt.value = r;
+      // Format: YYYYMMDD_HHMMSS → YYYY-MM-DD HH:MM:SS
+      opt.textContent = r.replace(/(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/, "$1-$2-$3 $4:$5:$6");
+      if (r === currentRun) opt.selected = true;
+      sel.appendChild(opt);
+    }
+    sel.onchange = async () => {
+      currentRun = sel.value;
+      const result = await discoverFlows(currentRun);
+      timelines = result.timelines;
+      themes = result.themes;
+      tlIdx = 0; imgIdx = 0; themeIdx = 0;
+      buildSidebar();
+      render();
+    };
+    sideScroll.appendChild(sel);
+
+    // Timelines header
+    const hdr = document.createElement("div");
+    hdr.className = "sb-section";
+    hdr.textContent = "Timelines";
+    sideScroll.appendChild(hdr);
+
+    // Theme badge
+    if (themes.length > 0) {
+      const badge = document.createElement("div");
+      badge.id = "theme-badge";
+      badge.innerHTML = `<div><div class="lbl">Theme</div><div class="val" id="theme-name">—</div></div><div class="hint">Space</div>`;
+      badge.onclick = () => { themeIdx = (themeIdx + 1) % themes.length; render(); };
+      sideScroll.appendChild(badge);
+    }
+
+    for (let i = 0; i < timelines.length; i++) {
+      const tl = timelines[i];
+      const el = document.createElement("div");
+      el.className = "sb-item";
+      el.innerHTML = `${tl.label} <span class="cnt">${tl.images.length}</span>`;
+      const idx = i;
+      el.onclick = () => { tlIdx = idx; imgIdx = 0; render(); };
+      sideScroll.appendChild(el);
+      sidebarItems.push(el);
+    }
+  }
 
   function render() {
-    const key = flowKeys[flowIdx];
-    const flow = DATA[key];
-    const images = flow.images;
-    stepIdx = Math.max(0, Math.min(stepIdx, images.length - 1));
-    document.querySelectorAll(".flow-item").forEach((el, i) => el.classList.toggle("active", i === flowIdx));
-    const activeEl = document.querySelector(".flow-item.active");
+    if (timelines.length === 0) return;
+    const tl = timelines[tlIdx];
+    imgIdx = Math.max(0, Math.min(imgIdx, tl.images.length - 1));
+    const image = tl.images[imgIdx];
+
+    // Sidebar highlights
+    sidebarItems.forEach((el, i) => el.classList.toggle("active", i === tlIdx));
+    const activeEl = sidebarItems[tlIdx];
     if (activeEl) activeEl.scrollIntoView({ block: "nearest" });
-    flowTitle.textContent = flow.label;
-    stepInfo.textContent = (stepIdx + 1) + " / " + images.length;
-    img.src = key + "/" + images[stepIdx];
-    dots.innerHTML = "";
-    images.forEach((_, i) => {
+
+    // Image path: {runDir}/{themeDir}/{image}
+    const themeKey = themes[themeIdx]?.idx;
+    const dir = tl.themeDirs[themeKey] || Object.values(tl.themeDirs)[0];
+    imgEl.src = `${currentRun}/${dir}/${image.file}`;
+
+    // Top bar
+    tlTitle.textContent = tl.label;
+    stepInfo.textContent = `${imgIdx + 1} / ${tl.images.length}`;
+
+    // Theme badge + tag
+    const themeName = document.getElementById("theme-name");
+    if (themes.length > 0) {
+      if (themeName) themeName.textContent = themes[themeIdx].name;
+      themeTag.textContent = `${themes[themeIdx].name}  (${themeIdx + 1}/${themes.length})`;
+    }
+
+    // Dots
+    dotsEl.innerHTML = "";
+    tl.images.forEach((_, i) => {
       const dot = document.createElement("div");
-      dot.className = "dot" + (i === stepIdx ? " active" : "");
-      dot.onclick = () => { stepIdx = i; render(); };
-      dots.appendChild(dot);
+      dot.className = "dot" + (i === imgIdx ? " active" : "");
+      dot.onclick = () => { imgIdx = i; render(); };
+      dotsEl.appendChild(dot);
     });
-    const name = images[stepIdx].replace(/^\d+_/, "").replace(/\.png$/, "").replace(/_/g, " ");
-    caption.textContent = name;
+
+    captionEl.textContent = image.name;
   }
 
   document.addEventListener("keydown", (e) => {
     switch (e.key) {
-      case "ArrowRight": stepIdx++; render(); e.preventDefault(); break;
-      case "ArrowLeft":  stepIdx--; render(); e.preventDefault(); break;
-      case "ArrowDown":  flowIdx = Math.min(flowIdx + 1, flowKeys.length - 1); stepIdx = 0; render(); e.preventDefault(); break;
-      case "ArrowUp":    flowIdx = Math.max(flowIdx - 1, 0); stepIdx = 0; render(); e.preventDefault(); break;
+      case "ArrowRight":
+        imgIdx++; render(); e.preventDefault(); break;
+      case "ArrowLeft":
+        imgIdx--; render(); e.preventDefault(); break;
+      case "ArrowDown":
+        tlIdx = Math.min(tlIdx + 1, timelines.length - 1);
+        render(); e.preventDefault(); break;
+      case "ArrowUp":
+        tlIdx = Math.max(tlIdx - 1, 0);
+        render(); e.preventDefault(); break;
+      case " ":
+        if (themes.length > 0) {
+          themeIdx = (themeIdx + 1) % themes.length;
+          render();
+        }
+        e.preventDefault(); break;
     }
   });
 
+  buildSidebar();
   render();
 }
 
