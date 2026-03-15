@@ -302,7 +302,7 @@ async function main() {
     imgIdx = Math.max(0, Math.min(imgIdx, tl.images.length - 1));
     const image = tl.images[imgIdx];
 
-    // Sidebar highlights
+    // Sidebar higharachnes
     sidebarItems.forEach((el, i) => el.classList.toggle("active", i === tlIdx));
     const activeEl = sidebarItems[tlIdx];
     if (activeEl) activeEl.scrollIntoView({ block: "nearest" });

@@ -1,0 +1,1551 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   23 UI Themes for Vibe Coded — CSS Zen Garden–inspired
+   Each theme radically transforms layout, typography, shape, texture,
+   decoration, and interaction patterns using ONLY CSS custom properties
+   and structural overrides. Theme 1 ("default") lives in :root in main.css.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 2: "light" — BAUHAUS STUDIO
+   Geometric, primary-color accents, asymmetric grid, left sidebar,
+   thick black borders, Mondrian-inspired card accents
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="light"] {
+  color-scheme: light;
+  --font-body: "DM Sans","Inter",system-ui,sans-serif;
+  --font-heading: "DM Sans","Inter",sans-serif;
+  --font-size-base: 1rem; --line-height: 1.55; --heading-weight: 900;
+  --heading-transform: uppercase; --heading-letter-spacing: 0.04em;
+  --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
+  --spacing-card: 20px; --spacing-page: 28px; --card-gap: 20px;
+  --border-width: 3px;
+  --shadow-card: none; --shadow-button: none; --shadow-input: none;
+  --shadow-sidebar: none; --transition-speed: 0.1s;
+  --bg-body: #f8f6f0; --fg-body: #111111; --bg-sidebar: #ffffff; --border-sidebar: #111111;
+  --fg-brand: #111111; --fg-brand-hover: #d32f2f; --fg-nav: #333; --fg-nav-hover: #111;
+  --bg-nav-hover: rgba(211,47,47,0.06); --bg-nav-active: rgba(211,47,47,0.12);
+  --bg-card: #ffffff; --border-card: #111111;
+  --bg-prominent: #ffffff;
+  --border-prominent: #1565c0; --shadow-prominent: none;
+  --fg-accent: #d32f2f; --fg-accent-alt: #1565c0;
+  --bg-input: #ffffff; --fg-input: #111; --border-input: #111;
+  --bg-button: #111111; --fg-button: #ffffff; --border-button: #111111;
+  --bg-button-hover: #333; --bg-button-active: #000;
+  --bg-thead: #ffd600; --border-table: #111; --table-stripe: rgba(0,0,0,0.03);
+  --bg-status: #e3f2fd; --border-status: #1565c0; --fg-muted: #666;
+  --bg-mobile-header: #ffffff; --bg-overlay: rgba(0,0,0,0.4);
+  --tap-highlight: rgba(211,47,47,0.2); --bg-checkbox-label: rgba(211,47,47,0.04);
+  --bg-checkbox-label-mobile: rgba(248,246,240,0.8); --bg-menu-toggle-hover: rgba(211,47,47,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 3: "solarized-dark" — BLUEPRINT / DRAFTING TABLE
+   Monospace dense layout, grid-paper background, technical drawing feel,
+   hairline borders, no curves, annotation-style labels
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="solarized-dark"] {
+  --font-body: "Source Code Pro","Fira Code",monospace;
+  --font-heading: "Source Code Pro","Fira Code",monospace;
+  --font-size-base: 0.88rem; --line-height: 1.4; --letter-spacing: 0.01em;
+  --heading-weight: 400; --heading-transform: uppercase; --heading-letter-spacing: 0.12em;
+  --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
+  --spacing-card: 10px; --spacing-page: 14px; --card-gap: 8px; --content-max-width: 960px;
+  --border-width: 1px; --border-style: solid;
+  --shadow-card: none; --shadow-button: none; --shadow-input: none; --shadow-sidebar: none;
+  --transition-speed: 0s;
+  --button-weight: 400; --button-transform: uppercase; --button-letter-spacing: 0.06em;
+  --bg-body: #002b36; --fg-body: #839496; --bg-sidebar: #073642; --border-sidebar: #2a5060;
+  --fg-brand: #93a1a1; --fg-brand-hover: #b58900; --fg-nav: #586e75; --fg-nav-hover: #93a1a1;
+  --bg-nav-hover: rgba(181,137,0,0.06); --bg-nav-active: rgba(181,137,0,0.12);
+  --bg-card: #073642; --border-card: #2a5060;
+  --bg-prominent: #073642;
+  --border-prominent: #b58900; --shadow-prominent: none;
+  --fg-accent: #b58900; --fg-accent-alt: #cb4b16;
+  --bg-input: #002b36; --fg-input: #839496; --border-input: #2a5060;
+  --bg-button: transparent; --fg-button: #b58900; --border-button: #b58900;
+  --bg-button-hover: rgba(181,137,0,0.1); --bg-button-active: rgba(181,137,0,0.2);
+  --bg-thead: #073642; --border-table: #2a5060; --table-stripe: rgba(181,137,0,0.03);
+  --bg-status: #073642; --border-status: #b58900; --fg-muted: #586e75;
+  --bg-mobile-header: #073642; --tap-highlight: rgba(181,137,0,0.2);
+  --bg-checkbox-label: rgba(181,137,0,0.04); --bg-checkbox-label-mobile: rgba(7,54,66,0.5);
+  --bg-menu-toggle-hover: rgba(181,137,0,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 4: "solarized-light" — JAPANESE WOODBLOCK / WASHI
+   Clean light aesthetic, generous whitespace, delicate serif type,
+   watercolor-soft borders, floating cards with subtle paper texture,
+   wide reading column, left sidebar
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="solarized-light"] {
+  color-scheme: light;
+  --font-body: "Crimson Text",Georgia,"Noto Serif",serif;
+  --font-heading: "Playfair Display","Crimson Text",Georgia,serif;
+  --font-size-base: 1.05rem; --line-height: 1.75; --heading-weight: 700;
+  --heading-letter-spacing: -0.01em;
+  --radius: 2px; --radius-sm: 1px; --radius-lg: 3px; --radius-input: 2px; --radius-button: 2px;
+  --spacing-card: 28px; --spacing-page: 36px; --card-gap: 24px; --content-max-width: 780px;
+  --border-width: 1px;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.04); --shadow-button: none;
+  --shadow-sidebar: none; --transition-speed: 0.3s;
+  --bg-body: #faf8f2; --fg-body: #4a4a40; --bg-sidebar: #f0ebe0; --border-sidebar: #d8d0c0;
+  --fg-brand: #3a3a30; --fg-brand-hover: #8b6914; --fg-nav: #6a6a5a; --fg-nav-hover: #3a3a30;
+  --bg-nav-hover: rgba(139,105,20,0.05); --bg-nav-active: rgba(139,105,20,0.1);
+  --bg-card: #ffffff; --border-card: #e8e0d0;
+  --bg-prominent: #ffffff;
+  --border-prominent: #c0956a; --shadow-prominent: rgba(139,105,20,0.08);
+  --fg-accent: #8b6914; --fg-accent-alt: #b48a3c;
+  --bg-input: #faf8f2; --fg-input: #4a4a40; --border-input: #d0c8b8;
+  --bg-button: #f0ebe0; --fg-button: #4a4a40; --border-button: #d0c8b8;
+  --bg-button-hover: #e8e0d0; --bg-button-active: #d8d0c0;
+  --bg-thead: transparent; --border-table: #e8e0d0; --table-stripe: rgba(0,0,0,0.015);
+  --bg-status: #f0ebe0; --border-status: #c0956a; --fg-muted: #8a8a7a;
+  --bg-mobile-header: #f0ebe0; --bg-overlay: rgba(0,0,0,0.15);
+  --tap-highlight: rgba(139,105,20,0.15); --bg-checkbox-label: rgba(139,105,20,0.03);
+  --bg-checkbox-label-mobile: rgba(240,235,224,0.7); --bg-menu-toggle-hover: rgba(139,105,20,0.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 5: "nord" — FROSTED GLASS / AURORA BOREALIS
+   Glassmorphism, translucent cards with backdrop blur, floating
+   pill-shaped elements, soft glow effects, dreamy atmosphere
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="nord"] {
+  --font-body: "Inter",system-ui,sans-serif;
+  --font-heading: "Inter",system-ui,sans-serif; --heading-weight: 300;
+  --heading-letter-spacing: 0.08em; --heading-transform: uppercase;
+  --radius: 20px; --radius-sm: 12px; --radius-lg: 28px; --radius-input: 14px; --radius-button: 50px;
+  --spacing-card: 24px; --spacing-page: 28px; --card-gap: 20px;
+  --shadow-card: 0 8px 32px rgba(0,0,0,0.2); --shadow-button: 0 4px 16px rgba(136,192,208,0.15);
+  --shadow-sidebar: -8px 0 32px rgba(0,0,0,0.15); --shadow-input: none;
+  --button-weight: 600; --button-letter-spacing: 0.04em;
+  --transition-speed: 0.35s; --transition-fn: cubic-bezier(0.25,0.8,0.25,1);
+  --bg-body: #242933; --fg-body: #d8dee9;
+  --bg-sidebar: rgba(46,52,64,0.7); --border-sidebar: rgba(76,86,106,0.3);
+  --fg-brand: #eceff4; --fg-brand-hover: #88c0d0; --fg-nav: #8895a7; --fg-nav-hover: #eceff4;
+  --bg-nav-hover: rgba(136,192,208,0.08); --bg-nav-active: rgba(136,192,208,0.16);
+  --bg-card: rgba(59,66,82,0.5); --border-card: rgba(76,86,106,0.25);
+  --bg-prominent: rgba(59,66,82,0.65);
+  --border-prominent: rgba(136,192,208,0.5); --shadow-prominent: rgba(136,192,208,0.15);
+  --fg-accent: #88c0d0; --fg-accent-alt: #81a1c1;
+  --bg-input: rgba(46,52,64,0.4); --fg-input: #d8dee9; --border-input: rgba(76,86,106,0.3);
+  --bg-button: rgba(136,192,208,0.15); --fg-button: #88c0d0; --border-button: rgba(136,192,208,0.3);
+  --bg-button-hover: rgba(136,192,208,0.25); --bg-button-active: rgba(136,192,208,0.1);
+  --bg-thead: rgba(59,66,82,0.6); --border-table: rgba(76,86,106,0.2);
+  --bg-status: rgba(59,66,82,0.6); --border-status: #88c0d0; --fg-muted: #6a7a8c;
+  --bg-mobile-header: rgba(46,52,64,0.9); --tap-highlight: rgba(136,192,208,0.2);
+  --bg-checkbox-label: rgba(136,192,208,0.04); --bg-checkbox-label-mobile: rgba(59,66,82,0.4);
+  --bg-menu-toggle-hover: rgba(136,192,208,0.1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 6: "dracula" — GOTHIC CATHEDRAL
+   Deep purple-black ambience, ornate serif headings, heavy drop shadows,
+   gradient cards that feel like stained glass, thick ornamental borders
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="dracula"] {
+  --font-body: "Lato","Helvetica Neue",system-ui,sans-serif;
+  --font-heading: "Playfair Display","Libre Baskerville",Georgia,serif;
+  --heading-weight: 700; --line-height: 1.6;
+  --radius: 4px; --radius-sm: 2px; --radius-lg: 6px; --radius-input: 4px; --radius-button: 4px;
+  --spacing-card: 24px; --spacing-page: 28px; --card-gap: 20px;
+  --border-width: 1px;
+  --shadow-card: 0 10px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(189,147,249,0.1);
+  --shadow-button: 0 4px 12px rgba(0,0,0,0.3);
+  --shadow-sidebar: -6px 0 24px rgba(0,0,0,0.4);
+  --transition-speed: 0.3s; --transition-fn: cubic-bezier(0.4,0,0.2,1);
+  --bg-body: #1a1826; --fg-body: #e8e4f0; --bg-sidebar: #14121e; --border-sidebar: #2e2940;
+  --fg-brand: #e8e4f0; --fg-brand-hover: #bd93f9; --fg-nav: #6a6480; --fg-nav-hover: #e8e4f0;
+  --bg-nav-hover: rgba(189,147,249,0.06); --bg-nav-active: rgba(189,147,249,0.12);
+  --bg-card: linear-gradient(180deg,#201e30 0%,#1a1826 100%); --border-card: #2e2940;
+  --bg-prominent: linear-gradient(135deg,#2a2640 0%,#1a1826 100%);
+  --border-prominent: #bd93f9; --shadow-prominent: rgba(189,147,249,0.2);
+  --fg-accent: #bd93f9; --fg-accent-alt: #ff79c6;
+  --bg-input: #14121e; --fg-input: #e8e4f0; --border-input: #3a3550;
+  --bg-button: linear-gradient(135deg,#3a3550 0%,#2e2940 100%); --fg-button: #e8e4f0; --border-button: #4a4560;
+  --bg-button-hover: #4a4560; --bg-button-active: #2a2640;
+  --bg-thead: #201e30; --border-table: #2e2940;
+  --bg-status: #201e30; --border-status: #50fa7b; --fg-muted: #6a6480;
+  --bg-mobile-header: #14121e; --tap-highlight: rgba(189,147,249,0.2);
+  --bg-checkbox-label: rgba(189,147,249,0.04); --bg-checkbox-label-mobile: rgba(20,18,30,0.5);
+  --bg-menu-toggle-hover: rgba(189,147,249,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 7: "monokai" — HACKER TERMINAL / IDE
+   Dense code-editor layout, monospace everything, syntax-highlight colors,
+   no radius, minimal spacing, line-number-style borders, cursor blink
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="monokai"] {
+  --font-body: "JetBrains Mono","Fira Code","Cascadia Code",monospace;
+  --font-heading: "JetBrains Mono","Fira Code",monospace;
+  --font-size-base: 0.85rem; --line-height: 1.35; --letter-spacing: 0.02em;
+  --heading-weight: 400; --heading-transform: uppercase; --heading-letter-spacing: 0.1em;
+  --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
+  --spacing-card: 8px; --spacing-page: 10px; --card-gap: 4px; --content-max-width: 900px;
+  --border-width: 1px;
+  --shadow-card: none; --shadow-button: none; --shadow-input: none; --shadow-sidebar: none;
+  --button-weight: 400; --button-transform: uppercase; --button-letter-spacing: 0.08em;
+  --transition-speed: 0s;
+  --bg-body: #272822; --fg-body: #f8f8f2; --bg-sidebar: #1e1f1a; --border-sidebar: #3e3d32;
+  --fg-brand: #a6e22e; --fg-brand-hover: #f92672; --fg-nav: #75715e; --fg-nav-hover: #f8f8f2;
+  --bg-nav-hover: rgba(166,226,46,0.06); --bg-nav-active: rgba(166,226,46,0.12);
+  --bg-card: #1e1f1a; --border-card: #3e3d32;
+  --bg-prominent: #1e1f1a;
+  --border-prominent: #f92672; --shadow-prominent: none;
+  --fg-accent: #a6e22e; --fg-accent-alt: #66d9ef;
+  --bg-input: #272822; --fg-input: #f8f8f2; --border-input: #3e3d32;
+  --bg-button: transparent; --fg-button: #a6e22e; --border-button: #3e3d32;
+  --bg-button-hover: rgba(166,226,46,0.08); --bg-button-active: rgba(166,226,46,0.15);
+  --bg-thead: #1e1f1a; --border-table: #3e3d32; --table-stripe: rgba(166,226,46,0.02);
+  --bg-status: #2a2b24; --border-status: #e6db74; --fg-muted: #75715e;
+  --bg-mobile-header: #1e1f1a; --tap-highlight: rgba(166,226,46,0.2);
+  --bg-checkbox-label: rgba(166,226,46,0.03); --bg-checkbox-label-mobile: rgba(30,31,26,0.5);
+  --bg-menu-toggle-hover: rgba(166,226,46,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 8: "cyberpunk" — NEON DYSTOPIA
+   Glitchy, hostile UI with sharp angles, neon magenta/cyan,
+   clip-path cuts, animated glow borders, aggressive typography
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="cyberpunk"] {
+  --font-body: "Rajdhani","Orbitron","Share Tech Mono",monospace;
+  --font-heading: "Orbitron","Rajdhani",sans-serif;
+  --font-size-base: 0.9rem; --letter-spacing: 0.04em; --line-height: 1.5;
+  --heading-weight: 900; --heading-transform: uppercase; --heading-letter-spacing: 0.2em;
+  --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
+  --spacing-card: 16px; --spacing-page: 20px; --card-gap: 12px;
+  --border-width: 2px;
+  --button-weight: 700; --button-transform: uppercase; --button-letter-spacing: 0.12em;
+  --shadow-card: 0 0 20px rgba(255,0,255,0.15), 0 0 60px rgba(0,255,255,0.05);
+  --shadow-button: 0 0 12px rgba(255,0,255,0.3);
+  --shadow-sidebar: -6px 0 30px rgba(255,0,255,0.2);
+  --transition-speed: 0.08s;
+  --bg-body: #080810; --fg-body: #d0d0ff; --bg-sidebar: #0c0c18; --border-sidebar: #ff00ff;
+  --fg-brand: #ff00ff; --fg-brand-hover: #00ffff; --fg-nav: #6644aa; --fg-nav-hover: #ff00ff;
+  --bg-nav-hover: rgba(255,0,255,0.06); --bg-nav-active: rgba(0,255,255,0.1);
+  --bg-card: #0c0c18; --border-card: rgba(255,0,255,0.3);
+  --bg-prominent: linear-gradient(135deg,#1a0a2e 0%,#080810 100%);
+  --border-prominent: #ff00ff; --shadow-prominent: rgba(255,0,255,0.4);
+  --fg-accent: #00ffff; --fg-accent-alt: #ff00ff;
+  --bg-input: #080810; --fg-input: #d0d0ff; --border-input: rgba(255,0,255,0.5);
+  --bg-button: transparent; --fg-button: #ff00ff; --border-button: #ff00ff;
+  --bg-button-hover: rgba(255,0,255,0.15); --bg-button-active: rgba(255,0,255,0.25);
+  --bg-thead: #0c0c18; --border-table: rgba(255,0,255,0.2);
+  --bg-status: #1a0a2e; --border-status: #00ffff; --fg-muted: #5533aa;
+  --bg-mobile-header: #0c0c18; --tap-highlight: rgba(255,0,255,0.2);
+  --bg-checkbox-label: rgba(255,0,255,0.04); --bg-checkbox-label-mobile: rgba(12,12,24,0.5);
+  --bg-menu-toggle-hover: rgba(0,255,255,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 9: "ocean" — DEEP SEA BIOLUMINESCENCE
+   Dark oceanic depth, glowing accents like deep-sea creatures,
+   undulating organic shapes, extreme pill radius, wavy decorations
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="ocean"] {
+  --font-body: "Nunito","Quicksand",system-ui,sans-serif;
+  --font-heading: "Quicksand","Nunito",sans-serif; --heading-weight: 800;
+  --font-size-base: 1rem; --line-height: 1.65;
+  --radius: 24px; --radius-sm: 12px; --radius-lg: 32px; --radius-input: 16px; --radius-button: 50px;
+  --spacing-card: 24px; --spacing-page: 28px; --card-gap: 20px;
+  --shadow-card: 0 12px 40px rgba(0,20,40,0.5), 0 0 20px rgba(77,208,225,0.05);
+  --shadow-button: 0 4px 16px rgba(0,0,0,0.2);
+  --shadow-sidebar: -8px 0 24px rgba(0,10,20,0.3);
+  --button-weight: 700; --transition-speed: 0.4s; --transition-fn: cubic-bezier(0.25,0.8,0.25,1);
+  --bg-body: #060e18; --fg-body: #b0d4e8; --bg-sidebar: #081420; --border-sidebar: #0e2a3a;
+  --fg-brand: #4dd0e1; --fg-brand-hover: #00bcd4; --fg-nav: #4a8aa0; --fg-nav-hover: #b0d4e8;
+  --bg-nav-hover: rgba(77,208,225,0.06); --bg-nav-active: rgba(77,208,225,0.12);
+  --bg-card: #081420; --border-card: #0e2a3a;
+  --bg-prominent: linear-gradient(180deg,#0c1e30 0%,#060e18 100%);
+  --border-prominent: #00bcd4; --shadow-prominent: rgba(77,208,225,0.2);
+  --fg-accent: #4dd0e1; --fg-accent-alt: #00bcd4;
+  --bg-input: #060e18; --fg-input: #b0d4e8; --border-input: #1a3a4a;
+  --bg-button: #0e2a3a; --fg-button: #4dd0e1; --border-button: transparent;
+  --bg-button-hover: #143a50; --bg-button-active: #081420;
+  --bg-thead: #081420; --border-table: #0e2a3a;
+  --bg-status: #0c1e30; --border-status: #4dd0e1; --fg-muted: #3a6a80;
+  --bg-mobile-header: #081420; --tap-highlight: rgba(77,208,225,0.2);
+  --bg-checkbox-label: rgba(77,208,225,0.03); --bg-checkbox-label-mobile: rgba(8,20,32,0.5);
+  --bg-menu-toggle-hover: rgba(77,208,225,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 10: "forest" — ENCHANTED WOODLAND
+   Organic shapes, earthy tones, leaf-like asymmetric radius,
+   textured cards, serif body, nature-inspired accents
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="forest"] {
+  --font-body: "Crimson Text",Georgia,serif; --font-heading: "Libre Baskerville","Crimson Text",Georgia,serif;
+  --font-size-base: 1.02rem; --heading-weight: 700; --line-height: 1.6;
+  --radius: 8px; --radius-sm: 4px; --radius-lg: 12px; --radius-input: 6px; --radius-button: 6px;
+  --spacing-card: 20px; --spacing-page: 24px; --card-gap: 16px;
+  --border-width: 1px;
+  --shadow-card: 0 4px 16px rgba(0,12,0,0.3); --shadow-button: 0 2px 6px rgba(0,0,0,0.15);
+  --shadow-sidebar: -4px 0 12px rgba(0,10,0,0.2);
+  --table-stripe: rgba(102,187,106,0.04); --transition-speed: 0.25s;
+  --bg-body: #080e08; --fg-body: #b8d8b8; --bg-sidebar: #0e1a0e; --border-sidebar: #1a3a1a;
+  --fg-brand: #81c784; --fg-brand-hover: #4caf50; --fg-nav: #5a8a5a; --fg-nav-hover: #b8d8b8;
+  --bg-nav-hover: rgba(76,175,80,0.06); --bg-nav-active: rgba(76,175,80,0.12);
+  --bg-card: #0e1a0e; --border-card: #1a3a1a;
+  --bg-prominent: linear-gradient(180deg,#132813 0%,#080e08 100%);
+  --border-prominent: #4caf50; --shadow-prominent: rgba(76,175,80,0.15);
+  --fg-accent: #66bb6a; --fg-accent-alt: #a5d6a7;
+  --bg-input: #080e08; --fg-input: #b8d8b8; --border-input: #2a4a2a;
+  --bg-button: #1a3a1a; --fg-button: #b8d8b8; --border-button: #2a5a2a;
+  --bg-button-hover: #2a4a2a; --bg-button-active: #132813;
+  --bg-thead: #0e1a0e; --border-table: #1a3a1a;
+  --bg-status: #132813; --border-status: #66bb6a; --fg-muted: #4a7a4a;
+  --bg-mobile-header: #0e1a0e; --tap-highlight: rgba(76,175,80,0.2);
+  --bg-checkbox-label: rgba(76,175,80,0.04); --bg-checkbox-label-mobile: rgba(14,26,14,0.5);
+  --bg-menu-toggle-hover: rgba(76,175,80,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 11: "sunset" — DESERT MIRAGE
+   Hot gradient backgrounds, wavy silhouettes via border-radius,
+   bold warm typography, sand-textured cards, molten accents
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="sunset"] {
+  --font-body: "Poppins","Nunito",system-ui,sans-serif;
+  --font-heading: "Poppins",sans-serif; --heading-weight: 700;
+  --font-size-base: 1rem; --line-height: 1.6;
+  --radius: 16px; --radius-sm: 8px; --radius-lg: 24px; --radius-input: 12px; --radius-button: 12px;
+  --spacing-card: 22px; --spacing-page: 26px; --card-gap: 18px;
+  --shadow-card: 0 8px 32px rgba(30,10,0,0.5); --shadow-button: 0 4px 12px rgba(0,0,0,0.2);
+  --shadow-sidebar: -6px 0 20px rgba(30,10,0,0.3);
+  --button-weight: 600; --transition-speed: 0.3s;
+  --bg-body: linear-gradient(180deg,#1a0f0a 0%,#0d0806 100%); --fg-body: #f0d8c0;
+  --bg-sidebar: #1a0e08; --border-sidebar: #3a1a0a;
+  --fg-brand: #ffb74d; --fg-brand-hover: #ff7043; --fg-nav: #a07050; --fg-nav-hover: #f0d8c0;
+  --bg-nav-hover: rgba(255,112,67,0.06); --bg-nav-active: rgba(255,112,67,0.12);
+  --bg-card: linear-gradient(180deg,#2a1610 0%,#1a0e08 100%); --border-card: #3a1a0a;
+  --bg-prominent: linear-gradient(135deg,#3a1a0a 0%,#1a0f0a 100%);
+  --border-prominent: #ff7043; --shadow-prominent: rgba(255,112,67,0.25);
+  --fg-accent: #ff7043; --fg-accent-alt: #ffb74d;
+  --bg-input: #1a0f0a; --fg-input: #f0d8c0; --border-input: #5a3018;
+  --bg-button: linear-gradient(135deg,#4a2010 0%,#3a1a0a 100%); --fg-button: #ffcc80; --border-button: transparent;
+  --bg-button-hover: #5a3018; --bg-button-active: #3a1a0a;
+  --bg-thead: #2a1610; --border-table: #3a1a0a;
+  --bg-status: #3a1a0a; --border-status: #ffb74d; --fg-muted: #7a5a3a;
+  --bg-mobile-header: #1a0e08; --tap-highlight: rgba(255,112,67,0.2);
+  --bg-checkbox-label: rgba(255,112,67,0.04); --bg-checkbox-label-mobile: rgba(26,14,8,0.5);
+  --bg-menu-toggle-hover: rgba(255,112,67,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 12: "midnight-purple" — COSMIC NEBULA
+   Ultra-deep space purple, floating elements with glow,
+   gradient text headings, cosmic shimmer effects, generous spacing
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="midnight-purple"] {
+  --font-body: "DM Sans","Inter",system-ui,sans-serif;
+  --font-heading: "DM Sans","Inter",sans-serif; --heading-weight: 700;
+  --font-size-base: 1rem; --line-height: 1.6;
+  --radius: 14px; --radius-sm: 8px; --radius-lg: 20px; --radius-input: 10px; --radius-button: 10px;
+  --spacing-card: 24px; --spacing-page: 30px; --card-gap: 20px;
+  --shadow-card: 0 8px 32px rgba(10,5,20,0.6), 0 0 1px rgba(171,71,188,0.3);
+  --shadow-button: 0 4px 16px rgba(171,71,188,0.15);
+  --shadow-sidebar: -8px 0 32px rgba(10,5,20,0.4);
+  --transition-speed: 0.35s; --transition-fn: cubic-bezier(0.4,0,0.2,1);
+  --bg-body: #0a0514; --fg-body: #d0c0e0; --bg-sidebar: #0e081a; --border-sidebar: #1e1230;
+  --fg-brand: #ce93d8; --fg-brand-hover: #ab47bc; --fg-nav: #7a5a8a; --fg-nav-hover: #ce93d8;
+  --bg-nav-hover: rgba(171,71,188,0.06); --bg-nav-active: rgba(171,71,188,0.12);
+  --bg-card: #0e081a; --border-card: #1e1230;
+  --bg-prominent: linear-gradient(135deg,#1a1030 0%,#0a0514 100%);
+  --border-prominent: #ab47bc; --shadow-prominent: rgba(171,71,188,0.3);
+  --fg-accent: #ce93d8; --fg-accent-alt: #ab47bc;
+  --bg-input: #0a0514; --fg-input: #d0c0e0; --border-input: #2a1a40;
+  --bg-button: #1e1230; --fg-button: #ce93d8; --border-button: #3a2850;
+  --bg-button-hover: #2a1a40; --bg-button-active: #140a24;
+  --bg-thead: #0e081a; --border-table: #1e1230;
+  --bg-status: #1a1030; --border-status: #ce93d8; --fg-muted: #6a4a7a;
+  --bg-mobile-header: #0e081a; --tap-highlight: rgba(171,71,188,0.2);
+  --bg-checkbox-label: rgba(171,71,188,0.04); --bg-checkbox-label-mobile: rgba(14,8,26,0.5);
+  --bg-menu-toggle-hover: rgba(171,71,188,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 13: "cherry-blossom" — SAKURA GARDEN
+   Delicate pink light theme, petal-shaped curves, watercolor-soft
+   shadows, handwritten-feel typography, extreme left sidebar softness
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="cherry-blossom"] {
+  color-scheme: light;
+  --font-body: "Quicksand","Nunito",system-ui,sans-serif;
+  --font-heading: "Quicksand",sans-serif; --heading-weight: 700; --line-height: 1.7;
+  --font-size-base: 1rem;
+  --radius: 24px; --radius-sm: 14px; --radius-lg: 32px; --radius-input: 16px; --radius-button: 50px;
+  --spacing-card: 24px; --spacing-page: 30px; --card-gap: 20px;
+  --shadow-card: 0 6px 24px rgba(233,30,99,0.06); --shadow-button: 0 3px 10px rgba(233,30,99,0.08);
+  --shadow-sidebar: -2px 0 12px rgba(0,0,0,0.03);
+  --button-weight: 600; --transition-speed: 0.35s;
+  --table-stripe: rgba(233,30,99,0.02);
+  --bg-body: #fef5f8; --fg-body: #4a2535; --bg-sidebar: #fce8ef; --border-sidebar: #f4c2d0;
+  --fg-brand: #880e4f; --fg-brand-hover: #c2185b; --fg-nav: #9a4a60; --fg-nav-hover: #880e4f;
+  --bg-nav-hover: rgba(194,24,91,0.04); --bg-nav-active: rgba(194,24,91,0.08);
+  --bg-card: #ffffff; --border-card: #f4c2d0;
+  --bg-prominent: linear-gradient(135deg,#fce8ef 0%,#fff5f8 100%);
+  --border-prominent: #e91e63; --shadow-prominent: rgba(233,30,99,0.1);
+  --fg-accent: #c2185b; --fg-accent-alt: #e91e63;
+  --bg-input: #ffffff; --fg-input: #4a2535; --border-input: #f0b0c0;
+  --bg-button: #fce8ef; --fg-button: #880e4f; --border-button: transparent;
+  --bg-button-hover: #f8bbd0; --bg-button-active: #f48fb1;
+  --bg-thead: #fef5f8; --border-table: #f4c2d0;
+  --bg-status: #fce8ef; --border-status: #e91e63; --fg-muted: #ad6a7a;
+  --bg-mobile-header: #fce8ef; --bg-overlay: rgba(0,0,0,0.15);
+  --tap-highlight: rgba(233,30,99,0.15); --bg-checkbox-label: rgba(233,30,99,0.03);
+  --bg-checkbox-label-mobile: rgba(252,232,239,0.7); --bg-menu-toggle-hover: rgba(233,30,99,0.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 14: "retro-terminal" — MAINFRAME CRT
+   Scanline overlay, phosphor-green-on-black, blinking cursor,
+   dashed borders like teletype, zero curves, compact dense layout
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="retro-terminal"] {
+  --font-body: "Share Tech Mono","Courier New","Lucida Console",monospace;
+  --font-heading: "Share Tech Mono","Courier New",monospace;
+  --font-size-base: 0.88rem; --line-height: 1.4; --letter-spacing: 0.03em;
+  --heading-weight: 400; --heading-transform: uppercase; --heading-letter-spacing: 0.15em;
+  --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
+  --spacing-card: 8px; --spacing-page: 10px; --card-gap: 4px; --content-max-width: 860px;
+  --border-style: dashed; --border-width: 1px;
+  --button-weight: 400; --button-transform: uppercase; --button-letter-spacing: 0.1em;
+  --shadow-card: none; --shadow-button: none; --shadow-input: none; --shadow-sidebar: none;
+  --transition-speed: 0s;
+  --bg-body: #000000; --fg-body: #00ff00; --bg-sidebar: #000800; --border-sidebar: #003300;
+  --fg-brand: #00ff00; --fg-brand-hover: #00cc00; --fg-nav: #006600; --fg-nav-hover: #00ff00;
+  --bg-nav-hover: rgba(0,255,0,0.04); --bg-nav-active: rgba(0,255,0,0.08);
+  --bg-card: #000800; --border-card: #003300;
+  --bg-prominent: #000800;
+  --border-prominent: #00ff00; --shadow-prominent: none;
+  --fg-accent: #00ff00; --fg-accent-alt: #00cc00;
+  --bg-input: #000000; --fg-input: #00ff00; --border-input: #003300;
+  --bg-button: transparent; --fg-button: #00ff00; --border-button: #00ff00;
+  --bg-button-hover: rgba(0,255,0,0.06); --bg-button-active: rgba(0,255,0,0.12);
+  --bg-thead: #000800; --border-table: #003300;
+  --bg-status: #001a00; --border-status: #00ff00; --fg-muted: #005500;
+  --bg-mobile-header: #000800; --tap-highlight: rgba(0,255,0,0.15);
+  --bg-checkbox-label: rgba(0,255,0,0.02); --bg-checkbox-label-mobile: rgba(0,8,0,0.5);
+  --bg-menu-toggle-hover: rgba(0,255,0,0.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 15: "high-contrast" — BRUTALIST ACCESSIBILITY
+   Maximum contrast, thick borders, oversized text, no decorations,
+   no shadows, no transitions, bold everything, underlined headings
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="high-contrast"] {
+  --font-body: "Atkinson Hyperlegible",Verdana,system-ui,sans-serif;
+  --font-heading: "Atkinson Hyperlegible",Verdana,sans-serif;
+  --font-size-base: 1.1rem; --line-height: 1.65;
+  --heading-weight: 900; --heading-transform: none; --heading-letter-spacing: 0;
+  --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
+  --spacing-card: 16px; --spacing-page: 20px; --card-gap: 16px;
+  --border-width: 4px; --button-weight: 900;
+  --shadow-card: none; --shadow-button: none; --shadow-input: none;
+  --shadow-sidebar: none; --transition-speed: 0s;
+  --bg-body: #000000; --fg-body: #ffffff; --bg-sidebar: #000000; --border-sidebar: #ffffff;
+  --fg-brand: #ffffff; --fg-brand-hover: #ffff00; --fg-nav: #ffffff; --fg-nav-hover: #ffff00;
+  --bg-nav-hover: rgba(255,255,0,0.1); --bg-nav-active: rgba(255,255,0,0.2);
+  --bg-card: #000000; --border-card: #ffffff;
+  --bg-prominent: #000000;
+  --border-prominent: #ffff00; --shadow-prominent: none;
+  --fg-accent: #ffff00; --fg-accent-alt: #00ffff;
+  --bg-input: #000000; --fg-input: #ffffff; --border-input: #ffffff;
+  --bg-button: #ffffff; --fg-button: #000000; --border-button: #ffffff;
+  --bg-button-hover: #ffff00; --bg-button-active: #cccc00;
+  --bg-thead: #000000; --border-table: #ffffff;
+  --bg-status: #000000; --border-status: #ffff00; --fg-muted: #cccccc;
+  --bg-mobile-header: #000000; --tap-highlight: rgba(255,255,0,0.2);
+  --bg-checkbox-label: rgba(255,255,0,0.06); --bg-checkbox-label-mobile: rgba(0,0,0,0.5);
+  --bg-menu-toggle-hover: rgba(255,255,0,0.1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 16: "warm-earth" — ARTISAN POTTERY
+   Handcrafted feel, terracotta + clay tones, textured borders,
+   double-line headings, inset card shadows, serif everything
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="warm-earth"] {
+  --font-body: "Merriweather",Georgia,serif; --font-heading: "Merriweather",Georgia,serif;
+  --font-size-base: 0.95rem; --heading-weight: 700; --line-height: 1.6;
+  --radius: 6px; --radius-sm: 3px; --radius-lg: 8px; --radius-input: 4px; --radius-button: 4px;
+  --spacing-card: 20px; --spacing-page: 24px; --card-gap: 16px;
+  --border-width: 2px;
+  --shadow-card: inset 0 2px 6px rgba(0,0,0,0.2), 0 4px 12px rgba(20,14,10,0.3);
+  --shadow-button: 0 2px 4px rgba(0,0,0,0.15);
+  --shadow-sidebar: -4px 0 12px rgba(20,14,10,0.2);
+  --table-stripe: rgba(212,163,115,0.05); --transition-speed: 0.2s;
+  --bg-body: #14100c; --fg-body: #e0d0b8; --bg-sidebar: #1e1610; --border-sidebar: #3a2e20;
+  --fg-brand: #d4a373; --fg-brand-hover: #c8853a; --fg-nav: #8a7460; --fg-nav-hover: #d4a373;
+  --bg-nav-hover: rgba(200,133,58,0.06); --bg-nav-active: rgba(200,133,58,0.12);
+  --bg-card: #1e1610; --border-card: #3a2e20;
+  --bg-prominent: linear-gradient(180deg,#2a2018 0%,#14100c 100%);
+  --border-prominent: #c8853a; --shadow-prominent: rgba(200,133,58,0.15);
+  --fg-accent: #c8853a; --fg-accent-alt: #d4a373;
+  --bg-input: #14100c; --fg-input: #e0d0b8; --border-input: #4a3a28;
+  --bg-button: #3a2e20; --fg-button: #e0d0b8; --border-button: #5a4a34;
+  --bg-button-hover: #4a3a28; --bg-button-active: #2a2018;
+  --bg-thead: #1e1610; --border-table: #3a2e20;
+  --bg-status: #2a2018; --border-status: #c8853a; --fg-muted: #7a6a5a;
+  --bg-mobile-header: #1e1610; --tap-highlight: rgba(200,133,58,0.2);
+  --bg-checkbox-label: rgba(200,133,58,0.04); --bg-checkbox-label-mobile: rgba(30,22,16,0.5);
+  --bg-menu-toggle-hover: rgba(200,133,58,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 17: "arctic" — SCANDINAVIAN MINIMALISM
+   Ultra-clean light theme, almost no borders, thin-weight type,
+   generous whitespace, left sidebar, tiny uppercase labels
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="arctic"] {
+  color-scheme: light;
+  --font-body: "Roboto","Helvetica Neue",system-ui,sans-serif;
+  --font-heading: "Roboto",sans-serif;
+  --font-size-base: 0.95rem; --heading-weight: 300; --heading-letter-spacing: 0.06em;
+  --heading-transform: uppercase; --line-height: 1.55;
+  --radius: 4px; --radius-sm: 2px; --radius-lg: 6px; --radius-input: 3px; --radius-button: 3px;
+  --spacing-card: 20px; --spacing-page: 32px; --card-gap: 16px;
+  --border-width: 1px;
+  --shadow-card: none; --shadow-button: none; --shadow-input: none; --shadow-sidebar: none;
+  --button-weight: 400; --button-transform: uppercase; --button-letter-spacing: 0.06em;
+  --table-stripe: rgba(0,0,0,0.015); --transition-speed: 0.2s;
+  --bg-body: #f2f5f8; --fg-body: #2a3a4a; --bg-sidebar: #e8edf2; --border-sidebar: #d0d8e0;
+  --fg-brand: #1a2a3a; --fg-brand-hover: #0277bd; --fg-nav: #5a6a7a; --fg-nav-hover: #1a2a3a;
+  --bg-nav-hover: rgba(2,119,189,0.04); --bg-nav-active: rgba(2,119,189,0.08);
+  --bg-card: #ffffff; --border-card: #e0e6ec;
+  --bg-prominent: #ffffff;
+  --border-prominent: #0277bd; --shadow-prominent: rgba(2,119,189,0.08);
+  --fg-accent: #0277bd; --fg-accent-alt: #0288d1;
+  --bg-input: #ffffff; --fg-input: #2a3a4a; --border-input: #d0d8e0;
+  --bg-button: #e8edf2; --fg-button: #2a3a4a; --border-button: #d0d8e0;
+  --bg-button-hover: #d0d8e0; --bg-button-active: #c0c8d0;
+  --bg-thead: transparent; --border-table: #e0e6ec;
+  --bg-status: #e8edf2; --border-status: #0277bd; --fg-muted: #8a9aaa;
+  --bg-mobile-header: #e8edf2; --bg-overlay: rgba(0,0,0,0.15);
+  --tap-highlight: rgba(2,119,189,0.15); --bg-checkbox-label: rgba(2,119,189,0.03);
+  --bg-checkbox-label-mobile: rgba(232,237,242,0.7); --bg-menu-toggle-hover: rgba(2,119,189,0.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 18: "neon" — 8-BIT ARCADE
+   Pixel font, zero curves, thick neon borders, scanline feel,
+   outlined buttons, glitch text-shadow, retro game UI
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="neon"] {
+  --font-body: "Press Start 2P","Share Tech Mono",monospace;
+  --font-heading: "Press Start 2P",monospace;
+  --font-size-base: 0.72rem; --line-height: 2; --letter-spacing: 0.03em;
+  --heading-weight: 400; --heading-transform: uppercase; --heading-letter-spacing: 0.06em;
+  --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
+  --spacing-card: 16px; --spacing-page: 20px; --card-gap: 12px;
+  --border-width: 3px;
+  --button-transform: uppercase; --button-letter-spacing: 0.06em; --button-weight: 400;
+  --shadow-card: 4px 4px 0 rgba(57,255,20,0.2);
+  --shadow-button: 3px 3px 0 rgba(57,255,20,0.3);
+  --shadow-sidebar: none; --transition-speed: 0s;
+  --bg-body: #0a0a0a; --fg-body: #e0e0e0; --bg-sidebar: #050505; --border-sidebar: #39ff14;
+  --fg-brand: #39ff14; --fg-brand-hover: #ff073a; --fg-nav: #666; --fg-nav-hover: #39ff14;
+  --bg-nav-hover: rgba(57,255,20,0.04); --bg-nav-active: rgba(57,255,20,0.08);
+  --bg-card: #0f0f0f; --border-card: #39ff14;
+  --bg-prominent: #0f0f0f;
+  --border-prominent: #ff073a; --shadow-prominent: none;
+  --fg-accent: #39ff14; --fg-accent-alt: #ff073a;
+  --bg-input: #0a0a0a; --fg-input: #e0e0e0; --border-input: #39ff14;
+  --bg-button: transparent; --fg-button: #39ff14; --border-button: #39ff14;
+  --bg-button-hover: rgba(57,255,20,0.1); --bg-button-active: rgba(57,255,20,0.2);
+  --bg-thead: #050505; --border-table: #39ff14;
+  --bg-status: #0f0f0f; --border-status: #ff073a; --fg-muted: #444;
+  --bg-mobile-header: #050505; --tap-highlight: rgba(57,255,20,0.15);
+  --bg-checkbox-label: rgba(57,255,20,0.02); --bg-checkbox-label-mobile: rgba(10,10,10,0.5);
+  --bg-menu-toggle-hover: rgba(255,7,58,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 19: "paper" — BROADSHEET NEWSPAPER
+   Column-width layout, drop-cap typography, serif everything,
+   rule lines between sections, masthead-style heading, left sidebar
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="paper"] {
+  color-scheme: light;
+  --font-body: Georgia,"Times New Roman","Noto Serif",serif;
+  --font-heading: "Playfair Display",Georgia,serif;
+  --font-size-base: 1.05rem; --line-height: 1.75; --heading-weight: 700;
+  --heading-letter-spacing: -0.02em;
+  --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
+  --spacing-card: 24px; --spacing-page: 36px; --card-gap: 24px; --content-max-width: 740px;
+  --border-width: 1px;
+  --shadow-card: none; --shadow-button: none; --shadow-input: none; --shadow-sidebar: none;
+  --table-stripe: rgba(0,0,0,0.02); --transition-speed: 0.15s;
+  --bg-body: #f5f0e6; --fg-body: #2a2520; --bg-sidebar: #ede5d8; --border-sidebar: #c8bca8;
+  --fg-brand: #2a2520; --fg-brand-hover: #8b4513; --fg-nav: #5a5040; --fg-nav-hover: #2a2520;
+  --bg-nav-hover: rgba(139,69,19,0.04); --bg-nav-active: rgba(139,69,19,0.08);
+  --bg-card: #faf5ec; --border-card: #c8bca8;
+  --bg-prominent: #faf5ec;
+  --border-prominent: #8b4513; --shadow-prominent: none;
+  --fg-accent: #8b4513; --fg-accent-alt: #a0522d;
+  --bg-input: #faf5ec; --fg-input: #2a2520; --border-input: #b8ac98;
+  --bg-button: #ede5d8; --fg-button: #2a2520; --border-button: #b8ac98;
+  --bg-button-hover: #ddd5c8; --bg-button-active: #c8c0b0;
+  --bg-thead: transparent; --border-table: #c8bca8;
+  --bg-status: #ede5d8; --border-status: #8b4513; --fg-muted: #7a7060;
+  --bg-mobile-header: #ede5d8; --bg-overlay: rgba(0,0,0,0.2);
+  --tap-highlight: rgba(139,69,19,0.15); --bg-checkbox-label: rgba(139,69,19,0.03);
+  --bg-checkbox-label-mobile: rgba(237,229,216,0.7); --bg-menu-toggle-hover: rgba(139,69,19,0.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 20: "slate" — COMMAND CENTER / DASHBOARD
+   Professional system-UI, medium density, subtle card elevation,
+   data-dashboard feel, compact tables, focus-ring interactions
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="slate"] {
+  --font-body: system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-heading: system-ui,-apple-system,sans-serif; --heading-weight: 600;
+  --font-size-base: 0.93rem; --line-height: 1.5;
+  --radius: 8px; --radius-sm: 4px; --radius-lg: 10px; --radius-input: 6px; --radius-button: 6px;
+  --spacing-card: 16px; --spacing-page: 20px; --card-gap: 12px;
+  --border-width: 1px;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-button: 0 1px 2px rgba(0,0,0,0.08);
+  --shadow-sidebar: -2px 0 8px rgba(0,0,0,0.1);
+  --table-stripe: rgba(116,185,255,0.03); --transition-speed: 0.15s;
+  --bg-body: #1a2030; --fg-body: #c8d4e0; --bg-sidebar: #141a28; --border-sidebar: #2a3648;
+  --fg-brand: #e0e8f0; --fg-brand-hover: #74b9ff; --fg-nav: #6a7a90; --fg-nav-hover: #c8d4e0;
+  --bg-nav-hover: rgba(116,185,255,0.06); --bg-nav-active: rgba(116,185,255,0.12);
+  --bg-card: #1e2838; --border-card: #2a3648;
+  --bg-prominent: linear-gradient(180deg,#222e40 0%,#1a2030 100%);
+  --border-prominent: #74b9ff; --shadow-prominent: rgba(116,185,255,0.15);
+  --fg-accent: #74b9ff; --fg-accent-alt: #a29bfe;
+  --bg-input: #141a28; --fg-input: #c8d4e0; --border-input: #3a4a60;
+  --bg-button: #2a3648; --fg-button: #e0e8f0; --border-button: #3a4a60;
+  --bg-button-hover: #3a4a60; --bg-button-active: #222e40;
+  --bg-thead: #1e2838; --border-table: #2a3648;
+  --bg-status: #222e40; --border-status: #74b9ff; --fg-muted: #5a6a80;
+  --bg-mobile-header: #141a28; --tap-highlight: rgba(116,185,255,0.2);
+  --bg-checkbox-label: rgba(116,185,255,0.04); --bg-checkbox-label-mobile: rgba(20,26,40,0.5);
+  --bg-menu-toggle-hover: rgba(116,185,255,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 21: "rose-gold" — ART DECO LUXURY
+   Thin-weight uppercase type, metallic accents, outlined buttons
+   that fill on hover, borderless cards with bottom rules, geometric
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="rose-gold"] {
+  --font-body: "Lato","Helvetica Neue",system-ui,sans-serif;
+  --font-heading: "Lato",sans-serif;
+  --font-size-base: 0.95rem; --line-height: 1.55;
+  --heading-weight: 200; --heading-letter-spacing: 0.1em; --heading-transform: uppercase;
+  --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
+  --spacing-card: 24px; --spacing-page: 28px; --card-gap: 20px;
+  --border-width: 1px;
+  --shadow-card: none; --shadow-button: none; --shadow-input: none; --shadow-sidebar: none;
+  --button-weight: 300; --button-letter-spacing: 0.1em; --button-transform: uppercase;
+  --transition-speed: 0.3s;
+  --bg-body: #14100e; --fg-body: #e8d8d0; --bg-sidebar: #1a1410; --border-sidebar: #3a2820;
+  --fg-brand: #d4a07a; --fg-brand-hover: #c08050; --fg-nav: #8a6a5a; --fg-nav-hover: #d4a07a;
+  --bg-nav-hover: rgba(192,128,80,0.05); --bg-nav-active: rgba(192,128,80,0.1);
+  --bg-card: #14100e; --border-card: #3a2820;
+  --bg-prominent: #14100e;
+  --border-prominent: #c08050; --shadow-prominent: none;
+  --fg-accent: #c08050; --fg-accent-alt: #d4a07a;
+  --bg-input: #14100e; --fg-input: #e8d8d0; --border-input: #4a3828;
+  --bg-button: transparent; --fg-button: #d4a07a; --border-button: #d4a07a;
+  --bg-button-hover: #d4a07a; --bg-button-active: #c08050;
+  --bg-thead: #14100e; --border-table: #3a2820;
+  --bg-status: #1e1610; --border-status: #c08050; --fg-muted: #7a6050;
+  --bg-mobile-header: #1a1410; --tap-highlight: rgba(192,128,80,0.2);
+  --bg-checkbox-label: rgba(192,128,80,0.04); --bg-checkbox-label-mobile: rgba(26,20,16,0.5);
+  --bg-menu-toggle-hover: rgba(192,128,80,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 22: "emerald" — JEWEL BOX
+   Rich jewel tones, gold + emerald, serif headings with gold accent bar,
+   thick header borders, card hover reveals, gemstone-like depth
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="emerald"] {
+  --font-body: "Source Sans 3","Fira Sans",system-ui,sans-serif;
+  --font-heading: "Libre Baskerville","Crimson Text",Georgia,serif;
+  --font-size-base: 0.95rem; --heading-weight: 700; --line-height: 1.55;
+  --radius: 4px; --radius-sm: 2px; --radius-lg: 6px; --radius-input: 3px; --radius-button: 3px;
+  --spacing-card: 20px; --spacing-page: 24px; --card-gap: 16px;
+  --border-width: 2px;
+  --shadow-card: 0 6px 24px rgba(0,20,10,0.5); --shadow-button: 0 2px 8px rgba(0,0,0,0.15);
+  --shadow-sidebar: -4px 0 16px rgba(0,15,5,0.3);
+  --table-stripe: rgba(80,200,120,0.03); --transition-speed: 0.25s;
+  --bg-body: #060e08; --fg-body: #c0e0c8; --bg-sidebar: #0a1a10; --border-sidebar: #143020;
+  --fg-brand: #50c878; --fg-brand-hover: #ffd700; --fg-nav: #4a8a5a; --fg-nav-hover: #50c878;
+  --bg-nav-hover: rgba(80,200,120,0.06); --bg-nav-active: rgba(80,200,120,0.12);
+  --bg-card: #0a1a10; --border-card: #143020;
+  --bg-prominent: linear-gradient(135deg,#143020 0%,#060e08 100%);
+  --border-prominent: #ffd700; --shadow-prominent: rgba(255,215,0,0.15);
+  --fg-accent: #50c878; --fg-accent-alt: #ffd700;
+  --bg-input: #060e08; --fg-input: #c0e0c8; --border-input: #1e4030;
+  --bg-button: #143020; --fg-button: #c0e0c8; --border-button: #1e5030;
+  --bg-button-hover: #1e4030; --bg-button-active: #0a1a10;
+  --bg-thead: #0a1a10; --border-table: #143020;
+  --bg-status: #143020; --border-status: #50c878; --fg-muted: #3a7a4a;
+  --bg-mobile-header: #0a1a10; --tap-highlight: rgba(80,200,120,0.2);
+  --bg-checkbox-label: rgba(80,200,120,0.04); --bg-checkbox-label-mobile: rgba(10,26,16,0.5);
+  --bg-menu-toggle-hover: rgba(80,200,120,0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Theme 23: "coffee" — COZY CAFÉ
+   Warm brown tones, rounded corners, comfortable spacing,
+   soft inset inputs, nav pills, decorative underline headings
+   ═══════════════════════════════════════════════════════════════════════ */
+[data-theme="coffee"] {
+  --font-body: "Cabin","Nunito",system-ui,sans-serif;
+  --font-heading: "Cabin",sans-serif; --heading-weight: 700; --line-height: 1.6;
+  --font-size-base: 1rem;
+  --radius: 12px; --radius-sm: 6px; --radius-lg: 16px; --radius-input: 8px; --radius-button: 8px;
+  --spacing-card: 20px; --spacing-page: 24px; --card-gap: 16px;
+  --border-width: 1px;
+  --shadow-card: 0 4px 16px rgba(20,14,8,0.3); --shadow-button: 0 2px 6px rgba(0,0,0,0.1);
+  --shadow-sidebar: -4px 0 12px rgba(20,14,8,0.2);
+  --table-stripe: rgba(180,140,80,0.04); --transition-speed: 0.25s;
+  --bg-body: #14100a; --fg-body: #e0d4c0; --bg-sidebar: #1e1810; --border-sidebar: #342818;
+  --fg-brand: #c49a6c; --fg-brand-hover: #8b6914; --fg-nav: #8a7458; --fg-nav-hover: #c49a6c;
+  --bg-nav-hover: rgba(139,105,20,0.06); --bg-nav-active: rgba(139,105,20,0.12);
+  --bg-card: #1e1810; --border-card: #342818;
+  --bg-prominent: linear-gradient(180deg,#2a2014 0%,#14100a 100%);
+  --border-prominent: #8b6914; --shadow-prominent: rgba(139,105,20,0.15);
+  --fg-accent: #c49a6c; --fg-accent-alt: #8b6914;
+  --bg-input: #14100a; --fg-input: #e0d4c0; --border-input: #443828;
+  --bg-button: #342818; --fg-button: #e0d4c0; --border-button: #4a3a24;
+  --bg-button-hover: #443828; --bg-button-active: #2a2014;
+  --bg-thead: #1e1810; --border-table: #342818;
+  --bg-status: #2a2014; --border-status: #c49a6c; --fg-muted: #7a6a50;
+  --bg-mobile-header: #1e1810; --tap-highlight: rgba(139,105,20,0.2);
+  --bg-checkbox-label: rgba(139,105,20,0.04); --bg-checkbox-label-mobile: rgba(30,24,16,0.5);
+  --bg-menu-toggle-hover: rgba(139,105,20,0.08);
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   STRUCTURAL CSS — Per-theme layout, decoration, shape, animation
+   These go far beyond custom-property swaps. Each theme reshapes the
+   page fundamentally — different sidebar positions, card geometries,
+   heading treatments, button behaviours, and interaction patterns.
+   Inspired by CSS Zen Garden: same HTML, radically different design.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+
+/* ── THEME 2: BAUHAUS STUDIO ──────────────────────────────────────────
+   Left sidebar, Mondrian color-block cards, thick black borders,
+   yellow table headers, geometric red accent bars on headings
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="light"] .sidebar {
+  right: auto; left: 0;
+  border-left: none; border-right: 4px solid #111;
+}
+[data-theme="light"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
+[data-theme="light"] .sidebar-nav a {
+  border-right: none; border-left: 4px solid transparent;
+  text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; font-size: 0.85em;
+}
+[data-theme="light"] .sidebar-nav a:hover { border-left-color: #d32f2f; }
+[data-theme="light"] h2 {
+  position: relative; padding-left: 16px; margin-bottom: 16px;
+}
+[data-theme="light"] h2::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 6px; background: #d32f2f;
+}
+[data-theme="light"] .card {
+  border-width: 3px; border-color: #111;
+  transition: transform 0.1s;
+}
+[data-theme="light"] .card:hover { transform: translateX(4px); }
+[data-theme="light"] .card:nth-child(3n+1) { border-top: 6px solid #d32f2f; }
+[data-theme="light"] .card:nth-child(3n+2) { border-top: 6px solid #1565c0; }
+[data-theme="light"] .card:nth-child(3n) { border-top: 6px solid #ffd600; }
+[data-theme="light"] thead th { background: #ffd600; color: #111; font-weight: 900; }
+[data-theme="light"] .prominent-card {
+  border: 4px solid #1565c0; background: #ffffff;
+}
+[data-theme="light"] button:not(.menu-toggle) { font-weight: 900; letter-spacing: 0.04em; }
+@media (max-width: 768px) {
+  [data-theme="light"] .sidebar { right: 0; left: auto; border-right: none; border-left: 4px solid #111; }
+  [data-theme="light"] .main-wrapper { margin-left: 0; }
+}
+
+/* ── THEME 3: BLUEPRINT / DRAFTING TABLE ──────────────────────────────
+   Grid-paper background, technical annotation style, coordinate markers,
+   open outlined buttons, blueprint-cyan on dark blue
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="solarized-dark"] .page::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    linear-gradient(rgba(42,80,96,0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42,80,96,0.12) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+[data-theme="solarized-dark"] .card {
+  border: 1px solid #2a5060; border-radius: 0;
+  position: relative;
+}
+[data-theme="solarized-dark"] .card::before {
+  content: "┌"; position: absolute; top: -2px; left: 4px;
+  font-size: 0.7em; color: var(--fg-accent); opacity: 0.5;
+}
+[data-theme="solarized-dark"] h2 {
+  color: var(--fg-accent); font-size: 0.85em;
+  border-bottom: 1px solid #2a5060; padding-bottom: 4px;
+}
+[data-theme="solarized-dark"] button:not(.menu-toggle) {
+  background: transparent; border: 1px solid var(--fg-accent);
+}
+[data-theme="solarized-dark"] button:not(.menu-toggle):hover {
+  background: rgba(181,137,0,0.1);
+}
+[data-theme="solarized-dark"] .sidebar-nav a {
+  font-size: 0.82em; letter-spacing: 0.08em; text-transform: uppercase;
+}
+[data-theme="solarized-dark"] thead th {
+  font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.1em;
+}
+
+/* ── THEME 4: JAPANESE WOODBLOCK / WASHI ──────────────────────────────
+   Left sidebar, generous whitespace, calligraphic italic headings,
+   bottom-border-only inputs, floating cards with paper-edge feel
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="solarized-light"] .sidebar {
+  right: auto; left: 0;
+  border-left: none; border-right: 1px solid var(--border-sidebar);
+}
+[data-theme="solarized-light"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
+[data-theme="solarized-light"] .sidebar-nav a {
+  border-right: none; border-left: 2px solid transparent;
+  font-style: italic;
+}
+[data-theme="solarized-light"] .sidebar-nav a:hover { border-left-color: var(--fg-accent); }
+[data-theme="solarized-light"] h2 {
+  font-style: italic; font-size: 1.6em; margin-bottom: 20px;
+  border-bottom: none; position: relative; padding-bottom: 12px;
+}
+[data-theme="solarized-light"] h2::after {
+  content: ""; position: absolute; bottom: 0; left: 0;
+  width: 60px; height: 2px; background: var(--fg-accent);
+}
+[data-theme="solarized-light"] .card {
+  border: none; border-bottom: 1px solid var(--border-card);
+  border-radius: 0; box-shadow: none; padding: 28px 0;
+}
+[data-theme="solarized-light"] input:not([type="checkbox"]),
+[data-theme="solarized-light"] select {
+  border-top: none; border-left: none; border-right: none;
+  border-radius: 0; background: transparent;
+  border-bottom: 1px solid var(--border-input);
+}
+[data-theme="solarized-light"] input:focus,
+[data-theme="solarized-light"] select:focus { border-bottom-color: var(--fg-accent); outline: none; }
+[data-theme="solarized-light"] .prominent-card {
+  border: none; border-left: 3px solid var(--border-prominent);
+  border-radius: 0; padding-left: 28px;
+}
+@media (max-width: 768px) {
+  [data-theme="solarized-light"] .sidebar { right: 0; left: auto; border-right: none; border-left: 1px solid var(--border-sidebar); }
+  [data-theme="solarized-light"] .main-wrapper { margin-left: 0; }
+}
+
+/* ── THEME 5: FROSTED GLASS / AURORA ──────────────────────────────────
+   Backdrop-blur cards, floating pill buttons with glow, gradient body,
+   ethereal heading style, nav items spaced as floating pills
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="nord"] body {
+  background: linear-gradient(160deg, #242933 0%, #1a2030 40%, #2e3440 100%);
+}
+[data-theme="nord"] .card {
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(136,192,208,0.15);
+}
+[data-theme="nord"] .card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.3), 0 0 20px rgba(136,192,208,0.08);
+}
+[data-theme="nord"] .sidebar {
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+}
+[data-theme="nord"] .sidebar-nav a {
+  margin: 3px 10px; border-radius: 12px; border-right: none;
+  text-align: center; font-size: 0.9em;
+}
+[data-theme="nord"] .sidebar-nav a:hover { background: rgba(136,192,208,0.12); }
+[data-theme="nord"] h2 {
+  font-weight: 300; letter-spacing: 0.1em; text-transform: uppercase;
+}
+[data-theme="nord"] button:not(.menu-toggle) {
+  border: 1px solid rgba(136,192,208,0.3); padding: 10px 28px;
+}
+[data-theme="nord"] button:not(.menu-toggle):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(136,192,208,0.2);
+}
+[data-theme="nord"] .prominent-card {
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(136,192,208,0.3);
+}
+
+/* ── THEME 6: GOTHIC CATHEDRAL ────────────────────────────────────────
+   Ornate serif headings with double-underline, stained-glass gradient
+   cards, heavy drop shadows, left-border accent, opulent spacing
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="dracula"] h2 {
+  font-family: "Playfair Display","Libre Baskerville",Georgia,serif;
+  font-size: 1.5em; font-weight: 700;
+  border-bottom: 3px double var(--fg-accent); padding-bottom: 10px;
+}
+[data-theme="dracula"] .card {
+  border-left: 4px solid var(--fg-accent-alt);
+  transition: box-shadow var(--transition-speed), border-color var(--transition-speed);
+}
+[data-theme="dracula"] .card:hover {
+  box-shadow: 0 16px 56px rgba(0,0,0,0.6), 0 0 0 1px var(--fg-accent);
+  border-left-color: var(--fg-accent);
+}
+[data-theme="dracula"] .prominent-card {
+  border-left: 6px solid var(--border-prominent);
+  border-top: none; border-right: none; border-bottom: none;
+}
+[data-theme="dracula"] .sidebar-nav a:hover {
+  padding-left: 24px;
+  transition: padding-left 0.3s;
+}
+[data-theme="dracula"] thead th {
+  font-family: "Playfair Display",Georgia,serif;
+  font-style: italic; font-weight: 400;
+}
+
+/* ── THEME 7: HACKER TERMINAL / IDE ───────────────────────────────────
+   Line-number left borders, syntax-colored elements, cursor-blink focus,
+   tab-bar-style nav, no decoration, pure function
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="monokai"] .card {
+  border: none; border-left: 3px solid #3e3d32;
+  padding-left: 12px;
+}
+[data-theme="monokai"] .card:hover { border-left-color: var(--fg-accent); }
+[data-theme="monokai"] h2 {
+  font-size: 0.85em; color: #66d9ef;
+}
+[data-theme="monokai"] h2::before { content: "// "; color: #75715e; }
+[data-theme="monokai"] .sidebar-nav a {
+  border-right: none; border-bottom: 1px solid #3e3d32;
+  font-size: 0.82em; padding: 6px 12px;
+}
+[data-theme="monokai"] .sidebar-nav a:hover {
+  background: rgba(166,226,46,0.06);
+  border-bottom-color: var(--fg-accent);
+}
+[data-theme="monokai"] button:not(.menu-toggle) {
+  background: transparent; border: 1px solid #3e3d32;
+}
+[data-theme="monokai"] button:not(.menu-toggle):hover { border-color: var(--fg-accent); }
+[data-theme="monokai"] input:focus,
+[data-theme="monokai"] select:focus {
+  border-color: var(--fg-accent); outline: 1px solid var(--fg-accent);
+  outline-offset: -1px;
+}
+[data-theme="monokai"] thead {
+  text-transform: uppercase; letter-spacing: 0.08em;
+  font-size: 0.78em; color: #f92672;
+}
+[data-theme="monokai"] .prominent-card {
+  border-left: 3px solid #f92672; border-top: none; border-right: none; border-bottom: none;
+}
+
+/* ── THEME 8: NEON DYSTOPIA ───────────────────────────────────────────
+   Clip-path cut corners, skewed headings, animated glow pulsing,
+   outlined-only buttons, glitch text shadow, scanline overlay
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="cyberpunk"] .card {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  border: 2px solid rgba(255,0,255,0.3);
+}
+[data-theme="cyberpunk"] .card:hover {
+  border-color: #ff00ff;
+  box-shadow: 0 0 30px rgba(255,0,255,0.2), 0 0 80px rgba(0,255,255,0.05);
+}
+[data-theme="cyberpunk"] h2 {
+  transform: skewX(-3deg);
+  text-shadow: 2px 2px #ff00ff, -1px -1px #00ffff;
+}
+[data-theme="cyberpunk"] button:not(.menu-toggle) {
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  padding: 10px 24px; background: transparent;
+}
+[data-theme="cyberpunk"] button:not(.menu-toggle):hover {
+  background: rgba(255,0,255,0.15);
+  box-shadow: 0 0 16px rgba(255,0,255,0.4);
+}
+[data-theme="cyberpunk"] .sidebar-nav a {
+  border-right: none; text-transform: uppercase;
+  letter-spacing: 0.12em; font-size: 0.82em;
+}
+[data-theme="cyberpunk"] .sidebar-nav a:hover {
+  text-shadow: 0 0 10px var(--fg-accent);
+}
+[data-theme="cyberpunk"] .prominent-card {
+  animation: cyberpunk-glow 2s ease-in-out infinite alternate;
+}
+[data-theme="cyberpunk"] .page::before {
+  content: ""; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(255,0,255,0.02) 0px, transparent 1px, transparent 4px);
+}
+@keyframes cyberpunk-glow {
+  from { box-shadow: 0 0 10px rgba(255,0,255,0.2), 0 0 20px rgba(0,255,255,0.1); }
+  to   { box-shadow: 0 0 20px rgba(255,0,255,0.4), 0 0 40px rgba(0,255,255,0.2); }
+}
+
+/* ── THEME 9: DEEP SEA BIOLUMINESCENCE ────────────────────────────────
+   Undulating organic shapes, cards with asymmetric blob radius,
+   glowing accent borders, floating hover, centered headings,
+   wave-like rhythm in spacing
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="ocean"] .card {
+  border-radius: 28px 8px 28px 8px;
+  border: 1px solid rgba(77,208,225,0.15);
+  position: relative; overflow: visible;
+}
+[data-theme="ocean"] .card::after {
+  content: ""; position: absolute; bottom: -2px; left: 20%; right: 20%;
+  height: 4px; background: linear-gradient(90deg, transparent, rgba(77,208,225,0.2), transparent);
+  border-radius: 50%;
+}
+[data-theme="ocean"] .card:hover {
+  transform: translateY(-6px) rotate(-0.5deg);
+  box-shadow: 0 20px 50px rgba(0,20,40,0.6), 0 0 30px rgba(77,208,225,0.08);
+}
+[data-theme="ocean"] h2 { text-align: center; font-weight: 800; }
+[data-theme="ocean"] button:not(.menu-toggle) {
+  border: none; padding: 12px 32px;
+  background: linear-gradient(135deg, #0e2a3a 0%, #143a50 100%);
+}
+[data-theme="ocean"] button:not(.menu-toggle):hover {
+  box-shadow: 0 4px 20px rgba(77,208,225,0.2);
+  transform: translateY(-2px);
+}
+[data-theme="ocean"] .sidebar-nav a {
+  margin: 4px 8px; border-radius: 16px; border-right: none;
+  text-align: center;
+}
+[data-theme="ocean"] .prominent-card {
+  border-radius: 32px 12px 32px 12px;
+  border: 2px solid rgba(0,188,212,0.3);
+}
+
+/* ── THEME 10: ENCHANTED WOODLAND ─────────────────────────────────────
+   Left-accent cards like tree bark, leaf emoji markers, organic shapes,
+   earthy double-line borders on tables, italic serif nav
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="forest"] .card {
+  border-left: 5px solid var(--fg-accent);
+  border-radius: 2px 10px 10px 2px;
+}
+[data-theme="forest"] .card:hover {
+  border-left-color: #a5d6a7;
+  box-shadow: 0 8px 24px rgba(0,12,0,0.4);
+}
+[data-theme="forest"] h2 {
+  font-style: italic; position: relative; padding-left: 28px;
+}
+[data-theme="forest"] h2::before {
+  content: "❦"; position: absolute; left: 0; color: var(--fg-accent);
+  font-style: normal;
+}
+[data-theme="forest"] thead th {
+  border-bottom: 3px double var(--fg-accent);
+  background: transparent; font-style: italic;
+}
+[data-theme="forest"] .sidebar-nav a {
+  font-family: "Crimson Text",Georgia,serif; font-style: italic;
+}
+[data-theme="forest"] button:not(.menu-toggle) {
+  border-radius: 2px 8px 8px 2px;
+}
+[data-theme="forest"] .prominent-card {
+  border-left: 6px solid var(--border-prominent);
+  border-top: none; border-right: none; border-bottom: none;
+  border-radius: 0 8px 8px 0;
+}
+
+/* ── THEME 11: DESERT MIRAGE ──────────────────────────────────────────
+   Top-border-only cards (like heat shimmer), gradient buttons,
+   layered warm shadows, sand-drift heading underlines
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="sunset"] .card {
+  border: none; border-top: 4px solid var(--fg-accent);
+  border-radius: 4px 4px 16px 16px;
+}
+[data-theme="sunset"] .card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(30,10,0,0.6);
+}
+[data-theme="sunset"] h2 {
+  position: relative; padding-bottom: 12px;
+}
+[data-theme="sunset"] h2::after {
+  content: ""; position: absolute; bottom: 0; left: 0;
+  width: 80px; height: 3px;
+  background: linear-gradient(90deg, var(--fg-accent), var(--fg-accent-alt));
+  border-radius: 2px;
+}
+[data-theme="sunset"] button:not(.menu-toggle) {
+  background: linear-gradient(135deg, #4a2010 0%, #6a3018 100%);
+  border: none; border-radius: 12px;
+}
+[data-theme="sunset"] button:not(.menu-toggle):hover {
+  background: linear-gradient(135deg, #5a3018 0%, #7a4020 100%);
+}
+[data-theme="sunset"] .prominent-card {
+  border-top: 5px solid var(--border-prominent);
+  border-left: none; border-right: none; border-bottom: none;
+  border-radius: 4px 4px 16px 16px;
+}
+
+/* ── THEME 12: COSMIC NEBULA ──────────────────────────────────────────
+   Gradient text headings, focus glow rings, floating nav pills,
+   card glow aura on hover, cosmic shimmer
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="midnight-purple"] h2 {
+  background: linear-gradient(135deg, #ce93d8, #ab47bc, #e1bee7);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 1.4em;
+}
+[data-theme="midnight-purple"] .card:hover {
+  box-shadow: 0 12px 40px rgba(10,5,20,0.7), 0 0 20px rgba(171,71,188,0.1);
+  transform: translateY(-4px);
+}
+[data-theme="midnight-purple"] input:focus,
+[data-theme="midnight-purple"] select:focus,
+[data-theme="midnight-purple"] textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(171,71,188,0.3), 0 0 16px rgba(171,71,188,0.1);
+}
+[data-theme="midnight-purple"] .sidebar-nav a {
+  margin: 3px 10px; border-radius: 10px; border-right: none;
+}
+[data-theme="midnight-purple"] .sidebar-nav a:hover { background: rgba(171,71,188,0.12); }
+[data-theme="midnight-purple"] button:not(.menu-toggle):hover {
+  box-shadow: 0 4px 16px rgba(171,71,188,0.25);
+  transform: translateY(-2px);
+}
+[data-theme="midnight-purple"] .prominent-card {
+  border: 1px solid rgba(171,71,188,0.4);
+  box-shadow: 0 0 30px rgba(171,71,188,0.08);
+}
+
+/* ── THEME 13: SAKURA GARDEN ──────────────────────────────────────────
+   Left sidebar, extreme curves, petal-shaped cards, soft rounded
+   everything, decorative pink bar under headings, floating buttons
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="cherry-blossom"] .sidebar {
+  right: auto; left: 0;
+  border-left: none; border-right: 1px solid var(--border-sidebar);
+}
+[data-theme="cherry-blossom"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
+[data-theme="cherry-blossom"] .sidebar-nav a {
+  border-right: none; border-left: 3px solid transparent;
+  margin: 2px 8px; border-radius: 16px;
+}
+[data-theme="cherry-blossom"] .sidebar-nav a:hover {
+  border-left-color: var(--fg-accent); background: rgba(194,24,91,0.04);
+}
+[data-theme="cherry-blossom"] .card {
+  border-radius: 28px 10px 28px 10px;
+  border: 1px solid #f0b0c0;
+}
+[data-theme="cherry-blossom"] .card:hover {
+  box-shadow: 0 10px 32px rgba(233,30,99,0.1);
+  transform: translateY(-3px);
+}
+[data-theme="cherry-blossom"] h2::after {
+  content: ""; display: block; width: 50px; height: 3px; margin-top: 8px;
+  background: linear-gradient(90deg, var(--fg-accent), transparent);
+  border-radius: 2px;
+}
+[data-theme="cherry-blossom"] button:not(.menu-toggle) {
+  padding: 10px 32px; border: none;
+}
+[data-theme="cherry-blossom"] button:not(.menu-toggle):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(233,30,99,0.15);
+}
+[data-theme="cherry-blossom"] .prominent-card {
+  border-radius: 32px 12px 32px 12px;
+  border: 2px solid var(--border-prominent);
+  background: linear-gradient(135deg, #fce8ef, #fff5f8);
+}
+@media (max-width: 768px) {
+  [data-theme="cherry-blossom"] .sidebar { right: 0; left: auto; border-right: none; border-left: 1px solid var(--border-sidebar); }
+  [data-theme="cherry-blossom"] .main-wrapper { margin-left: 0; }
+}
+
+/* ── THEME 14: MAINFRAME CRT ─────────────────────────────────────────
+   CRT scanline overlay, bracket-wrapped buttons, prefix prompts,
+   dashed borders everywhere, phosphor glow, blinking focus
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="retro-terminal"] .page::before {
+  content: ""; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0,255,0,0.03) 0px, transparent 1px, transparent 3px);
+}
+[data-theme="retro-terminal"] .card { border-style: dashed; }
+[data-theme="retro-terminal"] h2 { font-size: 0.88em; }
+[data-theme="retro-terminal"] h2::before { content: "> "; color: #005500; }
+[data-theme="retro-terminal"] button:not(.menu-toggle) {
+  background: transparent;
+}
+[data-theme="retro-terminal"] button:not(.menu-toggle)::before { content: "[ "; }
+[data-theme="retro-terminal"] button:not(.menu-toggle)::after { content: " ]"; }
+[data-theme="retro-terminal"] .sidebar-nav a {
+  text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.8em;
+  border-right: none;
+}
+[data-theme="retro-terminal"] .sidebar-nav a::before { content: "→ "; }
+[data-theme="retro-terminal"] input:focus,
+[data-theme="retro-terminal"] select:focus {
+  outline: 1px dashed #00ff00; outline-offset: 2px;
+  box-shadow: 0 0 8px rgba(0,255,0,0.15);
+}
+[data-theme="retro-terminal"] .prominent-card {
+  border: 1px dashed #00ff00;
+  box-shadow: inset 0 0 20px rgba(0,255,0,0.03);
+}
+[data-theme="retro-terminal"] .sidebar-header .brand::before { content: "$ "; }
+
+/* ── THEME 15: BRUTALIST ACCESSIBILITY ────────────────────────────────
+   Inverted buttons (white on black), massive focus outlines,
+   uppercase nav, underlined headings, thick card borders, no effects
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="high-contrast"] *:focus {
+  outline: 4px solid #ffff00 !important; outline-offset: 3px;
+}
+[data-theme="high-contrast"] .card {
+  border-width: 4px; border-color: #ffffff;
+}
+[data-theme="high-contrast"] h2 {
+  text-decoration: underline; text-decoration-thickness: 4px;
+  text-underline-offset: 6px; text-decoration-color: #ffff00;
+  font-size: 1.4em;
+}
+[data-theme="high-contrast"] button:not(.menu-toggle) {
+  border-width: 3px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+[data-theme="high-contrast"] button:not(.menu-toggle):hover {
+  background: #ffff00; color: #000000; border-color: #ffff00;
+}
+[data-theme="high-contrast"] .sidebar-nav a {
+  text-transform: uppercase; font-weight: 700; font-size: 1em;
+  border-right: none; border-bottom: 2px solid #ffffff;
+}
+[data-theme="high-contrast"] .sidebar-nav a:hover {
+  background: #ffff00; color: #000000;
+}
+[data-theme="high-contrast"] .prominent-card {
+  border: 4px solid #ffff00; background: #000000;
+}
+[data-theme="high-contrast"] thead th {
+  background: #ffffff; color: #000000; font-weight: 900;
+}
+
+/* ── THEME 16: ARTISAN POTTERY ────────────────────────────────────────
+   Inset-shadow cards (embossed look), double-line headings,
+   thick right-border nav hover, italic table headers, rough edges
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="warm-earth"] .card {
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.2), 0 4px 16px rgba(20,14,10,0.3);
+  border-radius: 2px 8px 2px 8px;
+}
+[data-theme="warm-earth"] h2 {
+  border-bottom: 3px double var(--fg-accent); padding-bottom: 8px;
+  font-style: italic;
+}
+[data-theme="warm-earth"] .sidebar-nav a:hover {
+  border-right: 5px solid var(--fg-accent);
+}
+[data-theme="warm-earth"] thead th {
+  font-style: italic; font-weight: 400;
+  border-bottom: 3px double var(--fg-accent);
+}
+[data-theme="warm-earth"] button:not(.menu-toggle) {
+  border-radius: 2px 8px 2px 8px;
+}
+[data-theme="warm-earth"] .prominent-card {
+  border-left: 5px solid var(--border-prominent);
+  border-top: none; border-right: none; border-bottom: none;
+  border-radius: 0 8px 8px 0;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.15), 0 6px 20px rgba(20,14,10,0.35);
+}
+
+/* ── THEME 17: SCANDINAVIAN MINIMALISM ────────────────────────────────
+   Left sidebar, almost invisible cards (borderless), clean flat surfaces,
+   tiny uppercase labels, generous whitespace, ultra-thin everything
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="arctic"] .sidebar {
+  right: auto; left: 0;
+  border-left: none; border-right: 1px solid var(--border-sidebar);
+}
+[data-theme="arctic"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
+[data-theme="arctic"] .sidebar-nav a {
+  border-right: none; border-left: 2px solid transparent;
+  font-size: 0.88em; text-transform: uppercase; letter-spacing: 0.06em;
+}
+[data-theme="arctic"] .sidebar-nav a:hover { border-left-color: var(--fg-accent); }
+[data-theme="arctic"] .card {
+  border: none; background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+[data-theme="arctic"] .card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+[data-theme="arctic"] h2 {
+  font-weight: 300; font-size: 0.9em;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--fg-muted);
+}
+[data-theme="arctic"] .prominent-card {
+  border: none; border-top: 2px solid var(--border-prominent);
+  border-radius: 0; background: #ffffff;
+}
+[data-theme="arctic"] button:not(.menu-toggle) {
+  font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.06em;
+}
+@media (max-width: 768px) {
+  [data-theme="arctic"] .sidebar { right: 0; left: auto; border-right: none; border-left: 1px solid var(--border-sidebar); }
+  [data-theme="arctic"] .main-wrapper { margin-left: 0; }
+}
+
+/* ── THEME 18: 8-BIT ARCADE ──────────────────────────────────────────
+   Hard-shadow offset cards (pixel art feel), glitch text-shadow,
+   bracketed buttons, LED-border glow, pixel-perfect sharpness
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="neon"] .card {
+  box-shadow: 6px 6px 0 rgba(57,255,20,0.15);
+  border: 3px solid #39ff14;
+}
+[data-theme="neon"] .card:hover {
+  box-shadow: 8px 8px 0 rgba(57,255,20,0.25), 0 0 12px rgba(57,255,20,0.1);
+}
+[data-theme="neon"] h2 {
+  text-shadow: 3px 3px #ff073a, -2px -2px #39ff14;
+  font-size: 0.9em;
+}
+[data-theme="neon"] button:not(.menu-toggle) {
+  background: transparent;
+  box-shadow: 4px 4px 0 rgba(57,255,20,0.2);
+}
+[data-theme="neon"] button:not(.menu-toggle):hover {
+  box-shadow: 6px 6px 0 rgba(57,255,20,0.3);
+  transform: translate(-2px, -2px);
+}
+[data-theme="neon"] .sidebar-nav a {
+  text-transform: uppercase; letter-spacing: 0.06em;
+  border-right: none; font-size: 0.7em;
+}
+[data-theme="neon"] .sidebar-nav a:hover {
+  background: rgba(57,255,20,0.06);
+  text-shadow: 0 0 6px #39ff14;
+}
+[data-theme="neon"] .prominent-card {
+  border: 3px solid #ff073a;
+  box-shadow: 6px 6px 0 rgba(255,7,58,0.2);
+}
+[data-theme="neon"] thead th { color: #ff073a; }
+
+/* ── THEME 19: BROADSHEET NEWSPAPER ───────────────────────────────────
+   Left sidebar, narrow column, horizontal rules between cards,
+   masthead-style headings, italic serif nav, no card borders
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="paper"] .sidebar {
+  right: auto; left: 0;
+  border-left: none; border-right: 1px solid var(--border-sidebar);
+}
+[data-theme="paper"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
+[data-theme="paper"] .sidebar-nav a {
+  border-right: none; border-left: 2px solid transparent;
+  font-family: Georgia,serif; font-style: italic;
+}
+[data-theme="paper"] .card {
+  border: none; border-radius: 0;
+  border-bottom: 1px solid var(--border-card);
+  padding: 24px 0;
+  box-shadow: none;
+}
+[data-theme="paper"] .card + .card { padding-top: 24px; }
+[data-theme="paper"] h2 {
+  font-size: 1.8em; line-height: 1.2;
+  border-bottom: 2px solid #2a2520; padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+[data-theme="paper"] .prominent-card {
+  border: none; border-top: 4px double #2a2520; border-bottom: 2px solid #2a2520;
+  border-radius: 0; padding: 24px 0;
+}
+[data-theme="paper"] button:not(.menu-toggle) {
+  font-family: Georgia,serif;
+}
+[data-theme="paper"] thead th {
+  font-family: "Playfair Display",Georgia,serif;
+  font-style: italic; font-weight: 400; font-size: 0.9em;
+}
+@media (max-width: 768px) {
+  [data-theme="paper"] .sidebar { right: 0; left: auto; border-right: none; border-left: 1px solid var(--border-sidebar); }
+  [data-theme="paper"] .main-wrapper { margin-left: 0; }
+}
+
+/* ── THEME 20: COMMAND CENTER / DASHBOARD ─────────────────────────────
+   Subtle card elevation, focus-ring interactions, compact forms,
+   pill-shaped nav hover, status-indicator borders
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="slate"] .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15), 0 8px 24px rgba(0,0,0,0.05);
+}
+[data-theme="slate"] .sidebar-nav a {
+  border-right: none; margin: 1px 6px; border-radius: 6px;
+  font-size: 0.9em;
+}
+[data-theme="slate"] .sidebar-nav a:hover { background: rgba(116,185,255,0.08); }
+[data-theme="slate"] input:focus,
+[data-theme="slate"] select:focus {
+  border-color: var(--fg-accent);
+  box-shadow: 0 0 0 3px rgba(116,185,255,0.15);
+  outline: none;
+}
+[data-theme="slate"] h2 {
+  font-size: 1.1em; display: flex; align-items: center; gap: 8px;
+}
+[data-theme="slate"] h2::before {
+  content: ""; display: inline-block; width: 4px; height: 1em;
+  background: var(--fg-accent); border-radius: 2px; flex-shrink: 0;
+}
+[data-theme="slate"] .prominent-card {
+  border: 1px solid var(--border-prominent);
+  border-left: 4px solid var(--border-prominent);
+}
+
+/* ── THEME 21: ART DECO LUXURY ────────────────────────────────────────
+   Zero radius, thin-weight headings, outlined buttons that invert
+   on hover, borderless cards with bottom rule, geometric patterns
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="rose-gold"] .card {
+  border: none; border-bottom: 1px solid var(--border-card);
+  border-radius: 0; padding: 24px 0;
+}
+[data-theme="rose-gold"] h2 {
+  font-weight: 200; font-size: 1.1em;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  position: relative; padding-bottom: 10px;
+}
+[data-theme="rose-gold"] h2::after {
+  content: ""; position: absolute; bottom: 0; left: 0;
+  width: 40px; height: 1px; background: var(--fg-accent);
+}
+[data-theme="rose-gold"] button:not(.menu-toggle) {
+  background: transparent; border: 1px solid var(--fg-accent);
+  color: var(--fg-accent); padding: 10px 28px;
+}
+[data-theme="rose-gold"] button:not(.menu-toggle):hover {
+  background: var(--fg-accent); color: var(--bg-body);
+}
+[data-theme="rose-gold"] .sidebar-nav a {
+  letter-spacing: 0.08em; text-transform: uppercase;
+  font-size: 0.82em; font-weight: 300; border-right: none;
+}
+[data-theme="rose-gold"] .sidebar-nav a:hover {
+  letter-spacing: 0.1em;
+  transition: letter-spacing 0.3s;
+}
+[data-theme="rose-gold"] .prominent-card {
+  border: 1px solid var(--border-prominent); border-radius: 0;
+  padding: 24px;
+}
+[data-theme="rose-gold"] thead th {
+  text-transform: uppercase; letter-spacing: 0.1em;
+  font-weight: 300; font-size: 0.82em;
+}
+
+/* ── THEME 22: JEWEL BOX ─────────────────────────────────────────────
+   Gold accent bar on headings, thick emerald table headers,
+   card hover border-reveal, serif heading contrast
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="emerald"] h2 {
+  position: relative; padding-left: 18px;
+  font-family: "Libre Baskerville","Crimson Text",Georgia,serif;
+}
+[data-theme="emerald"] h2::before {
+  content: ""; position: absolute; left: 0; top: 2px; bottom: 2px;
+  width: 4px; background: var(--fg-accent-alt); border-radius: 2px;
+}
+[data-theme="emerald"] .card {
+  border: 2px solid #143020;
+  transition: border-color var(--transition-speed);
+}
+[data-theme="emerald"] .card:hover { border-color: var(--fg-accent); }
+[data-theme="emerald"] thead th {
+  border-bottom: 3px solid var(--fg-accent);
+  font-family: "Libre Baskerville",Georgia,serif;
+  font-weight: 700;
+}
+[data-theme="emerald"] button:not(.menu-toggle) {
+  border-radius: 2px;
+}
+[data-theme="emerald"] .prominent-card {
+  border: 2px solid var(--fg-accent-alt);
+  background: linear-gradient(135deg, #143020, #060e08);
+}
+[data-theme="emerald"] .sidebar-nav a:hover {
+  border-right-color: var(--fg-accent);
+}
+
+/* ── THEME 23: COZY CAFÉ ─────────────────────────────────────────────
+   Nav pills, decorative heading underline, warm inset inputs,
+   soft hover effects, rounded everything, comfortable reading
+   ────────────────────────────────────────────────────────────────────── */
+[data-theme="coffee"] .sidebar-nav a {
+  margin: 3px 8px; border-radius: 10px; border-right: none;
+}
+[data-theme="coffee"] .sidebar-nav a:hover {
+  background: rgba(139,105,20,0.1);
+}
+[data-theme="coffee"] h2 {
+  position: relative; padding-bottom: 10px;
+}
+[data-theme="coffee"] h2::after {
+  content: ""; display: block; width: 36px; height: 3px; margin-top: 8px;
+  background: var(--fg-accent); border-radius: 2px;
+}
+[data-theme="coffee"] .card:hover {
+  box-shadow: 0 8px 24px rgba(20,14,8,0.4);
+  transform: translateY(-2px);
+}
+[data-theme="coffee"] input:not([type="checkbox"]),
+[data-theme="coffee"] select,
+[data-theme="coffee"] textarea {
+  background: rgba(52,40,24,0.3);
+}
+[data-theme="coffee"] button:not(.menu-toggle) {
+  border: none;
+}
+[data-theme="coffee"] .prominent-card {
+  border: none; border-left: 4px solid var(--border-prominent);
+  border-radius: 0 12px 12px 0;
+}
+
+/* Theme Picker */
+.theme-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-top: 8px; }
+.theme-swatch { cursor: pointer; border: 2px solid var(--border-card); border-radius: var(--radius-sm); padding: 8px 10px; text-align: center; font-size: 0.85em; transition: border-color var(--transition-speed) var(--transition-fn), transform var(--transition-speed) var(--transition-fn); background: var(--bg-card); color: var(--fg-body); }
+.theme-swatch:hover { transform: scale(1.03); border-color: var(--fg-accent); }
+.theme-swatch.active { border-color: var(--fg-accent); box-shadow: 0 0 8px var(--shadow-prominent); font-weight: 700; }
+
+/* Defunct Banner */
+.defunct-banner { background: #3a1a1a; border: 1px solid #c44; border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: var(--card-gap); color: #faa; text-align: center; font-weight: 600; }

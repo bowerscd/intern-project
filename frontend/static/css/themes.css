@@ -7,11 +7,11 @@
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 2: "light" — DE STIJL / BAUHAUS STUDIO
+   Theme 2: "arachne" — DE STIJL / BAUHAUS STUDIO
    Sidebar becomes horizontal top nav bar. Asymmetric Mondrian grid.
    Bold primary blocks, thick black frames, geometric precision.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="light"] {
+[data-theme="arachne"] {
   color-scheme: light;
   --font-body: "DM Sans","Inter",system-ui,sans-serif;
   --font-heading: "DM Sans","Inter",sans-serif;
@@ -41,11 +41,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 3: "solarized-dark" — BLUEPRINT DRAFTING TABLE
+   Theme 3: "daedalus" — BLUEPRINT DRAFTING TABLE
    Bottom status-bar sidebar. Grid-paper background. Technical monospace.
    Cards as outlined schematic panels with coordinate markers.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="solarized-dark"] {
+[data-theme="daedalus"] {
   --font-body: "Source Code Pro","Fira Code",monospace;
   --font-heading: "Source Code Pro","Fira Code",monospace;
   --font-size-base: 0.85rem; --line-height: 1.4; --letter-spacing: 0.01em;
@@ -74,11 +74,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 4: "solarized-light" — JAPANESE WASHI / IKEBANA
+   Theme 4: "aphrodite" — JAPANESE WASHI / IKEBANA
    Sidebar disappears on desktop; centered narrow reading column.
    Borderless cards as flowing text. Extreme whitespace. Calligraphic.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="solarized-light"] {
+[data-theme="aphrodite"] {
   color-scheme: light;
   --font-body: "Crimson Text",Georgia,"Noto Serif",serif;
   --font-heading: "Playfair Display","Crimson Text",Georgia,serif;
@@ -108,11 +108,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 5: "nord" — FROSTED GLASS / AURORA BOREALIS
+   Theme 5: "niflheim" — FROSTED GLASS / AURORA BOREALIS
    Glassmorphism throughout. Sidebar becomes translucent floating panel.
    Cards are frosted glass panes with soft glow. Everything is pills.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="nord"] {
+[data-theme="niflheim"] {
   --font-body: "Inter",system-ui,sans-serif;
   --font-heading: "Inter",system-ui,sans-serif; --heading-weight: 200;
   --heading-letter-spacing: 0.12em; --heading-transform: uppercase;
@@ -142,11 +142,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 6: "dracula" — GOTHIC CATHEDRAL
+   Theme 6: "norns" — GOTHIC CATHEDRAL
    Sidebar becomes full-width header band. Cards in stained-glass layout.
    Ornate serif headings, heavy drop shadows, arch-shaped accents.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="dracula"] {
+[data-theme="norns"] {
   --font-body: "Lato","Helvetica Neue",system-ui,sans-serif;
   --font-heading: "Playfair Display","Libre Baskerville",Georgia,serif;
   --heading-weight: 700; --line-height: 1.65; --heading-transform: none;
@@ -175,11 +175,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 7: "monokai" — HACKER TERMINAL / IDE
+   Theme 7: "quetzalcoatl" — HACKER TERMINAL / IDE
    Sidebar collapses to narrow icon strip. Cards become terminal panes.
    Dense monospace layout, syntax-colored elements, blinking cursor.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="monokai"] {
+[data-theme="quetzalcoatl"] {
   --font-body: "JetBrains Mono","Fira Code","Cascadia Code",monospace;
   --font-heading: "JetBrains Mono","Fira Code",monospace;
   --font-size-base: 0.82rem; --line-height: 1.35; --letter-spacing: 0.015em;
@@ -208,18 +208,18 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 8: "cyberpunk" — NEON DYSTOPIA / BLADE RUNNER
+   Theme 8: "atlas" — NEON DYSTOPIA / BLADE RUNNER
    Diagonal clip-path cuts. Scanline overlay. Glitch text shadows.
    Sidebar as vertical neon strip. Everything angular and aggressive.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="cyberpunk"] {
+[data-theme="atlas"] {
   --font-body: "Rajdhani","Share Tech Mono",system-ui,sans-serif;
   --font-heading: "Orbitron","Rajdhani",sans-serif;
   --font-size-base: 0.92rem; --line-height: 1.5;
   --heading-weight: 700; --heading-transform: uppercase; --heading-letter-spacing: 0.08em;
   --radius: 0; --radius-sm: 0; --radius-lg: 0; --radius-input: 0; --radius-button: 0;
   --spacing-card: 20px; --spacing-page: 24px; --card-gap: 16px;
-  --border-width: 2px;
+  --border-width: 2px; --sidebar-width: 0px;
   --shadow-card: 0 0 20px rgba(255,0,255,0.08); --shadow-button: none;
   --shadow-sidebar: none; --shadow-input: none;
   --transition-speed: 0.15s;
@@ -241,11 +241,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 9: "ocean" — DEEP SEA BIOLUMINESCENCE
+   Theme 9: "thoth" — DEEP SEA BIOLUMINESCENCE
    Organic flowing shapes. Cards overlap vertically with wave-like edges.
    Sidebar becomes translucent depth-gauge strip. Bioluminescent glows.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="ocean"] {
+[data-theme="thoth"] {
   --font-body: "Quicksand","Nunito",system-ui,sans-serif;
   --font-heading: "Quicksand","Nunito",sans-serif;
   --font-size-base: 0.95rem; --line-height: 1.65; --heading-weight: 700;
@@ -274,11 +274,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 10: "forest" — ENCHANTED WOODLAND JOURNAL
+   Theme 10: "yggdrasil" — ENCHANTED WOODLAND JOURNAL
    Left sidebar as vine-covered panel. Cards as journal pages with
    ruled lines. Serif everything, decorative leaf ornaments, earthy tones.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="forest"] {
+[data-theme="yggdrasil"] {
   --font-body: "Merriweather","Crimson Text",Georgia,serif;
   --font-heading: "Playfair Display","Crimson Text",Georgia,serif;
   --font-size-base: 0.95rem; --line-height: 1.75; --heading-weight: 700;
@@ -307,11 +307,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 11: "sunset" — DESERT CANYON / HORIZONTAL STRATA
+   Theme 11: "amaterasu" — DESERT CANYON / HORIZONTAL STRATA
    Full-width horizontal card strips like geological layers.
    Sidebar becomes bottom tab bar. Gradient bands across the page.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="sunset"] {
+[data-theme="amaterasu"] {
   --font-body: "Source Sans 3","Fira Sans",system-ui,sans-serif;
   --font-heading: "Poppins","Source Sans 3",sans-serif;
   --font-size-base: 1rem; --line-height: 1.6; --heading-weight: 700;
@@ -341,11 +341,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 12: "midnight-purple" — COSMIC NEBULA
+   Theme 12: "hecate" — COSMIC NEBULA
    Floating card galaxy. Gradient text headings. Radial decorations.
    Sidebar fades into an orbital navigation arc.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="midnight-purple"] {
+[data-theme="hecate"] {
   --font-body: "Inter",system-ui,sans-serif;
   --font-heading: "Poppins","Inter",sans-serif;
   --font-size-base: 0.95rem; --line-height: 1.6; --heading-weight: 600;
@@ -374,11 +374,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 13: "cherry-blossom" — SAKURA GARDEN / KAWAII
+   Theme 13: "freya" — SAKURA GARDEN / KAWAII
    Centered narrow column with generous whitespace. Petal-shaped cards.
    Sidebar becomes floating icon bar. Ultra-soft and rounded.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="cherry-blossom"] {
+[data-theme="freya"] {
   color-scheme: light;
   --font-body: "Nunito","Quicksand",system-ui,sans-serif;
   --font-heading: "Nunito","Quicksand",sans-serif;
@@ -409,11 +409,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 14: "retro-terminal" — CRT MAINFRAME / AMBER PHOSPHOR
+   Theme 14: "hermes" — CRT MAINFRAME / AMBER PHOSPHOR
    Full CRT aesthetic with screen curvature, scanlines, amber glow.
    Dashed borders, prompt-style headings, monospace everything.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="retro-terminal"] {
+[data-theme="hermes"] {
   --font-body: "Share Tech Mono","Fira Code",monospace;
   --font-heading: "Share Tech Mono","Fira Code",monospace;
   --font-size-base: 0.88rem; --line-height: 1.45; --letter-spacing: 0.02em;
@@ -442,12 +442,12 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 15: "high-contrast" — BRUTALIST / RAW CONCRETE
+   Theme 15: "prometheus" — BRUTALIST / RAW CONCRETE
    Massive borders, huge typography, yellow focus rings.
    Completely flat — no effects, no gradients, no subtlety.
    Sidebar becomes heavy top bar with oversized nav.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="high-contrast"] {
+[data-theme="prometheus"] {
   color-scheme: dark;
   --font-body: "Atkinson Hyperlegible","Inter",system-ui,sans-serif;
   --font-heading: "Atkinson Hyperlegible","Inter",sans-serif;
@@ -476,11 +476,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 16: "warm-earth" — ARTISAN POTTERY / CLAY STUDIO
+   Theme 16: "gaia" — ARTISAN POTTERY / CLAY STUDIO
    Embossed inset-shadow cards. Handmade asymmetric shapes.
    Double-line headings, thick right-border nav, rough organic edges.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="warm-earth"] {
+[data-theme="gaia"] {
   --font-body: "Merriweather",Georgia,serif;
   --font-heading: "Playfair Display","Libre Baskerville",Georgia,serif;
   --font-size-base: 0.95rem; --line-height: 1.7; --heading-weight: 700;
@@ -510,11 +510,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 17: "arctic" — SCANDINAVIAN MINIMAL / MUJI
+   Theme 17: "skadi" — SCANDINAVIAN MINIMAL / MUJI
    Near-invisible UI. Extreme whitespace. Whisper-thin lines.
    Sidebar hidden on desktop. Content is a clean centered column.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="arctic"] {
+[data-theme="skadi"] {
   color-scheme: light;
   --font-body: "Inter",system-ui,sans-serif;
   --font-heading: "Inter",system-ui,sans-serif;
@@ -544,11 +544,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 18: "neon" — 8-BIT ARCADE / PIXEL ART
+   Theme 18: "raijin" — 8-BIT ARCADE / PIXEL ART
    Hard pixel shadows, step animations, retro game borders.
    Everything blocky with offset drop-shadows. Press Start 2P font.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="neon"] {
+[data-theme="raijin"] {
   --font-body: "Press Start 2P","Share Tech Mono",monospace;
   --font-heading: "Press Start 2P",monospace;
   --font-size-base: 0.7rem; --line-height: 1.8; --letter-spacing: 0;
@@ -577,11 +577,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 19: "paper" — BROADSHEET NEWSPAPER / EDITORIAL
+   Theme 19: "seshat" — BROADSHEET NEWSPAPER / EDITORIAL
    Multi-column text flow with rule lines between sections.
    Serif everything. Drop caps. Masthead headings. Left sidebar.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="paper"] {
+[data-theme="seshat"] {
   color-scheme: light;
   --font-body: "Libre Baskerville","Crimson Text",Georgia,serif;
   --font-heading: "Playfair Display","Libre Baskerville",Georgia,serif;
@@ -611,11 +611,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 20: "slate" — MISSION CONTROL / DASHBOARD
+   Theme 20: "hephaestus" — MISSION CONTROL / DASHBOARD
    Dense grid layout. Status indicators everywhere. Compact forms.
    Sidebar as narrow control strip. Data-oriented dark display.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="slate"] {
+[data-theme="hephaestus"] {
   --font-body: "Roboto","Inter",system-ui,sans-serif;
   --font-heading: "Roboto","Inter",sans-serif;
   --font-size-base: 0.88rem; --line-height: 1.45; --heading-weight: 500;
@@ -645,11 +645,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 21: "rose-gold" — ART DECO / GATSBY LUXURY
+   Theme 21: "vishnu" — ART DECO / GATSBY LUXURY
    Geometric patterns with ultra-thin gold lines. Wide letter-spacing.
    Architectural layout. Sidebar as elegant side panel.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="rose-gold"] {
+[data-theme="vishnu"] {
   --font-body: "Lato","Inter",system-ui,sans-serif;
   --font-heading: "Playfair Display","Libre Baskerville",Georgia,serif;
   --font-size-base: 0.93rem; --line-height: 1.6; --heading-weight: 400;
@@ -678,11 +678,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 22: "emerald" — JEWEL BOX / TREASURE VAULT
+   Theme 22: "cernunnos" — JEWEL BOX / TREASURE VAULT
    Rich dark background with gem-like glowing elements. Faceted card
    shapes. Ornate gold-and-emerald borders. Left sidebar.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="emerald"] {
+[data-theme="cernunnos"] {
   --font-body: "Lato","Roboto",system-ui,sans-serif;
   --font-heading: "Libre Baskerville","Crimson Text",Georgia,serif;
   --font-size-base: 0.95rem; --line-height: 1.6; --heading-weight: 700;
@@ -712,11 +712,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Theme 23: "coffee" — COZY CAFÉ / READING ROOM
+   Theme 23: "brigid" — COZY CAFÉ / READING ROOM
    Book-like layout with wide margins. Warm paper texture.
    Sidebar as bookshelf-style nav with pill items. Comfortable reading.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="coffee"] {
+[data-theme="brigid"] {
   --font-body: "Cabin","Source Sans 3",system-ui,sans-serif;
   --font-heading: "Playfair Display","Libre Baskerville",Georgia,serif;
   --font-size-base: 1rem; --line-height: 1.7; --heading-weight: 700;
@@ -757,91 +757,91 @@
    Sidebar becomes horizontal top bar. Content in asymmetric grid with
    thick black dividers. Some cards span multiple columns/rows.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="light"] .app-layout { flex-direction: column; }
-[data-theme="light"] .sidebar {
+[data-theme="arachne"] .app-layout { flex-direction: column; }
+[data-theme="arachne"] .sidebar {
   position: relative; width: 100%; height: auto;
   flex-direction: row; align-items: center;
   border-left: none; border-bottom: 6px solid #111;
   top: auto; right: auto; left: auto; bottom: auto;
   background: #111;
 }
-[data-theme="light"] .sidebar-header { border-bottom: none; padding: 12px 24px; }
-[data-theme="light"] .sidebar-header .brand {
+[data-theme="arachne"] .sidebar-header { border-bottom: none; padding: 12px 24px; }
+[data-theme="arachne"] .sidebar-header .brand {
   font-size: 1.6em; font-weight: 900; color: #ffd600;
   text-transform: uppercase; letter-spacing: 0.08em;
 }
-[data-theme="light"] .sidebar-nav {
+[data-theme="arachne"] .sidebar-nav {
   flex-direction: row; padding: 0; overflow-x: auto; overflow-y: hidden;
 }
-[data-theme="light"] .sidebar-nav a {
+[data-theme="arachne"] .sidebar-nav a {
   padding: 14px 24px; font-size: 0.9em; white-space: nowrap;
   border-right: 3px solid #333; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.04em; color: #fff;
 }
-[data-theme="light"] .sidebar-nav a:hover { background: #d32f2f; color: #fff; }
-[data-theme="light"] .main-wrapper { margin-right: 0; }
-[data-theme="light"] .page {
+[data-theme="arachne"] .sidebar-nav a:hover { background: #d32f2f; color: #fff; }
+[data-theme="arachne"] .main-wrapper { margin-right: 0; }
+[data-theme="arachne"] .page {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
   grid-auto-rows: minmax(180px, auto);
   gap: 6px; padding: 6px; max-width: 100%;
   background: #111;
 }
-[data-theme="light"] .card {
+[data-theme="arachne"] .card {
   margin: 0; border-radius: 0; border: none;
   padding: 28px; position: relative;
 }
-[data-theme="light"] .card:nth-child(1) {
+[data-theme="arachne"] .card:nth-child(1) {
   grid-column: 1 / 3; grid-row: 1 / 3;
   background: #ffd600; color: #111;
 }
-[data-theme="light"] .card:nth-child(1) h2 { color: #111; }
-[data-theme="light"] .card:nth-child(2) { background: #d32f2f; color: #fff; }
-[data-theme="light"] .card:nth-child(2) h2 { color: #fff; }
-[data-theme="light"] .card:nth-child(3) { background: #1565c0; color: #fff; grid-row: 2 / 4; }
-[data-theme="light"] .card:nth-child(3) h2 { color: #fff; }
-[data-theme="light"] .card:nth-child(4) { background: #ffffff; color: #111; grid-column: 1 / 2; }
-[data-theme="light"] .card:nth-child(5) { background: #f5f0e8; color: #111; grid-column: 2 / 4; }
-[data-theme="light"] .card:nth-child(n+6) { background: #ffffff; color: #111; }
-[data-theme="light"] .grid-2 {
+[data-theme="arachne"] .card:nth-child(1) h2 { color: #111; }
+[data-theme="arachne"] .card:nth-child(2) { background: #d32f2f; color: #fff; }
+[data-theme="arachne"] .card:nth-child(2) h2 { color: #fff; }
+[data-theme="arachne"] .card:nth-child(3) { background: #1565c0; color: #fff; grid-row: 2 / 4; }
+[data-theme="arachne"] .card:nth-child(3) h2 { color: #fff; }
+[data-theme="arachne"] .card:nth-child(4) { background: #ffffff; color: #111; grid-column: 1 / 2; }
+[data-theme="arachne"] .card:nth-child(5) { background: #f5f0e8; color: #111; grid-column: 2 / 4; }
+[data-theme="arachne"] .card:nth-child(n+6) { background: #ffffff; color: #111; }
+[data-theme="arachne"] .grid-2 {
   display: contents;
 }
-[data-theme="light"] h2 {
+[data-theme="arachne"] h2 {
   font-size: 1.8em; font-weight: 900; text-transform: uppercase;
   letter-spacing: 0.06em; margin-bottom: 20px;
 }
-[data-theme="light"] .prominent-card {
+[data-theme="arachne"] .prominent-card {
   grid-column: 1 / 3; grid-row: 1 / 3;
   background: #ffd600 !important; border: none;
 }
-[data-theme="light"] button:not(.menu-toggle) {
+[data-theme="arachne"] button:not(.menu-toggle) {
   background: #111; color: #fff; border: none; padding: 14px 28px;
   font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
 }
-[data-theme="light"] button:not(.menu-toggle):hover { background: #d32f2f; }
-[data-theme="light"] thead th {
+[data-theme="arachne"] button:not(.menu-toggle):hover { background: #d32f2f; }
+[data-theme="arachne"] thead th {
   background: #111; color: #ffd600; font-weight: 700;
   text-transform: uppercase; padding: 10px;
 }
 @media (max-width: 768px) {
-  [data-theme="light"] .sidebar {
+  [data-theme="arachne"] .sidebar {
     position: fixed; width: 240px; height: 100%;
     flex-direction: column; border-bottom: none;
     right: 0; top: 0; bottom: 0; left: auto;
     transform: translateX(100%); border-left: 6px solid #111;
   }
-  [data-theme="light"] .sidebar.open { transform: translateX(0); }
-  [data-theme="light"] .sidebar-nav { flex-direction: column; }
-  [data-theme="light"] .sidebar-nav a { border-right: none; }
-  [data-theme="light"] .page {
+  [data-theme="arachne"] .sidebar.open { transform: translateX(0); }
+  [data-theme="arachne"] .sidebar-nav { flex-direction: column; }
+  [data-theme="arachne"] .sidebar-nav a { border-right: none; }
+  [data-theme="arachne"] .page {
     display: block; background: #f5f0e8; padding: 8px;
   }
-  [data-theme="light"] .card { margin-bottom: 6px; }
-  [data-theme="light"] .card:nth-child(n) {
+  [data-theme="arachne"] .card { margin-bottom: 6px; }
+  [data-theme="arachne"] .card:nth-child(n) {
     grid-column: auto; grid-row: auto;
     background: #ffffff; color: #111;
   }
-  [data-theme="light"] .card:nth-child(n) h2 { color: #111; }
+  [data-theme="arachne"] .card:nth-child(n) h2 { color: #111; }
 }
 
 
@@ -849,33 +849,33 @@
    No card boundaries. One long scrolling schematic document with
    section markers, grid-paper background, and margin annotations.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="solarized-dark"] .app-layout { flex-direction: column; }
-[data-theme="solarized-dark"] .sidebar {
+[data-theme="daedalus"] .app-layout { flex-direction: column; }
+[data-theme="daedalus"] .sidebar {
   position: fixed; bottom: 0; top: auto; left: 0; right: 0;
   width: 100%; height: 32px;
   flex-direction: row; align-items: center;
   border-left: none; border-top: 1px solid #2a5060;
   z-index: 100;
 }
-[data-theme="solarized-dark"] .sidebar-header {
+[data-theme="daedalus"] .sidebar-header {
   border-bottom: none; padding: 0 12px;
 }
-[data-theme="solarized-dark"] .sidebar-header .brand {
+[data-theme="daedalus"] .sidebar-header .brand {
   font-size: 0.7em; color: #b58900;
   text-transform: uppercase; letter-spacing: 0.12em;
 }
-[data-theme="solarized-dark"] .sidebar-nav {
+[data-theme="daedalus"] .sidebar-nav {
   flex-direction: row; padding: 0; overflow-x: auto; overflow-y: hidden;
 }
-[data-theme="solarized-dark"] .sidebar-nav a {
+[data-theme="daedalus"] .sidebar-nav a {
   padding: 6px 14px; font-size: 0.68em;
   text-transform: uppercase; letter-spacing: 0.12em;
   border-right: 1px solid #2a5060; white-space: nowrap;
 }
-[data-theme="solarized-dark"] .main-wrapper {
+[data-theme="daedalus"] .main-wrapper {
   margin-right: 0; margin-bottom: 32px;
 }
-[data-theme="solarized-dark"] body::before {
+[data-theme="daedalus"] body::before {
   content: ""; position: fixed; inset: 0; z-index: -1;
   background:
     linear-gradient(rgba(42,80,96,0.06) 1px, transparent 1px),
@@ -883,64 +883,64 @@
   background-size: 20px 20px;
   pointer-events: none;
 }
-[data-theme="solarized-dark"] .page {
+[data-theme="daedalus"] .page {
   max-width: 800px; margin: 0 auto;
   padding: 40px 40px 40px 80px; position: relative;
   counter-reset: section-counter;
 }
-[data-theme="solarized-dark"] .page::before {
+[data-theme="daedalus"] .page::before {
   content: ""; position: absolute; left: 60px; top: 0; bottom: 0;
   border-left: 1px dashed rgba(42,80,96,0.3);
 }
-[data-theme="solarized-dark"] .card {
+[data-theme="daedalus"] .card {
   background: transparent; border: none; border-radius: 0;
   margin: 0; padding: 24px 0; position: relative;
   counter-increment: section-counter;
 }
-[data-theme="solarized-dark"] .card::before {
+[data-theme="daedalus"] .card::before {
   content: "§" counter(section-counter);
   position: absolute; left: -60px; top: 24px;
   font-size: 0.65em; color: #586e75;
   text-transform: uppercase; letter-spacing: 0.1em;
   width: 50px; text-align: right;
 }
-[data-theme="solarized-dark"] .card + .card {
+[data-theme="daedalus"] .card + .card {
   border-top: 1px dashed rgba(42,80,96,0.2);
 }
-[data-theme="solarized-dark"] h2 {
+[data-theme="daedalus"] h2 {
   font-size: 0.75em; color: #b58900;
   text-transform: uppercase; letter-spacing: 0.14em;
   margin-bottom: 16px;
 }
-[data-theme="solarized-dark"] .grid-2 { display: block; }
-[data-theme="solarized-dark"] .prominent-card {
+[data-theme="daedalus"] .grid-2 { display: block; }
+[data-theme="daedalus"] .prominent-card {
   background: transparent; border: none; border-left: 3px solid #b58900;
   border-radius: 0; padding-left: 20px;
 }
-[data-theme="solarized-dark"] button:not(.menu-toggle) {
+[data-theme="daedalus"] button:not(.menu-toggle) {
   background: transparent; border: 1px solid #b58900;
   font-size: 0.72em; text-transform: uppercase; letter-spacing: 0.1em; padding: 4px 16px;
 }
-[data-theme="solarized-dark"] thead th {
+[data-theme="daedalus"] thead th {
   font-size: 0.68em; text-transform: uppercase; letter-spacing: 0.14em;
   color: #b58900; border-bottom: 1px solid #2a5060;
 }
-[data-theme="solarized-dark"] input:not([type="checkbox"]),
-[data-theme="solarized-dark"] select {
+[data-theme="daedalus"] input:not([type="checkbox"]),
+[data-theme="daedalus"] select {
   background: rgba(0,43,54,0.5); border: 1px solid #2a5060;
   font-size: 0.78em;
 }
 @media (max-width: 768px) {
-  [data-theme="solarized-dark"] .sidebar {
+  [data-theme="daedalus"] .sidebar {
     position: fixed; width: 240px; height: 100%;
     flex-direction: column; border-top: none;
     right: 0; top: 0; bottom: 0; left: auto;
     transform: translateX(100%); border-left: 1px solid #2a5060;
   }
-  [data-theme="solarized-dark"] .sidebar.open { transform: translateX(0); }
-  [data-theme="solarized-dark"] .sidebar-nav { flex-direction: column; }
-  [data-theme="solarized-dark"] .main-wrapper { margin-bottom: 0; }
-  [data-theme="solarized-dark"] .page { padding: 20px 12px 20px 48px; }
+  [data-theme="daedalus"] .sidebar.open { transform: translateX(0); }
+  [data-theme="daedalus"] .sidebar-nav { flex-direction: column; }
+  [data-theme="daedalus"] .main-wrapper { margin-bottom: 0; }
+  [data-theme="daedalus"] .page { padding: 20px 12px 20px 48px; }
 }
 
 
@@ -949,7 +949,7 @@
    continuous vertical scroll with no card boundaries, just typography
    and whitespace. Like reading a zen scroll.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="solarized-light"] .sidebar {
+[data-theme="aphrodite"] .sidebar {
   position: fixed; top: auto; bottom: 0; left: 50%;
   transform: translateX(-50%);
   width: auto; max-width: 580px; height: auto;
@@ -959,69 +959,69 @@
   box-shadow: 0 -2px 20px rgba(0,0,0,0.06);
   backdrop-filter: blur(10px); z-index: 100;
 }
-[data-theme="solarized-light"] .sidebar-header {
+[data-theme="aphrodite"] .sidebar-header {
   border-bottom: none; padding: 8px 16px;
 }
-[data-theme="solarized-light"] .sidebar-header .brand {
+[data-theme="aphrodite"] .sidebar-header .brand {
   font-size: 0.85em; font-style: italic; color: #8b6914;
 }
-[data-theme="solarized-light"] .sidebar-nav {
+[data-theme="aphrodite"] .sidebar-nav {
   flex-direction: row; padding: 0; overflow-x: auto; overflow-y: hidden;
 }
-[data-theme="solarized-light"] .sidebar-nav a {
+[data-theme="aphrodite"] .sidebar-nav a {
   padding: 8px 14px; font-size: 0.82em; white-space: nowrap;
   font-style: italic; border-right: none; color: #8a8a70;
 }
-[data-theme="solarized-light"] .sidebar-nav a:hover { color: #8b6914; }
-[data-theme="solarized-light"] .main-wrapper { margin-right: 0; margin-bottom: 52px; }
-[data-theme="solarized-light"] .page {
+[data-theme="aphrodite"] .sidebar-nav a:hover { color: #8b6914; }
+[data-theme="aphrodite"] .main-wrapper { margin-right: 0; margin-bottom: 52px; }
+[data-theme="aphrodite"] .page {
   max-width: 580px; margin: 0 auto; padding: 80px 24px 60px;
 }
-[data-theme="solarized-light"] .card {
+[data-theme="aphrodite"] .card {
   background: transparent; border: none; margin: 0; border-radius: 0;
   padding: 48px 0;
 }
-[data-theme="solarized-light"] .card + .card::before {
+[data-theme="aphrodite"] .card + .card::before {
   content: ""; display: block; width: 60px; height: 1px;
   background: #d0c8b4; margin: 0 auto 48px;
 }
-[data-theme="solarized-light"] .grid-2 { display: block; }
-[data-theme="solarized-light"] h2 {
+[data-theme="aphrodite"] .grid-2 { display: block; }
+[data-theme="aphrodite"] h2 {
   font-family: "Playfair Display",Georgia,serif;
   font-style: italic; font-weight: 400; font-size: 2.2em;
   margin-bottom: 28px; color: #3a3a30; letter-spacing: -0.02em;
   line-height: 1.15; text-align: center;
 }
-[data-theme="solarized-light"] .prominent-card {
+[data-theme="aphrodite"] .prominent-card {
   background: transparent; border: none; border-radius: 0;
   padding: 48px 0; box-shadow: none;
 }
-[data-theme="solarized-light"] input:not([type="checkbox"]),
-[data-theme="solarized-light"] select {
+[data-theme="aphrodite"] input:not([type="checkbox"]),
+[data-theme="aphrodite"] select {
   border: none; border-bottom: 1px solid #d0c8b8;
   border-radius: 0; background: transparent; padding: 14px 0;
 }
-[data-theme="solarized-light"] button:not(.menu-toggle) {
+[data-theme="aphrodite"] button:not(.menu-toggle) {
   background: transparent; border: 1px solid #8b6914;
   color: #8b6914; padding: 14px 36px; font-style: italic;
 }
-[data-theme="solarized-light"] button:not(.menu-toggle):hover {
+[data-theme="aphrodite"] button:not(.menu-toggle):hover {
   background: #8b6914; color: #faf6ee;
 }
-[data-theme="solarized-light"] table { font-size: 0.88em; }
-[data-theme="solarized-light"] th {
+[data-theme="aphrodite"] table { font-size: 0.88em; }
+[data-theme="aphrodite"] th {
   color: #8b6914; font-style: italic; font-weight: 400;
 }
 @media (max-width: 768px) {
-  [data-theme="solarized-light"] .sidebar {
+  [data-theme="aphrodite"] .sidebar {
     position: fixed; width: 240px; max-width: none; height: 100%;
     flex-direction: column; border-radius: 0;
     right: 0; top: 0; bottom: auto; left: auto;
     transform: translateX(100%); border-left: 1px solid #d0c8b8;
   }
-  [data-theme="solarized-light"] .sidebar.open { transform: translateX(0); }
-  [data-theme="solarized-light"] .sidebar-nav { flex-direction: column; }
-  [data-theme="solarized-light"] .main-wrapper { margin-bottom: 0; }
+  [data-theme="aphrodite"] .sidebar.open { transform: translateX(0); }
+  [data-theme="aphrodite"] .sidebar-nav { flex-direction: column; }
+  [data-theme="aphrodite"] .main-wrapper { margin-bottom: 0; }
 }
 
 
@@ -1030,71 +1030,71 @@
    some narrower, creating an asymmetric masonry-like feel. Content
    floats in a misty void.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="nord"] body {
+[data-theme="niflheim"] body {
   background: linear-gradient(160deg, #1a1e26, #16202e 40%, #242933);
   background-attachment: fixed;
 }
-[data-theme="nord"] .sidebar {
+[data-theme="niflheim"] .sidebar {
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-left-color: rgba(136,192,208,0.08);
 }
-[data-theme="nord"] .sidebar-nav a {
+[data-theme="niflheim"] .sidebar-nav a {
   margin: 4px 10px; border-radius: 50px; border-right: none;
   text-align: center; font-size: 0.82em; padding: 10px 16px;
   font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
 }
-[data-theme="nord"] .sidebar-nav a:hover {
+[data-theme="niflheim"] .sidebar-nav a:hover {
   background: rgba(136,192,208,0.12);
 }
-[data-theme="nord"] .sidebar-header .brand {
+[data-theme="niflheim"] .sidebar-header .brand {
   font-weight: 200; letter-spacing: 0.12em; text-transform: uppercase;
 }
-[data-theme="nord"] .page {
+[data-theme="niflheim"] .page {
   column-count: 2; column-gap: 20px;
   max-width: 1100px; padding: 24px;
 }
-[data-theme="nord"] .card {
+[data-theme="niflheim"] .card {
   break-inside: avoid; display: inline-block; width: 100%;
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(136,192,208,0.1);
   margin-bottom: 20px;
   transition: transform 0.4s cubic-bezier(.25,.8,.25,1), box-shadow 0.4s;
 }
-[data-theme="nord"] .card:nth-child(odd) {
+[data-theme="niflheim"] .card:nth-child(odd) {
   border-radius: 24px 8px 24px 8px;
 }
-[data-theme="nord"] .card:nth-child(even) {
+[data-theme="niflheim"] .card:nth-child(even) {
   border-radius: 8px 24px 8px 24px;
 }
-[data-theme="nord"] .card:hover {
+[data-theme="niflheim"] .card:hover {
   transform: translateY(-8px) scale(1.02);
   box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 30px rgba(136,192,208,0.06);
 }
-[data-theme="nord"] .grid-2 { display: block; column-count: 1; }
-[data-theme="nord"] h2 {
+[data-theme="niflheim"] .grid-2 { display: block; column-count: 1; }
+[data-theme="niflheim"] h2 {
   font-weight: 200; letter-spacing: 0.14em; text-transform: uppercase;
   font-size: 0.82em; color: rgba(216,222,233,0.6);
 }
-[data-theme="nord"] h2::after {
+[data-theme="niflheim"] h2::after {
   content: ""; display: block; width: 40px; height: 2px; margin-top: 10px;
   background: linear-gradient(90deg, rgba(136,192,208,0.4), transparent);
 }
-[data-theme="nord"] .prominent-card {
+[data-theme="niflheim"] .prominent-card {
   break-inside: avoid; column-span: all;
   backdrop-filter: blur(20px); border: 1px solid rgba(136,192,208,0.2);
   border-radius: 16px;
 }
-[data-theme="nord"] button:not(.menu-toggle) {
+[data-theme="niflheim"] button:not(.menu-toggle) {
   padding: 12px 28px; border-radius: 50px;
   backdrop-filter: blur(8px);
 }
-[data-theme="nord"] input:not([type="checkbox"]),
-[data-theme="nord"] select {
+[data-theme="niflheim"] input:not([type="checkbox"]),
+[data-theme="niflheim"] select {
   border-radius: 50px; padding: 12px 20px;
   backdrop-filter: blur(8px);
 }
 @media (max-width: 768px) {
-  [data-theme="nord"] .page { column-count: 1; }
+  [data-theme="niflheim"] .page { column-count: 1; }
 }
 
 
@@ -1103,38 +1103,38 @@
    placed side by side with pointed-arch-style top borders. Feels
    like stained glass windows or cathedral alcoves.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="dracula"] .app-layout { flex-direction: column; }
-[data-theme="dracula"] .sidebar {
+[data-theme="norns"] .app-layout { flex-direction: column; }
+[data-theme="norns"] .sidebar {
   position: relative; width: 100%; height: auto;
   flex-direction: row; align-items: center;
   border-left: none; border-bottom: 3px solid #2e2940;
   top: auto; right: auto; left: auto; bottom: auto;
   background: linear-gradient(180deg, #0e0c16, #14121e);
 }
-[data-theme="dracula"] .sidebar-header {
+[data-theme="norns"] .sidebar-header {
   border-bottom: none; padding: 14px 24px;
 }
-[data-theme="dracula"] .sidebar-header .brand {
+[data-theme="norns"] .sidebar-header .brand {
   font-family: "Playfair Display",Georgia,serif;
   font-size: 1.4em; font-weight: 700; font-style: italic; color: #bd93f9;
 }
-[data-theme="dracula"] .sidebar-nav {
+[data-theme="norns"] .sidebar-nav {
   flex-direction: row; padding: 0; overflow-x: auto; overflow-y: hidden;
 }
-[data-theme="dracula"] .sidebar-nav a {
+[data-theme="norns"] .sidebar-nav a {
   padding: 14px 20px; font-size: 0.88em; white-space: nowrap;
   border-right: none; font-style: italic;
   border-bottom: 3px solid transparent;
   font-family: "Playfair Display",Georgia,serif;
 }
-[data-theme="dracula"] .sidebar-nav a:hover { border-bottom-color: #bd93f9; }
-[data-theme="dracula"] .main-wrapper { margin-right: 0; }
-[data-theme="dracula"] .page {
+[data-theme="norns"] .sidebar-nav a:hover { border-bottom-color: #bd93f9; }
+[data-theme="norns"] .main-wrapper { margin-right: 0; }
+[data-theme="norns"] .page {
   display: flex; flex-wrap: wrap; gap: 0;
   max-width: 100%; padding: 0;
   align-items: stretch;
 }
-[data-theme="dracula"] .card {
+[data-theme="norns"] .card {
   flex: 1 1 240px; min-height: 400px; margin: 0;
   border-radius: 0; border: none;
   border-right: 2px solid #2e2940;
@@ -1142,46 +1142,46 @@
   display: flex; flex-direction: column;
   position: relative;
 }
-[data-theme="dracula"] .card::before {
+[data-theme="norns"] .card::before {
   content: ""; position: absolute; top: 0; left: 20%; right: 20%;
   height: 60px;
   background: radial-gradient(ellipse at top, rgba(189,147,249,0.06) 0%, transparent 70%);
   pointer-events: none;
 }
-[data-theme="dracula"] .card:last-child { border-right: none; }
-[data-theme="dracula"] .card:hover {
+[data-theme="norns"] .card:last-child { border-right: none; }
+[data-theme="norns"] .card:hover {
   background: rgba(189,147,249,0.03);
 }
-[data-theme="dracula"] .grid-2 { display: contents; }
-[data-theme="dracula"] h2 {
+[data-theme="norns"] .grid-2 { display: contents; }
+[data-theme="norns"] h2 {
   font-family: "Playfair Display",Georgia,serif;
   font-size: 1.4em; font-weight: 700; font-style: italic;
   text-align: center; padding-bottom: 16px; margin-bottom: 20px;
   border-bottom: 3px double #bd93f9;
 }
-[data-theme="dracula"] .prominent-card {
+[data-theme="norns"] .prominent-card {
   flex: 2 1 400px; border-right: 2px solid #bd93f9;
   background: linear-gradient(180deg, rgba(30,24,48,0.5), transparent);
 }
-[data-theme="dracula"] button:not(.menu-toggle) {
+[data-theme="norns"] button:not(.menu-toggle) {
   font-style: italic; letter-spacing: 0.02em;
 }
-[data-theme="dracula"] thead th {
+[data-theme="norns"] thead th {
   font-family: "Playfair Display",Georgia,serif;
   font-style: italic; font-weight: 400;
   border-bottom: 2px solid #2e2940;
 }
 @media (max-width: 768px) {
-  [data-theme="dracula"] .sidebar {
+  [data-theme="norns"] .sidebar {
     position: fixed; width: 240px; height: 100%;
     flex-direction: column; border-bottom: none;
     right: 0; top: 0; bottom: 0; transform: translateX(100%);
     border-left: 2px solid #2e2940;
   }
-  [data-theme="dracula"] .sidebar.open { transform: translateX(0); }
-  [data-theme="dracula"] .sidebar-nav { flex-direction: column; }
-  [data-theme="dracula"] .page { display: block; padding: 16px; }
-  [data-theme="dracula"] .card {
+  [data-theme="norns"] .sidebar.open { transform: translateX(0); }
+  [data-theme="norns"] .sidebar-nav { flex-direction: column; }
+  [data-theme="norns"] .page { display: block; padding: 16px; }
+  [data-theme="norns"] .card {
     min-height: auto; border-right: none;
     border-bottom: 2px solid #2e2940; margin-bottom: 0;
   }
@@ -1192,154 +1192,176 @@
    Sidebar becomes tab bar at top. Page splits into bordered panes
    like a terminal multiplexer. Dense, no rounded corners, pipe chars.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="monokai"] .app-layout { flex-direction: column; }
-[data-theme="monokai"] .sidebar {
+[data-theme="quetzalcoatl"] .app-layout { flex-direction: column; }
+[data-theme="quetzalcoatl"] .sidebar {
   position: relative; width: 100%; height: auto;
   flex-direction: row; align-items: stretch;
   border-left: none; border-bottom: 1px solid #3e3d32;
   top: auto; right: auto; left: auto; bottom: auto;
 }
-[data-theme="monokai"] .sidebar-header {
+[data-theme="quetzalcoatl"] .sidebar-header {
   border-bottom: none; padding: 4px 10px; display: flex; align-items: center;
 }
-[data-theme="monokai"] .sidebar-header .brand {
+[data-theme="quetzalcoatl"] .sidebar-header .brand {
   font-size: 0.72em; color: #a6e22e;
 }
-[data-theme="monokai"] .sidebar-nav {
+[data-theme="quetzalcoatl"] .sidebar-nav {
   flex-direction: row; padding: 0; overflow-x: auto; overflow-y: hidden;
 }
-[data-theme="monokai"] .sidebar-nav a {
+[data-theme="quetzalcoatl"] .sidebar-nav a {
   padding: 4px 14px; font-size: 0.72em; white-space: nowrap;
   border-right: 1px solid #3e3d32; background: #1e1f1a; color: #75715e;
 }
-[data-theme="monokai"] .sidebar-nav a:hover { background: #272822; color: #f8f8f2; }
-[data-theme="monokai"] .main-wrapper { margin-right: 0; }
-[data-theme="monokai"] .page {
+[data-theme="quetzalcoatl"] .sidebar-nav a:hover { background: #272822; color: #f8f8f2; }
+[data-theme="quetzalcoatl"] .main-wrapper { margin-right: 0; }
+[data-theme="quetzalcoatl"] .page {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto;
   gap: 0; max-width: 100%; padding: 0;
 }
-[data-theme="monokai"] .card {
+[data-theme="quetzalcoatl"] .card {
   border: 1px solid #3e3d32; border-radius: 0;
   margin: 0; padding: 6px 8px;
   position: relative; overflow: auto;
   font-size: 0.82em;
 }
-[data-theme="monokai"] .card::before {
+[data-theme="quetzalcoatl"] .card::before {
   content: "─ " attr(class) " "; display: block;
   font-size: 0.65em; color: #75715e; border-bottom: 1px solid #3e3d32;
   padding-bottom: 2px; margin-bottom: 4px;
   text-transform: uppercase; letter-spacing: 0.06em;
 }
-[data-theme="monokai"] .grid-2 {
+[data-theme="quetzalcoatl"] .grid-2 {
   display: contents;
 }
-[data-theme="monokai"] .prominent-card {
+[data-theme="quetzalcoatl"] .prominent-card {
   grid-column: 1 / -1;
   border-left: 3px solid #f92672; background: #1e1f1a;
 }
-[data-theme="monokai"] h2 {
+[data-theme="quetzalcoatl"] h2 {
   font-size: 0.72em; color: #66d9ef; margin-bottom: 6px;
 }
-[data-theme="monokai"] h2::before { content: "// "; color: #75715e; }
-[data-theme="monokai"] button:not(.menu-toggle) {
+[data-theme="quetzalcoatl"] h2::before { content: "// "; color: #75715e; }
+[data-theme="quetzalcoatl"] button:not(.menu-toggle) {
   background: transparent; border: 1px solid #3e3d32;
   font-size: 0.72em; padding: 3px 10px;
 }
-[data-theme="monokai"] button:not(.menu-toggle):hover { border-color: #a6e22e; color: #a6e22e; }
-[data-theme="monokai"] input:not([type="checkbox"]),
-[data-theme="monokai"] select {
+[data-theme="quetzalcoatl"] button:not(.menu-toggle):hover { border-color: #a6e22e; color: #a6e22e; }
+[data-theme="quetzalcoatl"] input:not([type="checkbox"]),
+[data-theme="quetzalcoatl"] select {
   background: #272822; border: 1px solid #3e3d32; font-size: 0.78em;
 }
-[data-theme="monokai"] thead th {
+[data-theme="quetzalcoatl"] thead th {
   font-size: 0.68em; color: #f92672;
   text-transform: uppercase; letter-spacing: 0.08em;
 }
 @media (max-width: 768px) {
-  [data-theme="monokai"] .sidebar {
+  [data-theme="quetzalcoatl"] .sidebar {
     position: fixed; width: 240px; height: 100%;
     flex-direction: column; border-bottom: none;
     right: 0; top: 0; bottom: 0; transform: translateX(100%);
     border-left: 1px solid #3e3d32;
   }
-  [data-theme="monokai"] .sidebar.open { transform: translateX(0); }
-  [data-theme="monokai"] .sidebar-nav { flex-direction: column; }
-  [data-theme="monokai"] .page { grid-template-columns: 1fr; }
+  [data-theme="quetzalcoatl"] .sidebar.open { transform: translateX(0); }
+  [data-theme="quetzalcoatl"] .sidebar-nav { flex-direction: column; }
+  [data-theme="quetzalcoatl"] .page { grid-template-columns: 1fr; }
 }
 
 
-/* ═══════ THEME 8: CYBERPUNK — Angled 3D perspective, glitch, HUD ════
-   Cards are skewed panels in a perspective container, like a holographic
-   heads-up display. Scanline overlay, corner cut-outs, neon edges.
+/* ═══════ THEME 8: ATLAS — Horizontal-scroll HUD panels ═════════════
+   Content flows horizontally in a single scrollable row. Sidebar
+   collapses to a narrow icon strip on the left. Cards become tall
+   viewport-height panels with holographic HUD overlays.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="cyberpunk"] body::after {
-  content: ""; position: fixed; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, transparent, #ff00ff, #00ffff, transparent);
-  z-index: 10000; pointer-events: none;
-  animation: cyberpunk-scan 3s linear infinite;
+[data-theme="atlas"] .app-layout { flex-direction: row; }
+[data-theme="atlas"] .sidebar {
+  position: fixed; left: 0; right: auto; top: 0; bottom: 0;
+  width: 56px; overflow: hidden; border-left: none;
+  border-right: 2px solid rgba(255,0,255,0.3);
+  transition: width 0.25s ease;
 }
-@keyframes cyberpunk-scan {
-  0% { top: 0; } 100% { top: 100vh; }
+[data-theme="atlas"] .sidebar:hover { width: 200px; }
+[data-theme="atlas"] .sidebar-header { padding: 14px 8px; text-align: center; }
+[data-theme="atlas"] .sidebar-header .brand {
+  font-family: "Orbitron",sans-serif; font-size: 0.65em;
+  writing-mode: vertical-lr; text-orientation: mixed;
+  letter-spacing: 0.12em; text-transform: uppercase;
 }
-[data-theme="cyberpunk"] .page {
-  perspective: 1200px; max-width: 1100px;
+[data-theme="atlas"] .sidebar:hover .sidebar-header .brand {
+  writing-mode: horizontal-tb;
+  font-size: 0.88em;
 }
-[data-theme="cyberpunk"] .page::before {
+[data-theme="atlas"] .sidebar-nav a {
+  padding: 12px 8px; font-size: 0.6em; text-align: center;
+  border-right: none; white-space: nowrap; overflow: hidden;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  font-family: "Rajdhani",sans-serif;
+}
+[data-theme="atlas"] .sidebar:hover .sidebar-nav a {
+  padding: 12px 16px; text-align: left; font-size: 0.75em;
+}
+[data-theme="atlas"] .sidebar-nav a:hover {
+  text-shadow: 0 0 12px rgba(255,0,255,0.6); color: #ff00ff;
+}
+[data-theme="atlas"] .main-wrapper {
+  margin-right: 0; margin-left: 56px;
+}
+[data-theme="atlas"] .page {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: minmax(120px, auto);
+  gap: 2px; padding: 2px; max-width: 100%;
+  background: rgba(255,0,255,0.04);
+}
+[data-theme="atlas"] .page::before {
   content: ""; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
   background: repeating-linear-gradient(0deg,
     rgba(255,0,255,0.012) 0px, transparent 1px, transparent 4px);
 }
-[data-theme="cyberpunk"] .card {
-  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
-  border: 2px solid rgba(255,0,255,0.2);
-  transform: rotateY(-1deg) rotateX(0.5deg);
-  transition: transform 0.3s, box-shadow 0.3s;
+[data-theme="atlas"] .card {
+  border-radius: 0; margin: 0;
+  border: 1px solid rgba(255,0,255,0.15);
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  padding: 24px 20px;
 }
-[data-theme="cyberpunk"] .card:nth-child(even) {
-  transform: rotateY(1deg) rotateX(-0.5deg);
-}
-[data-theme="cyberpunk"] .card:hover {
-  transform: rotateY(0) rotateX(0) scale(1.02);
-  border-color: #ff00ff;
-  box-shadow: 0 0 40px rgba(255,0,255,0.15), inset 0 0 20px rgba(255,0,255,0.03);
-}
-[data-theme="cyberpunk"] h2 {
+[data-theme="atlas"] .card:nth-child(1) { grid-column: 1 / 3; }
+[data-theme="atlas"] .card:nth-child(4) { grid-column: 1 / 3; }
+[data-theme="atlas"] .grid-2 { display: contents; }
+[data-theme="atlas"] h2 {
   font-family: "Orbitron",sans-serif;
-  transform: skewX(-2deg);
   text-shadow: 2px 2px rgba(255,0,255,0.4), -1px -1px rgba(0,255,255,0.4);
-  font-size: 0.88em;
+  font-size: 0.88em; text-transform: uppercase; letter-spacing: 0.06em;
 }
-[data-theme="cyberpunk"] .sidebar-nav a {
-  border-right: none; text-transform: uppercase;
-  letter-spacing: 0.14em; font-size: 0.75em;
-  font-family: "Rajdhani",sans-serif;
+[data-theme="atlas"] .prominent-card {
+  grid-column: 1 / 3;
+  border: 2px solid rgba(0,255,255,0.3);
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
 }
-[data-theme="cyberpunk"] .sidebar-nav a:hover {
-  text-shadow: 0 0 12px rgba(255,0,255,0.6); color: #ff00ff;
-}
-[data-theme="cyberpunk"] .sidebar-header .brand {
-  font-family: "Orbitron",sans-serif; font-weight: 900;
-  text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.88em;
-}
-[data-theme="cyberpunk"] button:not(.menu-toggle) {
+[data-theme="atlas"] button:not(.menu-toggle) {
   clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
-  padding: 10px 28px; background: transparent;
-  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 10px 28px; text-transform: uppercase; letter-spacing: 0.08em;
   font-family: "Rajdhani",sans-serif; font-weight: 600;
 }
-[data-theme="cyberpunk"] .prominent-card {
-  clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 24px 100%, 0 calc(100% - 24px));
-  border: 2px solid rgba(0,255,255,0.3);
-  animation: cyberpunk-glow 2s ease-in-out infinite alternate;
-}
-@keyframes cyberpunk-glow {
-  from { box-shadow: 0 0 15px rgba(255,0,255,0.15); }
-  to   { box-shadow: 0 0 25px rgba(255,0,255,0.25), 0 0 50px rgba(0,255,255,0.1); }
-}
-[data-theme="cyberpunk"] thead th {
+[data-theme="atlas"] thead th {
   color: #00ffff; text-transform: uppercase; letter-spacing: 0.1em;
   font-size: 0.75em; font-family: "Rajdhani",sans-serif;
+}
+@media (max-width: 768px) {
+  [data-theme="atlas"] .sidebar {
+    position: fixed; width: 240px; height: 100%;
+    left: auto; right: 0; top: 0;
+    transform: translateX(100%); border-right: none;
+    border-left: 2px solid rgba(255,0,255,0.3);
+  }
+  [data-theme="atlas"] .sidebar.open { transform: translateX(0); }
+  [data-theme="atlas"] .sidebar:hover { width: 240px; }
+  [data-theme="atlas"] .sidebar-header .brand { writing-mode: horizontal-tb; font-size: 0.88em; }
+  [data-theme="atlas"] .sidebar-nav a { text-align: left; font-size: 0.75em; padding: 12px 16px; }
+  [data-theme="atlas"] .main-wrapper { margin-left: 0; }
+  [data-theme="atlas"] .page { display: block; }
+  [data-theme="atlas"] .card { clip-path: none; }
+  [data-theme="atlas"] .card:nth-child(n) { grid-column: auto; }
 }
 
 
@@ -1347,16 +1369,16 @@
    Cards become circular/oval viewport windows. Content is clipped
    to rounded shapes like looking through submarine portholes.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="ocean"] body {
+[data-theme="thoth"] body {
   background: linear-gradient(180deg, #040e18, #061420 50%, #08182a);
   background-attachment: fixed;
 }
-[data-theme="ocean"] .page {
+[data-theme="thoth"] .page {
   display: flex; flex-wrap: wrap;
   justify-content: center; align-items: flex-start;
   gap: 24px; max-width: 1200px; padding: 32px;
 }
-[data-theme="ocean"] .card {
+[data-theme="thoth"] .card {
   border-radius: 50%; width: 340px; height: 340px;
   display: flex; flex-direction: column; justify-content: center;
   align-items: center; text-align: center;
@@ -1366,44 +1388,53 @@
   transition: all 0.5s cubic-bezier(.23,1,.32,1);
   position: relative;
 }
-[data-theme="ocean"] .card::after {
+[data-theme="thoth"] .card::after {
   content: ""; position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px;
   border-radius: 50%; border: 1px solid rgba(77,208,225,0.06);
   pointer-events: none;
 }
-[data-theme="ocean"] .card:hover {
+[data-theme="thoth"] .card:hover {
   transform: scale(1.08);
   box-shadow: inset 0 0 40px rgba(0,10,20,0.3), 0 0 40px rgba(77,208,225,0.1);
   border-color: rgba(77,208,225,0.3);
 }
-[data-theme="ocean"] .grid-2 { display: contents; }
-[data-theme="ocean"] h2 {
+[data-theme="thoth"] .grid-2 { display: contents; }
+[data-theme="thoth"] h2 {
   text-align: center; font-weight: 700; font-size: 1em;
   color: #4dd0e1;
 }
-[data-theme="ocean"] .prominent-card {
+[data-theme="thoth"] .prominent-card {
   width: 440px; height: 440px;
   border: 3px solid rgba(0,188,212,0.25);
   border-radius: 50%;
 }
-[data-theme="ocean"] .sidebar-nav a {
+[data-theme="thoth"] .sidebar-nav a {
   margin: 5px 10px; border-radius: 20px; border-right: none;
   text-align: center; font-size: 0.85em; padding: 10px 16px;
 }
-[data-theme="ocean"] .sidebar-header .brand { font-weight: 700; }
-[data-theme="ocean"] button:not(.menu-toggle) {
+[data-theme="thoth"] .sidebar-header .brand { font-weight: 700; }
+[data-theme="thoth"] button:not(.menu-toggle) {
   border: none; border-radius: 50px; padding: 10px 28px;
   background: linear-gradient(135deg, rgba(8,24,40,0.8), rgba(13,39,65,0.8));
 }
-[data-theme="ocean"] input:not([type="checkbox"]),
-[data-theme="ocean"] select {
+[data-theme="thoth"] input:not([type="checkbox"]),
+[data-theme="thoth"] select {
   border-radius: 50px; padding: 10px 16px; width: auto;
 }
-[data-theme="ocean"] table { font-size: 0.78em; }
-[data-theme="ocean"] .scrollable-content { max-height: 200px; }
+[data-theme="thoth"] table { font-size: 0.78em; }
+[data-theme="thoth"] .scrollable-content { max-height: 200px; }
 @media (max-width: 768px) {
-  [data-theme="ocean"] .card { width: 280px; height: 280px; padding: 30px; }
-  [data-theme="ocean"] .prominent-card { width: 300px; height: 300px; }
+  [data-theme="thoth"] .card {
+    width: 100%; height: auto; min-height: 120px;
+    border-radius: 60px; padding: 24px 32px;
+    text-align: left; justify-content: flex-start;
+    align-items: flex-start;
+  }
+  [data-theme="thoth"] .card::after { border-radius: 60px; }
+  [data-theme="thoth"] .prominent-card {
+    width: 100%; height: auto; border-radius: 60px;
+  }
+  [data-theme="thoth"] h2 { text-align: left; }
 }
 
 
@@ -1411,79 +1442,79 @@
    Cards hang off a vertical line like a timeline, alternating L/R.
    A green "vine" runs down the center connecting everything.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="forest"] .sidebar {
+[data-theme="yggdrasil"] .sidebar {
   right: auto; left: 0;
   border-left: none; border-right: 1px solid #1a3018;
   background: linear-gradient(180deg, #081208, #0a160a);
 }
-[data-theme="forest"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
-[data-theme="forest"] .sidebar-nav a {
+[data-theme="yggdrasil"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
+[data-theme="yggdrasil"] .sidebar-nav a {
   border-right: none; border-left: 3px solid transparent;
   font-family: "Crimson Text",Georgia,serif; font-style: italic;
 }
-[data-theme="forest"] .sidebar-nav a:hover { border-left-color: #81c784; }
-[data-theme="forest"] .sidebar-header .brand {
+[data-theme="yggdrasil"] .sidebar-nav a:hover { border-left-color: #81c784; }
+[data-theme="yggdrasil"] .sidebar-header .brand {
   font-family: "Playfair Display",Georgia,serif; font-style: italic;
 }
-[data-theme="forest"] .page {
+[data-theme="yggdrasil"] .page {
   max-width: 900px; position: relative; padding: 40px 24px;
 }
-[data-theme="forest"] .page::before {
+[data-theme="yggdrasil"] .page::before {
   content: ""; position: absolute; left: 50%; top: 0; bottom: 0;
   width: 3px; transform: translateX(-50%);
   background: linear-gradient(180deg, #2a4a28, #81c784, #2a4a28);
   border-radius: 2px;
 }
-[data-theme="forest"] .grid-2 { display: block; }
-[data-theme="forest"] .card {
+[data-theme="yggdrasil"] .grid-2 { display: block; }
+[data-theme="yggdrasil"] .card {
   width: 42%; position: relative;
   border-left: 4px solid #2a4a28; border-radius: 2px 12px 12px 2px;
   padding: 20px 20px 20px 24px; margin-bottom: 24px;
 }
-[data-theme="forest"] .card::after {
+[data-theme="yggdrasil"] .card::after {
   content: ""; position: absolute; top: 24px;
   width: 12px; height: 12px; border-radius: 50%;
   background: #81c784; border: 3px solid #0a160a;
 }
-[data-theme="forest"] .card:nth-child(odd) {
+[data-theme="yggdrasil"] .card:nth-child(odd) {
   margin-left: 0; margin-right: auto;
 }
-[data-theme="forest"] .card:nth-child(odd)::after {
+[data-theme="yggdrasil"] .card:nth-child(odd)::after {
   right: -8%; /* adjust for 42% width - connector to center line */
 }
-[data-theme="forest"] .card:nth-child(even) {
+[data-theme="yggdrasil"] .card:nth-child(even) {
   margin-left: auto; margin-right: 0;
 }
-[data-theme="forest"] .card:nth-child(even)::after {
+[data-theme="yggdrasil"] .card:nth-child(even)::after {
   left: -8%;
 }
-[data-theme="forest"] .card:hover {
+[data-theme="yggdrasil"] .card:hover {
   border-left-color: #81c784;
   box-shadow: 0 8px 24px rgba(0,12,0,0.5);
 }
-[data-theme="forest"] h2 {
+[data-theme="yggdrasil"] h2 {
   font-style: italic; font-size: 1.2em; color: #a5d6a7;
 }
-[data-theme="forest"] .prominent-card {
+[data-theme="yggdrasil"] .prominent-card {
   width: 60%; margin-left: 20% !important; margin-right: 20% !important;
   border-left: 4px solid #66bb6a; border-radius: 12px;
   background: linear-gradient(135deg, rgba(10,22,10,0.9), rgba(8,18,8,0.9));
 }
-[data-theme="forest"] .prominent-card::after { display: none; }
-[data-theme="forest"] thead th {
+[data-theme="yggdrasil"] .prominent-card::after { display: none; }
+[data-theme="yggdrasil"] thead th {
   font-style: italic; font-weight: 400;
   font-family: "Crimson Text",Georgia,serif;
 }
-[data-theme="forest"] button:not(.menu-toggle) { border-radius: 2px 10px 10px 2px; }
+[data-theme="yggdrasil"] button:not(.menu-toggle) { border-radius: 2px 10px 10px 2px; }
 @media (max-width: 768px) {
-  [data-theme="forest"] .sidebar {
+  [data-theme="yggdrasil"] .sidebar {
     right: 0; left: auto; border-right: none; border-left: 1px solid #1a3018;
   }
-  [data-theme="forest"] .main-wrapper { margin-left: 0; }
-  [data-theme="forest"] .page::before { left: 16px; transform: none; }
-  [data-theme="forest"] .card { width: auto; margin-left: 32px !important; margin-right: 0 !important; }
-  [data-theme="forest"] .card::after { left: -24px !important; right: auto !important; }
-  [data-theme="forest"] .prominent-card { width: auto; margin-left: 32px !important; margin-right: 0 !important; }
+  [data-theme="yggdrasil"] .main-wrapper { margin-left: 0; }
+  [data-theme="yggdrasil"] .page::before { left: 16px; transform: none; }
+  [data-theme="yggdrasil"] .card { width: auto; margin-left: 32px !important; margin-right: 0 !important; }
+  [data-theme="yggdrasil"] .card::after { left: -24px !important; right: auto !important; }
+  [data-theme="yggdrasil"] .prominent-card { width: auto; margin-left: 32px !important; margin-right: 0 !important; }
 }
 
 
@@ -1492,8 +1523,8 @@
    Each section is a horizontal stripe across the entire screen.
    Fixed bottom nav. Content feels like a one-page marketing site.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="sunset"] .app-layout { flex-direction: column; }
-[data-theme="sunset"] .sidebar {
+[data-theme="amaterasu"] .app-layout { flex-direction: column; }
+[data-theme="amaterasu"] .sidebar {
   position: fixed; bottom: 0; top: auto; left: 0; right: 0;
   width: 100%; height: 48px;
   flex-direction: row; align-items: center;
@@ -1501,51 +1532,51 @@
   background: linear-gradient(180deg, #1a0e08, #120a06);
   z-index: 100;
 }
-[data-theme="sunset"] .sidebar-header { border-bottom: none; padding: 0 16px; }
-[data-theme="sunset"] .sidebar-header .brand { font-size: 0.88em; font-weight: 700; color: #ff8a65; }
-[data-theme="sunset"] .sidebar-nav {
+[data-theme="amaterasu"] .sidebar-header { border-bottom: none; padding: 0 16px; }
+[data-theme="amaterasu"] .sidebar-header .brand { font-size: 0.88em; font-weight: 700; color: #ff8a65; }
+[data-theme="amaterasu"] .sidebar-nav {
   flex-direction: row; padding: 0; overflow-x: auto; overflow-y: hidden;
   justify-content: center; flex: 1;
 }
-[data-theme="sunset"] .sidebar-nav a {
+[data-theme="amaterasu"] .sidebar-nav a {
   padding: 12px 20px; font-size: 0.88em; white-space: nowrap; border-right: none;
 }
-[data-theme="sunset"] .main-wrapper { margin-right: 0; margin-bottom: 48px; }
-[data-theme="sunset"] .page { max-width: 100%; padding: 0; }
-[data-theme="sunset"] .card {
+[data-theme="amaterasu"] .main-wrapper { margin-right: 0; margin-bottom: 48px; }
+[data-theme="amaterasu"] .page { max-width: 100%; padding: 0; }
+[data-theme="amaterasu"] .card {
   border: none; border-radius: 0; margin: 0;
   padding: 48px 10vw; min-height: 50vh;
   display: flex; flex-direction: column; justify-content: center;
 }
-[data-theme="sunset"] .card:nth-child(odd) { background: rgba(30,16,8,0.6); }
-[data-theme="sunset"] .card:nth-child(even) { background: rgba(26,14,8,0.85); }
-[data-theme="sunset"] .grid-2 { display: block; }
-[data-theme="sunset"] h2 {
+[data-theme="amaterasu"] .card:nth-child(odd) { background: rgba(30,16,8,0.6); }
+[data-theme="amaterasu"] .card:nth-child(even) { background: rgba(26,14,8,0.85); }
+[data-theme="amaterasu"] .grid-2 { display: block; }
+[data-theme="amaterasu"] h2 {
   font-size: 2em; font-weight: 200; letter-spacing: 0.04em;
 }
-[data-theme="sunset"] h2::after {
+[data-theme="amaterasu"] h2::after {
   content: ""; display: block; width: 80px; height: 3px; margin-top: 12px;
   background: linear-gradient(90deg, #ff8a65, transparent);
 }
-[data-theme="sunset"] .prominent-card {
+[data-theme="amaterasu"] .prominent-card {
   min-height: 60vh; padding: 64px 10vw;
   background: linear-gradient(135deg, rgba(60,30,10,0.6), rgba(26,14,8,0.9)) !important;
   border-left: 6px solid #ff8a65;
 }
-[data-theme="sunset"] button:not(.menu-toggle) {
+[data-theme="amaterasu"] button:not(.menu-toggle) {
   border: none; border-radius: 8px; padding: 14px 32px; font-size: 1em;
 }
 @media (max-width: 768px) {
-  [data-theme="sunset"] .sidebar {
+  [data-theme="amaterasu"] .sidebar {
     position: fixed; width: 240px; height: 100%;
     flex-direction: column; border-top: none;
     right: 0; top: 0; bottom: 0; left: auto;
     transform: translateX(100%); border-left: 1px solid #3a2010;
   }
-  [data-theme="sunset"] .sidebar.open { transform: translateX(0); }
-  [data-theme="sunset"] .sidebar-nav { flex-direction: column; }
-  [data-theme="sunset"] .main-wrapper { margin-bottom: 0; }
-  [data-theme="sunset"] .card { padding: 24px 16px; min-height: auto; }
+  [data-theme="amaterasu"] .sidebar.open { transform: translateX(0); }
+  [data-theme="amaterasu"] .sidebar-nav { flex-direction: column; }
+  [data-theme="amaterasu"] .main-wrapper { margin-bottom: 0; }
+  [data-theme="amaterasu"] .card { padding: 24px 16px; min-height: auto; }
 }
 
 
@@ -1553,56 +1584,56 @@
    Cards float at different positions/rotations in a deep space void.
    Some overlap, some are tilted, creating a cosmic scatter effect.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="midnight-purple"] .page {
+[data-theme="hecate"] .page {
   position: relative; min-height: 100vh;
   max-width: 100%; padding: 32px;
 }
-[data-theme="midnight-purple"] .card {
+[data-theme="hecate"] .card {
   border: 1px solid rgba(171,71,188,0.15);
   position: relative;
   transition: transform 0.4s, box-shadow 0.4s;
 }
-[data-theme="midnight-purple"] .card:nth-child(1) {
+[data-theme="hecate"] .card:nth-child(1) {
   transform: rotate(-1deg); margin-left: 5%;
 }
-[data-theme="midnight-purple"] .card:nth-child(2) {
+[data-theme="hecate"] .card:nth-child(2) {
   transform: rotate(0.8deg); margin-left: 15%; width: 80%;
 }
-[data-theme="midnight-purple"] .card:nth-child(3) {
+[data-theme="hecate"] .card:nth-child(3) {
   transform: rotate(-0.5deg); margin-left: 2%; width: 70%;
 }
-[data-theme="midnight-purple"] .card:nth-child(4) {
+[data-theme="hecate"] .card:nth-child(4) {
   transform: rotate(1.2deg); margin-left: 20%; width: 75%;
 }
-[data-theme="midnight-purple"] .card:nth-child(5) {
+[data-theme="hecate"] .card:nth-child(5) {
   transform: rotate(-0.8deg); margin-left: 8%;
 }
-[data-theme="midnight-purple"] .card:hover {
+[data-theme="hecate"] .card:hover {
   transform: rotate(0) scale(1.03) !important;
   z-index: 10;
   box-shadow: 0 20px 60px rgba(10,5,20,0.7), 0 0 30px rgba(171,71,188,0.08);
 }
-[data-theme="midnight-purple"] .grid-2 { display: block; }
-[data-theme="midnight-purple"] h2 {
+[data-theme="hecate"] .grid-2 { display: block; }
+[data-theme="hecate"] h2 {
   background: linear-gradient(135deg, #ce93d8, #ab47bc, #e1bee7);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
   font-size: 1.4em; font-weight: 600;
 }
-[data-theme="midnight-purple"] .prominent-card {
+[data-theme="hecate"] .prominent-card {
   transform: none !important; margin-left: 0 !important;
   width: 100% !important;
   border: 1px solid rgba(171,71,188,0.3);
   box-shadow: 0 0 60px rgba(171,71,188,0.06);
 }
-[data-theme="midnight-purple"] .sidebar-nav a {
+[data-theme="hecate"] .sidebar-nav a {
   margin: 3px 10px; border-radius: 12px; border-right: none;
   text-align: center;
 }
-[data-theme="midnight-purple"] .sidebar-header .brand { color: #ce93d8; }
-[data-theme="midnight-purple"] button:not(.menu-toggle) { border-radius: 12px; padding: 10px 28px; }
-[data-theme="midnight-purple"] input:not([type="checkbox"]),
-[data-theme="midnight-purple"] select { border-radius: 12px; }
+[data-theme="hecate"] .sidebar-header .brand { color: #ce93d8; }
+[data-theme="hecate"] button:not(.menu-toggle) { border-radius: 12px; padding: 10px 28px; }
+[data-theme="hecate"] input:not([type="checkbox"]),
+[data-theme="hecate"] select { border-radius: 12px; }
 
 
 /* ═══════ THEME 13: SAKURA — Mobile app / iOS card list ══════════════
@@ -1610,74 +1641,75 @@
    items grouped in "card groups" — like iOS Settings. No traditional
    card grid. Everything is stacked vertically with group labels.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="cherry-blossom"] .app-layout { flex-direction: column; align-items: center; }
-[data-theme="cherry-blossom"] .sidebar {
-  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
-  width: auto; max-width: 420px; height: auto;
+[data-theme="freya"] .app-layout { flex-direction: column; align-items: center; }
+[data-theme="freya"] .sidebar {
+  position: fixed; top: 0; left: 0; right: 0; bottom: auto;
+  width: 100%; max-width: none; height: auto;
   flex-direction: row; align-items: center;
   border: none; background: rgba(252,232,239,0.92);
-  border-radius: 50px; padding: 0 6px;
-  box-shadow: 0 4px 24px rgba(233,30,99,0.12);
+  border-radius: 0; padding: 0 16px;
+  box-shadow: 0 2px 12px rgba(233,30,99,0.08);
   backdrop-filter: blur(20px); z-index: 100;
+  transform: none;
 }
-[data-theme="cherry-blossom"] .sidebar-header {
+[data-theme="freya"] .sidebar-header {
   border-bottom: none; padding: 6px 12px;
 }
-[data-theme="cherry-blossom"] .sidebar-header .brand {
+[data-theme="freya"] .sidebar-header .brand {
   font-size: 0.82em; font-weight: 800; color: #c2185b;
 }
-[data-theme="cherry-blossom"] .sidebar-nav {
+[data-theme="freya"] .sidebar-nav {
   flex-direction: row; padding: 0; gap: 2px;
   overflow-x: auto; overflow-y: hidden;
 }
-[data-theme="cherry-blossom"] .sidebar-nav a {
+[data-theme="freya"] .sidebar-nav a {
   padding: 6px 12px; font-size: 0.75em; white-space: nowrap;
   border-right: none; border-radius: 50px; font-weight: 600;
 }
-[data-theme="cherry-blossom"] .sidebar-nav a:hover { background: rgba(194,24,91,0.08); }
-[data-theme="cherry-blossom"] .main-wrapper { margin-right: 0; margin-bottom: 72px; width: 100%; }
-[data-theme="cherry-blossom"] .page { max-width: 520px; margin: 0 auto; padding: 16px; }
-[data-theme="cherry-blossom"] .card {
+[data-theme="freya"] .sidebar-nav a:hover { background: rgba(194,24,91,0.08); }
+[data-theme="freya"] .main-wrapper { margin-right: 0; padding-top: 52px; width: 100%; }
+[data-theme="freya"] .page { max-width: 880px; margin: 0 auto; padding: 20px 32px; }
+[data-theme="freya"] .card {
   border-radius: 16px; margin-bottom: 8px;
   border: none; padding: 16px 20px;
   box-shadow: 0 1px 3px rgba(233,30,99,0.06);
 }
-[data-theme="cherry-blossom"] .card + .card { border-radius: 16px; }
-[data-theme="cherry-blossom"] .grid-2 {
+[data-theme="freya"] .card + .card { border-radius: 16px; }
+[data-theme="freya"] .grid-2 {
   display: block;
 }
-[data-theme="cherry-blossom"] .grid-2 > .card:first-child {
+[data-theme="freya"] .grid-2 > .card:first-child {
   border-radius: 16px 16px 4px 4px; margin-bottom: 1px;
 }
-[data-theme="cherry-blossom"] .grid-2 > .card:last-child {
+[data-theme="freya"] .grid-2 > .card:last-child {
   border-radius: 4px 4px 16px 16px;
 }
-[data-theme="cherry-blossom"] h2 {
+[data-theme="freya"] h2 {
   font-size: 0.78em; text-transform: uppercase; letter-spacing: 0.06em;
   color: #c2185b; font-weight: 600; margin-bottom: 8px;
 }
-[data-theme="cherry-blossom"] .prominent-card {
+[data-theme="freya"] .prominent-card {
   border-radius: 20px; border: none;
   background: linear-gradient(135deg, #fce4ec, #fce8ef);
 }
-[data-theme="cherry-blossom"] button:not(.menu-toggle) {
+[data-theme="freya"] button:not(.menu-toggle) {
   border: none; border-radius: 12px; padding: 12px 28px; font-weight: 700;
   width: 100%;
 }
-[data-theme="cherry-blossom"] input:not([type="checkbox"]),
-[data-theme="cherry-blossom"] select {
+[data-theme="freya"] input:not([type="checkbox"]),
+[data-theme="freya"] select {
   border-radius: 12px; padding: 12px 16px; border: 1px solid #f0b0c0;
 }
 @media (max-width: 768px) {
-  [data-theme="cherry-blossom"] .sidebar {
+  [data-theme="freya"] .sidebar {
     position: fixed; width: 240px; max-width: none; height: 100%;
     flex-direction: column; border-radius: 0;
     right: 0; top: 0; bottom: auto; left: auto;
     transform: translateX(100%); border-left: 1px solid #f8d0dd;
   }
-  [data-theme="cherry-blossom"] .sidebar.open { transform: translateX(0); }
-  [data-theme="cherry-blossom"] .sidebar-nav { flex-direction: column; }
-  [data-theme="cherry-blossom"] .main-wrapper { margin-bottom: 0; }
+  [data-theme="freya"] .sidebar.open { transform: translateX(0); }
+  [data-theme="freya"] .sidebar-nav { flex-direction: column; }
+  [data-theme="freya"] .main-wrapper { margin-bottom: 0; }
 }
 
 
@@ -1685,84 +1717,84 @@
    Full terminal emulation. Sidebar becomes function-key bar at bottom.
    Cards are box-drawn panels like a DOS dialog. Everything monospace.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="retro-terminal"] .app-layout { flex-direction: column; }
-[data-theme="retro-terminal"] .sidebar {
+[data-theme="hermes"] .app-layout { flex-direction: column; }
+[data-theme="hermes"] .sidebar {
   position: fixed; bottom: 0; top: auto; left: 0; right: 0;
   width: 100%; height: 28px;
   flex-direction: row; align-items: center;
   border-left: none; border-top: 1px solid #004400;
   z-index: 100; background: #000800;
 }
-[data-theme="retro-terminal"] .sidebar-header {
+[data-theme="hermes"] .sidebar-header {
   border-bottom: none; padding: 0 8px;
 }
-[data-theme="retro-terminal"] .sidebar-header .brand {
+[data-theme="hermes"] .sidebar-header .brand {
   font-size: 0.7em; color: #00ff00;
 }
-[data-theme="retro-terminal"] .sidebar-header .brand::before { content: "$ "; }
-[data-theme="retro-terminal"] .sidebar-nav {
+[data-theme="hermes"] .sidebar-header .brand::before { content: "$ "; }
+[data-theme="hermes"] .sidebar-nav {
   flex-direction: row; padding: 0;
 }
-[data-theme="retro-terminal"] .sidebar-nav a {
+[data-theme="hermes"] .sidebar-nav a {
   padding: 4px 12px; font-size: 0.68em; white-space: nowrap;
   text-transform: uppercase; letter-spacing: 0.1em; border-right: none;
   counter-increment: fnkey;
 }
-[data-theme="retro-terminal"] .sidebar-nav a::before {
+[data-theme="hermes"] .sidebar-nav a::before {
   content: "F" counter(fnkey) "=";
   color: #005500;
 }
-[data-theme="retro-terminal"] .sidebar-nav { counter-reset: fnkey; }
-[data-theme="retro-terminal"] .main-wrapper { margin-right: 0; margin-bottom: 28px; }
-[data-theme="retro-terminal"] body {
+[data-theme="hermes"] .sidebar-nav { counter-reset: fnkey; }
+[data-theme="hermes"] .main-wrapper { margin-right: 0; margin-bottom: 28px; }
+[data-theme="hermes"] body {
   text-shadow: 0 0 4px rgba(0,255,0,0.12);
 }
-[data-theme="retro-terminal"] .page::before {
+[data-theme="hermes"] .page::before {
   content: ""; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
   background: repeating-linear-gradient(0deg,
     rgba(0,255,0,0.02) 0px, transparent 1px, transparent 3px);
 }
-[data-theme="retro-terminal"] .page::after {
+[data-theme="hermes"] .page::after {
   content: ""; position: fixed; inset: 0; z-index: 9998; pointer-events: none;
   background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.35) 100%);
 }
-[data-theme="retro-terminal"] .page { max-width: 80ch; }
-[data-theme="retro-terminal"] .grid-2 { display: block; }
-[data-theme="retro-terminal"] .card {
+[data-theme="hermes"] .page { max-width: 80ch; }
+[data-theme="hermes"] .grid-2 { display: block; }
+[data-theme="hermes"] .card {
   border: 1px dashed #004400; border-radius: 0;
   position: relative; padding: 12px;
 }
-[data-theme="retro-terminal"] h2 { font-size: 0.82em; }
-[data-theme="retro-terminal"] h2::before { content: "> "; color: #005500; }
-[data-theme="retro-terminal"] button:not(.menu-toggle) {
+[data-theme="hermes"] h2 { font-size: 0.82em; }
+[data-theme="hermes"] h2::before { content: "> "; color: #005500; }
+[data-theme="hermes"] button:not(.menu-toggle) {
   background: transparent; border: 1px dashed #00ff00;
 }
-[data-theme="retro-terminal"] button:not(.menu-toggle)::before { content: "[ "; }
-[data-theme="retro-terminal"] button:not(.menu-toggle)::after { content: " ]"; }
-[data-theme="retro-terminal"] button:not(.menu-toggle):hover {
+[data-theme="hermes"] button:not(.menu-toggle)::before { content: "[ "; }
+[data-theme="hermes"] button:not(.menu-toggle)::after { content: " ]"; }
+[data-theme="hermes"] button:not(.menu-toggle):hover {
   background: rgba(0,255,0,0.06); text-shadow: 0 0 8px rgba(0,255,0,0.3);
 }
-[data-theme="retro-terminal"] .prominent-card {
+[data-theme="hermes"] .prominent-card {
   border: 1px solid #00ff00; background: rgba(0,8,0,0.5);
 }
-[data-theme="retro-terminal"] thead th {
+[data-theme="hermes"] thead th {
   font-size: 0.72em; text-transform: uppercase; letter-spacing: 0.1em;
   border-bottom: 1px dashed #004400;
 }
-[data-theme="retro-terminal"] input:not([type="checkbox"]),
-[data-theme="retro-terminal"] select {
+[data-theme="hermes"] input:not([type="checkbox"]),
+[data-theme="hermes"] select {
   border: 1px solid #004400; background: transparent; border-radius: 0;
 }
 @media (max-width: 768px) {
-  [data-theme="retro-terminal"] .sidebar {
+  [data-theme="hermes"] .sidebar {
     position: fixed; width: 240px; height: 100%;
     flex-direction: column; border-top: none;
     right: 0; top: 0; bottom: 0; left: auto;
     transform: translateX(100%); border-left: 1px dashed #004400;
   }
-  [data-theme="retro-terminal"] .sidebar.open { transform: translateX(0); }
-  [data-theme="retro-terminal"] .sidebar-nav { flex-direction: column; counter-reset: fnkey; }
-  [data-theme="retro-terminal"] .main-wrapper { margin-bottom: 0; }
+  [data-theme="hermes"] .sidebar.open { transform: translateX(0); }
+  [data-theme="hermes"] .sidebar-nav { flex-direction: column; counter-reset: fnkey; }
+  [data-theme="hermes"] .main-wrapper { margin-bottom: 0; }
 }
 
 
@@ -1770,80 +1802,80 @@
    Top header bar. Content as overlapping, oversized typographic blocks.
    No card borders. Text is massive and raw. Like a punk zine layout.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="high-contrast"] .app-layout { flex-direction: column; }
-[data-theme="high-contrast"] .sidebar {
+[data-theme="prometheus"] .app-layout { flex-direction: column; }
+[data-theme="prometheus"] .sidebar {
   position: relative; width: 100%; height: auto;
   flex-direction: row; align-items: center; flex-wrap: wrap;
   border-left: none; border-bottom: 8px solid #ffff00;
   top: auto; right: auto; left: auto; bottom: auto;
   background: #000;
 }
-[data-theme="high-contrast"] .sidebar-header {
+[data-theme="prometheus"] .sidebar-header {
   border-bottom: none; padding: 12px 20px;
 }
-[data-theme="high-contrast"] .sidebar-header .brand {
+[data-theme="prometheus"] .sidebar-header .brand {
   font-size: 2em; font-weight: 700; text-transform: uppercase; color: #ffff00;
 }
-[data-theme="high-contrast"] .sidebar-nav {
+[data-theme="prometheus"] .sidebar-nav {
   flex-direction: row; padding: 0; flex-wrap: wrap;
 }
-[data-theme="high-contrast"] .sidebar-nav a {
+[data-theme="prometheus"] .sidebar-nav a {
   padding: 12px 20px; font-size: 1.1em; white-space: nowrap;
   text-transform: uppercase; font-weight: 700; border-right: none; color: #fff;
 }
-[data-theme="high-contrast"] .sidebar-nav a:hover {
+[data-theme="prometheus"] .sidebar-nav a:hover {
   background: #ffff00; color: #000;
 }
-[data-theme="high-contrast"] .main-wrapper { margin-right: 0; }
-[data-theme="high-contrast"] .page { max-width: 100%; padding: 0; }
-[data-theme="high-contrast"] .card {
+[data-theme="prometheus"] .main-wrapper { margin-right: 0; }
+[data-theme="prometheus"] .page { max-width: 100%; padding: 0; }
+[data-theme="prometheus"] .card {
   border: none; border-radius: 0; margin: 0;
   padding: 40px 48px;
   border-bottom: 4px solid #fff;
 }
-[data-theme="high-contrast"] .card:nth-child(odd) { padding-left: 10vw; }
-[data-theme="high-contrast"] .card:nth-child(even) { padding-left: 5vw; padding-right: 15vw; }
-[data-theme="high-contrast"] .grid-2 { display: block; }
-[data-theme="high-contrast"] h2 {
+[data-theme="prometheus"] .card:nth-child(odd) { padding-left: 10vw; }
+[data-theme="prometheus"] .card:nth-child(even) { padding-left: 5vw; padding-right: 15vw; }
+[data-theme="prometheus"] .grid-2 { display: block; }
+[data-theme="prometheus"] h2 {
   font-size: 3em; font-weight: 700;
   text-transform: uppercase; line-height: 0.95;
   margin-bottom: 24px;
   text-decoration: underline; text-decoration-thickness: 6px;
   text-underline-offset: 8px; text-decoration-color: #ffff00;
 }
-[data-theme="high-contrast"] .prominent-card {
+[data-theme="prometheus"] .prominent-card {
   background: #ffff00; color: #000; border: none;
   padding: 48px;
 }
-[data-theme="high-contrast"] .prominent-card h2 { color: #000; text-decoration-color: #000; }
-[data-theme="high-contrast"] *:focus-visible {
+[data-theme="prometheus"] .prominent-card h2 { color: #000; text-decoration-color: #000; }
+[data-theme="prometheus"] *:focus-visible {
   outline: 4px solid #ffff00 !important; outline-offset: 3px;
 }
-[data-theme="high-contrast"] button:not(.menu-toggle) {
+[data-theme="prometheus"] button:not(.menu-toggle) {
   border: 4px solid #fff; font-weight: 700;
   text-transform: uppercase; font-size: 1.1em; padding: 14px 28px;
 }
-[data-theme="high-contrast"] button:not(.menu-toggle):hover {
+[data-theme="prometheus"] button:not(.menu-toggle):hover {
   background: #ffff00; color: #000; border-color: #ffff00;
 }
-[data-theme="high-contrast"] thead th {
+[data-theme="prometheus"] thead th {
   background: #fff; color: #000; font-weight: 700; font-size: 1em;
 }
-[data-theme="high-contrast"] input:not([type="checkbox"]),
-[data-theme="high-contrast"] select {
+[data-theme="prometheus"] input:not([type="checkbox"]),
+[data-theme="prometheus"] select {
   border: 3px solid #fff; font-size: 1.1em;
 }
 @media (max-width: 768px) {
-  [data-theme="high-contrast"] .sidebar {
+  [data-theme="prometheus"] .sidebar {
     position: fixed; width: 260px; height: 100%;
     flex-direction: column; flex-wrap: nowrap; border-bottom: none;
     right: 0; top: 0; bottom: 0; transform: translateX(100%);
     border-left: 8px solid #ffff00;
   }
-  [data-theme="high-contrast"] .sidebar.open { transform: translateX(0); }
-  [data-theme="high-contrast"] .sidebar-nav { flex-direction: column; flex-wrap: nowrap; }
-  [data-theme="high-contrast"] h2 { font-size: 1.8em; }
-  [data-theme="high-contrast"] .card { padding: 24px 16px; }
+  [data-theme="prometheus"] .sidebar.open { transform: translateX(0); }
+  [data-theme="prometheus"] .sidebar-nav { flex-direction: column; flex-wrap: nowrap; }
+  [data-theme="prometheus"] h2 { font-size: 1.8em; }
+  [data-theme="prometheus"] .card { padding: 24px 16px; }
 }
 
 
@@ -1851,52 +1883,52 @@
    Cards become tiles in a tight masonry grid with deep embossed
    shadows. Irregular alternating sizes. Handmade, wonky feel.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="warm-earth"] .page {
+[data-theme="gaia"] .page {
   column-count: 3; column-gap: 12px;
   max-width: 1100px; padding: 16px;
 }
-[data-theme="warm-earth"] .card {
+[data-theme="gaia"] .card {
   break-inside: avoid; display: inline-block; width: 100%;
   border-radius: 3px 14px 3px 14px;
   box-shadow: inset 0 3px 10px rgba(0,0,0,0.25), 0 6px 20px rgba(20,14,10,0.35);
   margin-bottom: 12px; position: relative;
 }
-[data-theme="warm-earth"] .card::after {
+[data-theme="gaia"] .card::after {
   content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
   background: linear-gradient(90deg, transparent, rgba(200,160,96,0.15), transparent);
 }
-[data-theme="warm-earth"] .card:hover {
+[data-theme="gaia"] .card:hover {
   box-shadow: inset 0 3px 10px rgba(0,0,0,0.15), 0 10px 32px rgba(20,14,10,0.45);
   transform: translateY(-2px) rotate(-0.3deg);
 }
-[data-theme="warm-earth"] .grid-2 { display: block; column-count: 1; }
-[data-theme="warm-earth"] h2 {
+[data-theme="gaia"] .grid-2 { display: block; column-count: 1; }
+[data-theme="gaia"] h2 {
   font-style: italic; font-size: 1.2em;
   border-bottom: 3px double #3a2e20; padding-bottom: 8px;
 }
-[data-theme="warm-earth"] .prominent-card {
+[data-theme="gaia"] .prominent-card {
   column-span: all;
   border-left: 8px solid #c8a060;
   border-radius: 0 14px 14px 0;
 }
-[data-theme="warm-earth"] .sidebar-header .brand {
+[data-theme="gaia"] .sidebar-header .brand {
   font-family: "Playfair Display",Georgia,serif; font-style: italic;
 }
-[data-theme="warm-earth"] thead th {
+[data-theme="gaia"] thead th {
   font-style: italic; font-weight: 400;
   font-family: "Playfair Display",Georgia,serif;
 }
-[data-theme="warm-earth"] button:not(.menu-toggle) {
+[data-theme="gaia"] button:not(.menu-toggle) {
   border-radius: 2px 10px 2px 10px;
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
 }
-[data-theme="warm-earth"] input:not([type="checkbox"]),
-[data-theme="warm-earth"] select {
+[data-theme="gaia"] input:not([type="checkbox"]),
+[data-theme="gaia"] select {
   border-radius: 2px 8px 2px 8px;
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
 }
 @media (max-width: 768px) {
-  [data-theme="warm-earth"] .page { column-count: 1; }
+  [data-theme="gaia"] .page { column-count: 1; }
 }
 
 
@@ -1905,196 +1937,232 @@
    content marked only by whitespace and subtle horizontal rules.
    Ultra-minimal, nearly invisible UI.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="arctic"] .sidebar {
+[data-theme="skadi"] .sidebar {
   position: fixed; top: 0; left: 50%; transform: translateX(-50%);
-  width: auto; max-width: 680px; height: auto;
+  width: auto; max-width: 680px; height: auto; bottom: auto;
   flex-direction: row; align-items: center;
   border: none; background: rgba(250,251,252,0.85);
   backdrop-filter: blur(10px); padding: 0 16px; z-index: 100;
 }
-[data-theme="arctic"] .sidebar-header {
+[data-theme="skadi"] .sidebar-header {
   border-bottom: none; padding: 10px 16px;
 }
-[data-theme="arctic"] .sidebar-header .brand {
+[data-theme="skadi"] .sidebar-header .brand {
   font-weight: 300; font-size: 0.85em;
   text-transform: uppercase; letter-spacing: 0.12em;
 }
-[data-theme="arctic"] .sidebar-nav {
+[data-theme="skadi"] .sidebar-nav {
   flex-direction: row; padding: 0; overflow-x: auto; overflow-y: hidden;
 }
-[data-theme="arctic"] .sidebar-nav a {
+[data-theme="skadi"] .sidebar-nav a {
   padding: 10px 14px; font-size: 0.75em; white-space: nowrap;
   text-transform: uppercase; letter-spacing: 0.08em; font-weight: 300;
   border-right: none; color: #8a909a;
 }
-[data-theme="arctic"] .sidebar-nav a:hover { color: #2a2e34; }
-[data-theme="arctic"] .main-wrapper { margin-right: 0; padding-top: 44px; }
-[data-theme="arctic"] .page {
-  max-width: 600px; margin: 0 auto; padding: 60px 20px;
+[data-theme="skadi"] .sidebar-nav a:hover { color: #2a2e34; }
+[data-theme="skadi"] .main-wrapper { margin-right: 0; padding-top: 52px; }
+[data-theme="skadi"] .page {
+  max-width: 960px; margin: 0 auto; padding: 24px 32px;
 }
-[data-theme="arctic"] .card {
-  background: transparent; border: none; margin: 0; border-radius: 0;
-  padding: 40px 0;
+[data-theme="skadi"] .card {
+  background: rgba(255,255,255,0.6); border: 1px solid #e4e8ec;
+  margin: 0; border-radius: 6px; padding: 20px 24px;
 }
-[data-theme="arctic"] .card + .card {
-  border-top: 1px solid #e8ecf0;
+[data-theme="skadi"] .card + .card {
+  margin-top: 12px;
 }
-[data-theme="arctic"] .grid-2 { display: block; }
-[data-theme="arctic"] h2 {
+[data-theme="skadi"] .grid-2 { display: block; }
+[data-theme="skadi"] h2 {
   font-weight: 300; font-size: 0.78em; color: #8a909a;
   text-transform: uppercase; letter-spacing: 0.12em;
 }
-[data-theme="arctic"] .prominent-card {
-  background: transparent; border: none; padding: 40px 0;
+[data-theme="skadi"] .prominent-card {
+  background: rgba(94,158,214,0.06); border: 1px solid #c8ddf0; padding: 20px 24px;
+  border-radius: 8px;
 }
-[data-theme="arctic"] button:not(.menu-toggle) {
+[data-theme="skadi"] button:not(.menu-toggle) {
   font-size: 0.78em; text-transform: uppercase; letter-spacing: 0.1em;
   font-weight: 300;
 }
-[data-theme="arctic"] input:not([type="checkbox"]),
-[data-theme="arctic"] select {
+[data-theme="skadi"] input:not([type="checkbox"]),
+[data-theme="skadi"] select {
   border: none; border-bottom: 1px solid #d4d8dc;
   border-radius: 0; padding: 10px 0; background: transparent;
 }
-[data-theme="arctic"] table { font-size: 0.85em; }
-[data-theme="arctic"] th {
+[data-theme="skadi"] table { font-size: 0.85em; }
+[data-theme="skadi"] th {
   font-weight: 300; text-transform: uppercase; letter-spacing: 0.08em;
   font-size: 0.78em; color: #8a909a;
 }
 @media (max-width: 768px) {
-  [data-theme="arctic"] .sidebar {
+  [data-theme="skadi"] .sidebar {
     position: fixed; width: 240px; max-width: none; height: 100%;
     flex-direction: column; backdrop-filter: none;
     right: 0; top: 0; bottom: 0; left: auto;
     transform: translateX(100%); background: #fafbfc;
     border-left: 1px solid #e4e8ec;
   }
-  [data-theme="arctic"] .sidebar.open { transform: translateX(0); }
-  [data-theme="arctic"] .sidebar-nav { flex-direction: column; }
-  [data-theme="arctic"] .main-wrapper { padding-top: 0; }
+  [data-theme="skadi"] .sidebar.open { transform: translateX(0); }
+  [data-theme="skadi"] .sidebar-nav { flex-direction: column; }
+  [data-theme="skadi"] .main-wrapper { padding-top: 0; }
 }
 
 
-/* ═══════ THEME 18: ARCADE — 8-bit pixel window manager ══════════════
-   Cards become retro OS windows with title bars, minimize/close buttons.
-   Pixel-art borders, hard drop shadows, bitmap feel.
+/* ═══════ THEME 18: ARCADE — Tiled window manager ════════════════════
+   Cards become retro OS windows with title bars. Layout uses CSS grid
+   with irregular tile sizes — some cards span two columns, creating
+   a classic tiling WM feel (like i3/dwm).
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="neon"] .card {
-  border: 4px solid #39ff14; border-radius: 0;
-  position: relative;
-  padding-top: 36px;
-  box-shadow: 8px 8px 0 rgba(57,255,20,0.2);
-  image-rendering: pixelated;
+[data-theme="raijin"] .sidebar {
+  position: fixed; bottom: 0; left: 0; right: 0; top: auto;
+  width: 100%; height: auto;
+  flex-direction: row; align-items: center;
+  border-left: none; border-top: 4px solid #39ff14;
+  background: #050505; z-index: 100;
 }
-[data-theme="neon"] .card::before {
+[data-theme="raijin"] .sidebar-header { border-bottom: none; padding: 6px 12px; }
+[data-theme="raijin"] .sidebar-header .brand {
+  font-size: 0.62em; text-transform: uppercase; letter-spacing: 0.06em;
+}
+[data-theme="raijin"] .sidebar-nav {
+  flex-direction: row; padding: 0; overflow-x: auto; overflow-y: hidden;
+}
+[data-theme="raijin"] .sidebar-nav a {
+  padding: 6px 12px; font-size: 0.58em; white-space: nowrap;
+  border-right: 4px solid #1a1a1a; text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+[data-theme="raijin"] .main-wrapper { margin-right: 0; margin-bottom: 44px; }
+[data-theme="raijin"] .page {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: minmax(180px, auto);
+  gap: 0; padding: 0; max-width: 100%;
+}
+[data-theme="raijin"] .card {
+  border: 4px solid #39ff14; border-radius: 0;
+  position: relative; margin: 0;
+  padding: 40px 16px 16px;
+  box-shadow: none;
+}
+[data-theme="raijin"] .card::before {
   content: ""; position: absolute; top: 0; left: 0; right: 0;
   height: 28px; background: #39ff14;
   border-bottom: 4px solid #1a1a1a;
 }
-[data-theme="neon"] .card::after {
+[data-theme="raijin"] .card::after {
   content: "_ □ ✕"; position: absolute; top: 4px; right: 8px;
   font-size: 0.6em; color: #1a1a1a; letter-spacing: 6px; font-weight: 700;
   z-index: 1;
 }
-[data-theme="neon"] .card:hover {
-  box-shadow: 10px 10px 0 rgba(57,255,20,0.3);
-  transform: translate(-2px, -2px);
-}
-[data-theme="neon"] .card:nth-child(even)::before { background: #ff073a; }
-[data-theme="neon"] h2 {
+[data-theme="raijin"] .card:nth-child(1) { grid-column: 1 / 3; }
+[data-theme="raijin"] .card:nth-child(4) { grid-column: 2 / 4; }
+[data-theme="raijin"] .card:nth-child(even)::before { background: #ff073a; }
+[data-theme="raijin"] .grid-2 { display: contents; }
+[data-theme="raijin"] h2 {
   font-size: 0.62em; text-transform: uppercase;
   letter-spacing: 0.04em;
   text-shadow: 2px 2px #ff073a;
 }
-[data-theme="neon"] .grid-2 { display: block; }
-[data-theme="neon"] .prominent-card {
+[data-theme="raijin"] .prominent-card {
+  grid-column: 1 / 3;
   border: 4px solid #ff073a;
-  box-shadow: 8px 8px 0 rgba(255,7,58,0.2);
-  padding-top: 36px;
+  padding-top: 40px;
 }
-[data-theme="neon"] .prominent-card::before { background: #ff073a; }
-[data-theme="neon"] button:not(.menu-toggle) {
+[data-theme="raijin"] .prominent-card::before { background: #ff073a; }
+[data-theme="raijin"] button:not(.menu-toggle) {
   box-shadow: 4px 4px 0 rgba(57,255,20,0.3);
   font-size: 0.62em; padding: 6px 14px; border-radius: 0;
 }
-[data-theme="neon"] .sidebar-nav a {
-  text-transform: uppercase; letter-spacing: 0.04em;
-  border-right: none; font-size: 0.58em; padding: 8px 10px;
-}
-[data-theme="neon"] .sidebar-header .brand { font-size: 0.62em; text-transform: uppercase; }
-[data-theme="neon"] thead th {
+[data-theme="raijin"] thead th {
   color: #ff073a; font-size: 0.58em;
   text-transform: uppercase; letter-spacing: 0.06em;
 }
-[data-theme="neon"] input:not([type="checkbox"]),
-[data-theme="neon"] select {
+[data-theme="raijin"] input:not([type="checkbox"]),
+[data-theme="raijin"] select {
   border: 3px solid #39ff14; font-size: 0.65em; border-radius: 0;
 }
-[data-theme="neon"] table { font-size: 0.68em; }
+[data-theme="raijin"] table { font-size: 0.68em; }
+@media (max-width: 768px) {
+  [data-theme="raijin"] .sidebar {
+    position: fixed; width: 240px; height: 100%;
+    flex-direction: column; border-top: none;
+    right: 0; top: 0; left: auto; bottom: auto;
+    transform: translateX(100%); border-left: 4px solid #39ff14;
+  }
+  [data-theme="raijin"] .sidebar.open { transform: translateX(0); }
+  [data-theme="raijin"] .sidebar-nav { flex-direction: column; }
+  [data-theme="raijin"] .sidebar-nav a { border-right: none; }
+  [data-theme="raijin"] .main-wrapper { margin-bottom: 0; }
+  [data-theme="raijin"] .page {
+    display: block;
+  }
+  [data-theme="raijin"] .card:nth-child(n) { grid-column: auto; }
+}
 
 
 /* ═══════ THEME 19: NEWSPAPER — Multi-column editorial ═══════════════
    Left sidebar with serif editorial nav. Content flows in newspaper-
    style CSS columns. No visible cards — content flows like print.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="paper"] .sidebar {
+[data-theme="seshat"] .sidebar {
   right: auto; left: 0;
   border-left: none; border-right: 1px solid #c8c0b0;
 }
-[data-theme="paper"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
-[data-theme="paper"] .sidebar-nav a {
+[data-theme="seshat"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
+[data-theme="seshat"] .sidebar-nav a {
   border-right: none; border-left: 2px solid transparent;
   font-family: Georgia,serif; font-style: italic; font-size: 0.88em;
 }
-[data-theme="paper"] .sidebar-nav a:hover { border-left-color: #8b4513; }
-[data-theme="paper"] .sidebar-header .brand {
+[data-theme="seshat"] .sidebar-nav a:hover { border-left-color: #8b4513; }
+[data-theme="seshat"] .sidebar-header .brand {
   font-family: "Playfair Display",Georgia,serif;
   font-size: 1.3em; font-weight: 700;
 }
-[data-theme="paper"] .page {
+[data-theme="seshat"] .page {
   column-count: 3; column-gap: 28px;
   column-rule: 1px solid #c8c0b0;
   max-width: 1100px; padding: 32px;
 }
-[data-theme="paper"] .card {
+[data-theme="seshat"] .card {
   break-inside: avoid; display: inline-block; width: 100%;
   border: none; border-radius: 0; background: transparent;
   margin: 0 0 20px; padding: 0;
   box-shadow: none;
 }
-[data-theme="paper"] .card + .card::before {
+[data-theme="seshat"] .card + .card::before {
   content: ""; display: block; border-top: 1px solid #c8c0b0;
   margin-bottom: 16px;
 }
-[data-theme="paper"] .grid-2 { display: block; column-count: 1; }
-[data-theme="paper"] h2 {
+[data-theme="seshat"] .grid-2 { display: block; column-count: 1; }
+[data-theme="seshat"] h2 {
   font-family: "Playfair Display",Georgia,serif;
   font-size: 1.8em; line-height: 1.1;
   border-bottom: 3px solid #2a2520; padding-bottom: 8px;
   margin-bottom: 12px; letter-spacing: -0.02em;
 }
-[data-theme="paper"] .prominent-card {
+[data-theme="seshat"] .prominent-card {
   column-span: all;
   border: none; border-top: 4px double #2a2520;
   border-bottom: 2px solid #2a2520;
   border-radius: 0; padding: 20px 0; background: transparent;
   margin-bottom: 20px;
 }
-[data-theme="paper"] button:not(.menu-toggle) { font-family: Georgia,serif; }
-[data-theme="paper"] thead th {
+[data-theme="seshat"] button:not(.menu-toggle) { font-family: Georgia,serif; }
+[data-theme="seshat"] thead th {
   font-family: "Playfair Display",Georgia,serif;
   font-style: italic; font-weight: 400;
 }
-[data-theme="paper"] input:not([type="checkbox"]),
-[data-theme="paper"] select {
+[data-theme="seshat"] input:not([type="checkbox"]),
+[data-theme="seshat"] select {
   border: 1px solid #c8c0b0; background: #faf6ee;
 }
 @media (max-width: 768px) {
-  [data-theme="paper"] .sidebar {
+  [data-theme="seshat"] .sidebar {
     right: 0; left: auto; border-right: none; border-left: 1px solid #c8c0b0;
   }
-  [data-theme="paper"] .main-wrapper { margin-left: 0; }
-  [data-theme="paper"] .page { column-count: 1; }
+  [data-theme="seshat"] .main-wrapper { margin-left: 0; }
+  [data-theme="seshat"] .page { column-count: 1; }
 }
 
 
@@ -2102,56 +2170,56 @@
    Narrow icon-only sidebar that expands on hover. Content in a dense
    auto-fit grid with minimal gaps and compact info density.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="slate"] .sidebar {
+[data-theme="hephaestus"] .sidebar {
   width: 52px; overflow: hidden;
   transition: width 0.2s ease;
 }
-[data-theme="slate"] .sidebar:hover { width: 200px; }
-[data-theme="slate"] .sidebar-header { padding: 10px 6px; text-align: center; }
-[data-theme="slate"] .sidebar-header .brand {
+[data-theme="hephaestus"] .sidebar:hover { width: 200px; }
+[data-theme="hephaestus"] .sidebar-header { padding: 10px 6px; text-align: center; }
+[data-theme="hephaestus"] .sidebar-header .brand {
   font-size: 0.72em; font-weight: 500;
   text-transform: uppercase; letter-spacing: 0.06em;
   overflow: hidden; white-space: nowrap;
 }
-[data-theme="slate"] .sidebar-nav a {
+[data-theme="hephaestus"] .sidebar-nav a {
   padding: 8px 6px; font-size: 0.72em; white-space: nowrap;
   border-right: none; margin: 1px 3px; border-radius: 4px;
   text-transform: uppercase; letter-spacing: 0.04em; overflow: hidden;
 }
-[data-theme="slate"] .sidebar-nav a:hover { background: rgba(116,185,255,0.08); }
-[data-theme="slate"] .main-wrapper { margin-right: 52px; }
-[data-theme="slate"] .page {
+[data-theme="hephaestus"] .sidebar-nav a:hover { background: rgba(116,185,255,0.08); }
+[data-theme="hephaestus"] .main-wrapper { margin-right: 52px; }
+[data-theme="hephaestus"] .page {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 8px; padding: 8px; align-items: start; max-width: 100%;
 }
-[data-theme="slate"] .card {
+[data-theme="hephaestus"] .card {
   margin: 0; padding: 10px; font-size: 0.85em;
 }
-[data-theme="slate"] .card:hover {
+[data-theme="hephaestus"] .card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
-[data-theme="slate"] .grid-2 { display: contents; }
-[data-theme="slate"] h2 {
+[data-theme="hephaestus"] .grid-2 { display: contents; }
+[data-theme="hephaestus"] h2 {
   font-size: 0.78em; display: flex; align-items: center; gap: 6px;
 }
-[data-theme="slate"] h2::before {
+[data-theme="hephaestus"] h2::before {
   content: ""; display: inline-block; width: 4px; height: 1em;
   background: #74b9ff; border-radius: 2px;
 }
-[data-theme="slate"] .prominent-card {
+[data-theme="hephaestus"] .prominent-card {
   grid-column: 1 / -1;
   border-left: 4px solid #74b9ff;
 }
-[data-theme="slate"] thead th {
+[data-theme="hephaestus"] thead th {
   font-size: 0.72em; text-transform: uppercase; letter-spacing: 0.06em;
 }
 @media (max-width: 768px) {
-  [data-theme="slate"] .sidebar { width: 240px; }
-  [data-theme="slate"] .sidebar:hover { width: 240px; }
-  [data-theme="slate"] .main-wrapper { margin-right: 0; }
-  [data-theme="slate"] .page { grid-template-columns: 1fr; }
+  [data-theme="hephaestus"] .sidebar { width: 240px; }
+  [data-theme="hephaestus"] .sidebar:hover { width: 240px; }
+  [data-theme="hephaestus"] .main-wrapper { margin-right: 0; }
+  [data-theme="hephaestus"] .page { grid-template-columns: 1fr; }
 }
 
 
@@ -2159,66 +2227,66 @@
    Cards overlap each other with staggered negative margins, creating
    a layered/depth effect like theater curtains or art deco facades.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="rose-gold"] .page {
+[data-theme="vishnu"] .page {
   max-width: 800px; padding: 32px; position: relative;
 }
-[data-theme="rose-gold"] .card {
+[data-theme="vishnu"] .card {
   border: 1px solid #2a2018; border-radius: 0; margin: 0;
   padding: 32px; position: relative;
   margin-bottom: -16px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
-[data-theme="rose-gold"] .card:nth-child(odd) {
+[data-theme="vishnu"] .card:nth-child(odd) {
   margin-left: 0; margin-right: 40px;
   z-index: 1;
 }
-[data-theme="rose-gold"] .card:nth-child(even) {
+[data-theme="vishnu"] .card:nth-child(even) {
   margin-left: 40px; margin-right: 0;
   z-index: 2;
 }
-[data-theme="rose-gold"] .card:hover {
+[data-theme="vishnu"] .card:hover {
   z-index: 10 !important;
   transform: scale(1.02);
   box-shadow: 0 8px 32px rgba(0,0,0,0.5);
 }
-[data-theme="rose-gold"] .card:last-child { margin-bottom: 0; }
-[data-theme="rose-gold"] .grid-2 { display: block; }
-[data-theme="rose-gold"] h2 {
+[data-theme="vishnu"] .card:last-child { margin-bottom: 0; }
+[data-theme="vishnu"] .grid-2 { display: block; }
+[data-theme="vishnu"] h2 {
   font-weight: 400; font-size: 1em;
   letter-spacing: 0.14em; text-transform: uppercase;
   font-family: "Playfair Display",Georgia,serif;
   position: relative; padding-bottom: 12px;
 }
-[data-theme="rose-gold"] h2::after {
+[data-theme="vishnu"] h2::after {
   content: ""; position: absolute; bottom: 0; left: 0;
   width: 40px; height: 1px; background: #c8a878;
 }
-[data-theme="rose-gold"] .prominent-card {
+[data-theme="vishnu"] .prominent-card {
   border: 2px solid #c8a878; z-index: 5 !important;
   margin-left: 0 !important; margin-right: 0 !important;
 }
-[data-theme="rose-gold"] .sidebar-nav a {
+[data-theme="vishnu"] .sidebar-nav a {
   letter-spacing: 0.1em; text-transform: uppercase;
   font-size: 0.78em; font-weight: 300; border-right: none;
 }
-[data-theme="rose-gold"] .sidebar-header .brand {
+[data-theme="vishnu"] .sidebar-header .brand {
   text-transform: uppercase; letter-spacing: 0.12em;
   font-weight: 300; font-size: 0.82em;
   font-family: "Playfair Display",Georgia,serif;
 }
-[data-theme="rose-gold"] button:not(.menu-toggle) {
+[data-theme="vishnu"] button:not(.menu-toggle) {
   background: transparent; border: 1px solid #c8a878;
   color: #c8a878; text-transform: uppercase; letter-spacing: 0.08em;
 }
-[data-theme="rose-gold"] button:not(.menu-toggle):hover {
+[data-theme="vishnu"] button:not(.menu-toggle):hover {
   background: #c8a878; color: #14100e;
 }
-[data-theme="rose-gold"] thead th {
+[data-theme="vishnu"] thead th {
   text-transform: uppercase; letter-spacing: 0.1em;
   font-weight: 300; font-size: 0.78em; color: #c8a878;
 }
-[data-theme="rose-gold"] input:not([type="checkbox"]),
-[data-theme="rose-gold"] select {
+[data-theme="vishnu"] input:not([type="checkbox"]),
+[data-theme="vishnu"] select {
   border: none; border-bottom: 1px solid #2a2018;
   background: transparent; padding: 10px 0; border-radius: 0;
 }
@@ -2228,133 +2296,157 @@
    Left sidebar as spine. Content in a two-column book spread with
    a visible center gutter. Like an open book lying flat.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="emerald"] .sidebar {
+[data-theme="cernunnos"] .sidebar {
   right: auto; left: 0;
   border-left: none; border-right: 3px solid #ffd700;
   background: linear-gradient(180deg, #040a04, #060e08);
 }
-[data-theme="emerald"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
-[data-theme="emerald"] .sidebar-nav a {
+[data-theme="cernunnos"] .main-wrapper { margin-right: 0; margin-left: var(--sidebar-width); }
+[data-theme="cernunnos"] .sidebar-nav a {
   border-right: none; border-left: 3px solid transparent;
 }
-[data-theme="emerald"] .sidebar-nav a:hover { border-left-color: #4caf50; }
-[data-theme="emerald"] .sidebar-header .brand {
+[data-theme="cernunnos"] .sidebar-nav a:hover { border-left-color: #4caf50; }
+[data-theme="cernunnos"] .sidebar-header .brand {
   color: #ffd700; font-family: "Libre Baskerville",Georgia,serif;
 }
-[data-theme="emerald"] .page {
+[data-theme="cernunnos"] .page {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0; max-width: 1100px; padding: 0;
   position: relative;
 }
-[data-theme="emerald"] .page::before {
+[data-theme="cernunnos"] .page::before {
   content: ""; position: absolute; left: 50%; top: 0; bottom: 0;
   width: 4px; transform: translateX(-50%);
   background: linear-gradient(180deg, #ffd700, #4caf50, #ffd700);
   z-index: 5;
 }
-[data-theme="emerald"] .card {
+[data-theme="cernunnos"] .card {
   margin: 0; border: none; border-radius: 0;
   border-bottom: 1px solid #143020;
   padding: 24px 32px;
 }
-[data-theme="emerald"] .card:nth-child(odd) { padding-right: 40px; }
-[data-theme="emerald"] .card:nth-child(even) { padding-left: 40px; }
-[data-theme="emerald"] .card:hover {
+[data-theme="cernunnos"] .card:nth-child(odd) { padding-right: 40px; }
+[data-theme="cernunnos"] .card:nth-child(even) { padding-left: 40px; }
+[data-theme="cernunnos"] .card:hover {
   background: rgba(76,175,80,0.03);
 }
-[data-theme="emerald"] .grid-2 { display: contents; }
-[data-theme="emerald"] h2 {
+[data-theme="cernunnos"] .grid-2 { display: contents; }
+[data-theme="cernunnos"] h2 {
   font-family: "Libre Baskerville",Georgia,serif;
   font-size: 1.2em; position: relative; padding-left: 18px;
 }
-[data-theme="emerald"] h2::before {
+[data-theme="cernunnos"] h2::before {
   content: ""; position: absolute; left: 0; top: 4px; bottom: 4px;
   width: 4px; background: #ffd700; border-radius: 2px;
 }
-[data-theme="emerald"] .prominent-card {
+[data-theme="cernunnos"] .prominent-card {
   grid-column: 1 / -1;
   border-bottom: 2px solid #ffd700;
   background: linear-gradient(135deg, #0a200a, #060e08);
   padding: 32px;
 }
-[data-theme="emerald"] thead th {
+[data-theme="cernunnos"] thead th {
   border-bottom: 2px solid #ffd700;
   font-family: "Libre Baskerville",Georgia,serif;
   color: #ffd700;
 }
-[data-theme="emerald"] button:not(.menu-toggle) { border: 2px solid #143020; }
-[data-theme="emerald"] button:not(.menu-toggle):hover { border-color: #4caf50; }
+[data-theme="cernunnos"] button:not(.menu-toggle) { border: 2px solid #143020; }
+[data-theme="cernunnos"] button:not(.menu-toggle):hover { border-color: #4caf50; }
 @media (max-width: 768px) {
-  [data-theme="emerald"] .sidebar {
+  [data-theme="cernunnos"] .sidebar {
     right: 0; left: auto; border-right: none; border-left: 3px solid #ffd700;
   }
-  [data-theme="emerald"] .main-wrapper { margin-left: 0; }
-  [data-theme="emerald"] .page { grid-template-columns: 1fr; }
-  [data-theme="emerald"] .page::before { display: none; }
-  [data-theme="emerald"] .card:nth-child(odd) { padding-right: 16px; }
-  [data-theme="emerald"] .card:nth-child(even) { padding-left: 16px; }
+  [data-theme="cernunnos"] .main-wrapper { margin-left: 0; }
+  [data-theme="cernunnos"] .page { grid-template-columns: 1fr; }
+  [data-theme="cernunnos"] .page::before { display: none; }
+  [data-theme="cernunnos"] .card:nth-child(odd) { padding-right: 16px; }
+  [data-theme="cernunnos"] .card:nth-child(even) { padding-left: 16px; }
 }
 
 
-/* ═══════ THEME 23: CAFÉ — Chalkboard menu, no cards ═════════════════
-   No visible card containers. Content listed directly on a textured
-   dark background, like a café chalkboard. Hand-drawn feel with
-   chalk-like typography and decorative dividers.
+/* ═══════ THEME 23: CAFÉ — Horizontal accordion strips ═══════════════
+   Content flows as narrow full-width horizontal strips that expand
+   on hover. Sidebar becomes a top bar. Cards are collapsed to header-
+   height with content clipped; hovering reveals the full card.
    ═══════════════════════════════════════════════════════════════════════ */
-[data-theme="coffee"] body {
-  background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='6' height='6' fill='%231a120c'/%3E%3Crect width='1' height='1' x='2' y='3' fill='%231e150e' opacity='0.3'/%3E%3C/svg%3E");
+[data-theme="brigid"] .app-layout { flex-direction: column; }
+[data-theme="brigid"] .sidebar {
+  position: relative; width: 100%; height: auto;
+  flex-direction: row; align-items: center;
+  border-left: none; border-bottom: 2px solid rgba(212,165,116,0.3);
+  top: auto; right: auto; left: auto; bottom: auto;
 }
-[data-theme="coffee"] .sidebar-nav a {
-  margin: 3px 8px; border-radius: 10px; border-right: none;
-  padding: 10px 14px; font-size: 0.88em;
-}
-[data-theme="coffee"] .sidebar-header .brand {
+[data-theme="brigid"] .sidebar-header { border-bottom: none; padding: 10px 20px; }
+[data-theme="brigid"] .sidebar-header .brand {
   font-family: "Playfair Display",Georgia,serif; font-size: 1.1em;
 }
-[data-theme="coffee"] .page { max-width: 700px; padding: 32px 24px; }
-[data-theme="coffee"] .card {
+[data-theme="brigid"] .sidebar-nav {
+  flex-direction: row; padding: 0; overflow-x: auto; overflow-y: hidden;
+}
+[data-theme="brigid"] .sidebar-nav a {
+  padding: 10px 18px; font-size: 0.88em; white-space: nowrap;
+  border-right: 1px solid rgba(212,165,116,0.15); border-radius: 0;
+}
+[data-theme="brigid"] .main-wrapper { margin-right: 0; }
+[data-theme="brigid"] .page {
+  max-width: 100%; padding: 0; display: flex;
+  flex-direction: column; gap: 0;
+}
+[data-theme="brigid"] .card {
   background: transparent; border: none; border-radius: 0;
-  margin: 0; padding: 28px 0;
+  margin: 0; padding: 16px 32px;
   box-shadow: none;
+  border-bottom: 1px solid rgba(212,165,116,0.15);
+  max-height: 80px; overflow: hidden;
+  transition: max-height 0.4s ease, padding 0.3s ease;
 }
-[data-theme="coffee"] .card + .card::before {
-  content: "~ ✦ ~"; display: block; text-align: center;
-  color: rgba(212,165,116,0.3); font-size: 0.8em;
-  letter-spacing: 0.5em; margin-bottom: 28px;
+[data-theme="brigid"] .card:hover {
+  max-height: 600px;
+  padding: 28px 32px;
+  background: rgba(212,165,116,0.04);
 }
-[data-theme="coffee"] .grid-2 { display: block; }
-[data-theme="coffee"] h2 {
+[data-theme="brigid"] .grid-2 { display: contents; }
+[data-theme="brigid"] h2 {
   font-family: "Playfair Display",Georgia,serif;
-  font-size: 1.6em; text-align: center; font-style: italic;
-  color: #d4a574; margin-bottom: 16px;
+  font-size: 1.1em; font-style: italic;
+  color: #d4a574; margin-bottom: 12px;
 }
-[data-theme="coffee"] h2::after {
-  content: ""; display: block; width: 60px; height: 2px;
-  margin: 12px auto 0; background: rgba(212,165,116,0.3);
+[data-theme="brigid"] .prominent-card {
+  max-height: 200px; border: none; background: transparent;
+  padding: 24px 32px; box-shadow: none;
+  border-bottom: 2px solid rgba(212,165,116,0.3);
 }
-[data-theme="coffee"] .prominent-card {
-  border: none; background: transparent;
-  padding: 32px 0; box-shadow: none;
-  border-top: 2px solid rgba(212,165,116,0.2);
-  border-bottom: 2px solid rgba(212,165,116,0.2);
-}
-[data-theme="coffee"] button:not(.menu-toggle) {
+[data-theme="brigid"] .prominent-card:hover { max-height: 600px; }
+[data-theme="brigid"] button:not(.menu-toggle) {
   border: 1px solid rgba(212,165,116,0.3);
   border-radius: 8px; background: transparent;
 }
-[data-theme="coffee"] button:not(.menu-toggle):hover {
+[data-theme="brigid"] button:not(.menu-toggle):hover {
   background: rgba(212,165,116,0.1);
 }
-[data-theme="coffee"] input:not([type="checkbox"]),
-[data-theme="coffee"] select,
-[data-theme="coffee"] textarea {
+[data-theme="brigid"] input:not([type="checkbox"]),
+[data-theme="brigid"] select,
+[data-theme="brigid"] textarea {
   background: transparent; border: none;
   border-bottom: 1px solid rgba(212,165,116,0.3);
   border-radius: 0; padding: 12px 0;
 }
-[data-theme="coffee"] table { font-size: 0.88em; }
-[data-theme="coffee"] th { color: #d4a574; font-style: italic; }
+[data-theme="brigid"] table { font-size: 0.88em; }
+[data-theme="brigid"] th { color: #d4a574; font-style: italic; }
+@media (max-width: 768px) {
+  [data-theme="brigid"] .sidebar {
+    position: fixed; width: 240px; height: 100%;
+    flex-direction: column;
+    right: 0; top: 0; left: auto; bottom: auto;
+    transform: translateX(100%); border-bottom: none;
+    border-left: 2px solid rgba(212,165,116,0.3);
+  }
+  [data-theme="brigid"] .sidebar.open { transform: translateX(0); }
+  [data-theme="brigid"] .sidebar-nav { flex-direction: column; }
+  [data-theme="brigid"] .sidebar-nav a { border-right: none; }
+  [data-theme="brigid"] .card { max-height: none; }
+}
 
 
 /* ═══════════════════════════════════════════════════════════════════════

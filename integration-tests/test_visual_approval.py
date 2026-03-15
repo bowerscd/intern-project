@@ -12,7 +12,7 @@ one screenshot per theme in per-theme sub-directories::
             001_login_page.png
             002_oidc_register_form.png
             ...
-        01_account_registration_t02_light/
+        01_account_registration_t02_arachne/
             001_login_page.png
             ...
 
@@ -51,11 +51,11 @@ ALL_CLAIMS = BASIC | ADMIN | MEALBOT | COOKBOOK | HAPPY_HOUR | HAPPY_HOUR_TYRANT
 _SESSION_DIR: Path | None = None
 
 THEMES = [
-    "default", "light", "solarized-dark", "solarized-light",
-    "nord", "dracula", "monokai", "cyberpunk", "ocean", "forest",
-    "sunset", "midnight-purple", "cherry-blossom", "retro-terminal",
-    "high-contrast", "warm-earth", "arctic", "neon", "paper",
-    "slate", "rose-gold", "emerald", "coffee",
+    "default", "arachne", "daedalus", "aphrodite",
+    "niflheim", "norns", "quetzalcoatl", "atlas", "thoth", "yggdrasil",
+    "amaterasu", "hecate", "freya", "hermes",
+    "prometheus", "gaia", "skadi", "raijin", "seshat",
+    "hephaestus", "vishnu", "cernunnos", "brigid",
 ]
 
 
@@ -88,7 +88,7 @@ class FlowRecorder:
     per theme into per-theme sub-directories::
 
         {flow_name}_t01_default/001_foo.png
-        {flow_name}_t02_light/001_foo.png
+        {flow_name}_t02_arachne/001_foo.png
         …
 
     The ``default`` theme is restored after each snap so subsequent
@@ -727,16 +727,16 @@ class TestFlow05AccountSelfService:
                 time.sleep(0.8)
                 flow.snap(page, "account_claim_toggled")
 
-        swatch = page.query_selector('.theme-swatch[data-theme-name="dracula"]')
+        swatch = page.query_selector('.theme-swatch[data-theme-name="norns"]')
         if swatch:
             swatch.click()
             time.sleep(0.5)
         else:
-            page.evaluate("document.documentElement.setAttribute('data-theme', 'dracula')")
+            page.evaluate("document.documentElement.setAttribute('data-theme', 'norns')")
             time.sleep(0.3)
         page.evaluate("window.scrollTo(0, 0)")
         time.sleep(0.3)
-        flow.snap(page, "account_theme_dracula")
+        flow.snap(page, "account_theme_norns")
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -1151,7 +1151,7 @@ def _seed_showcase_data(
         },
         {
             "name": "Sunset Taphouse",
-            "url": "https://sunsettap.example.com",
+            "url": "https://amaterasutap.example.com",
             "address_raw": "456 Hilltop Rd, Portland, OR 97214",
             "number": 456, "street_name": "Hilltop Rd", "city": "Portland",
             "state": "OR", "zip_code": "97214",

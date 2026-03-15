@@ -382,7 +382,10 @@ def browser_context(browser, frontend_server):
     Sets the base URL so ``page.goto("/some-path")`` works.
     """
     frontend_url, _ = frontend_server
-    context = browser.new_context(base_url=frontend_url)
+    context = browser.new_context(
+        base_url=frontend_url,
+        viewport={"width": 1280, "height": 1080},
+    )
     yield context
     context.close()
 
