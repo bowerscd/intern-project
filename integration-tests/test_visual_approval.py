@@ -164,8 +164,8 @@ def _insert_legacy_account(db_path: str, username: str) -> None:
     conn.execute(
         "INSERT OR IGNORE INTO accounts "
         "(username, email, phone_provider, account_provider, external_unique_id, claims, status) "
-        "VALUES (?, NULL, 1, 1, 'legacy-placeholder', 1, 'active')",
-        (username,),
+        "VALUES (?, NULL, 1, 1, ?, 1, 'active')",
+        (username, f"legacy-{username}"),
     )
     conn.commit()
     conn.close()

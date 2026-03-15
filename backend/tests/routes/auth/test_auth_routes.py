@@ -575,7 +575,7 @@ class TestClaimAccount:
 
         with database.session() as s:
             act = create_account(
-                "legacyuser", None, ExternalAuthProvider.test, "legacy-placeholder"
+                "legacyuser", None, ExternalAuthProvider.test, "legacy-legacyuser"
             )
             s.add(act)
             s.commit()
@@ -644,7 +644,7 @@ class TestClaimAccount:
 
         with database.session() as s:
             act = create_account(
-                "dupetarget", None, ExternalAuthProvider.test, "legacy-placeholder"
+                "dupetarget", None, ExternalAuthProvider.test, "legacy-dupetarget"
             )
             s.add(act)
             s.commit()

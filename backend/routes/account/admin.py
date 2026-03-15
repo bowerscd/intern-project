@@ -184,8 +184,7 @@ async def review_claim_request(
             # This is defence-in-depth — the claim endpoint already enforces
             # this, but a direct DB manipulation or future code path could
             # bypass it.
-            LEGACY_PLACEHOLDER_SUB = "legacy-placeholder"
-            if target.external_unique_id != LEGACY_PLACEHOLDER_SUB:
+            if not target.external_unique_id.startswith("legacy-"):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Cannot approve: target account is already linked "

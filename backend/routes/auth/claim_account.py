@@ -18,7 +18,7 @@ from sqlalchemy import select, and_
 from .authenticate import PENDING_REGISTRATION_KEY
 from .router import Authentication
 
-LEGACY_PLACEHOLDER_SUB = "legacy-placeholder"
+LEGACY_PREFIX = "legacy-"
 
 
 @Authentication.get(
@@ -31,8 +31,8 @@ LEGACY_PLACEHOLDER_SUB = "legacy-placeholder"
 async def list_claimable_accounts(request: Request, db: Database) -> list[str]:
     """Return usernames of unlinked legacy accounts available to claim.
 
-    An account is claimable if its ``external_unique_id`` is still the
-    legacy placeholder, meaning it has not yet been linked to any OIDC
+    An account is claimable if its ``external_unique_id`` starts with
+    the legacy prefix, meaning it has not yet been linked to any OIDC
     identity.
 
     :param db: Active database session.
@@ -42,7 +42,7 @@ async def list_claimable_accounts(request: Request, db: Database) -> list[str]:
     with db:
         rows = db.scalars(
             select(Account.username).where(
-                Account.external_unique_id == LEGACY_PLACEHOLDER_SUB
+                Account.external_unique_id.like(f"{LEGACY_PREFIX}%")
             )
         ).all()
     return sorted(rows)
@@ -98,7 +98,7 @@ async def claim_account(
 
         # Only legacy (unlinked) accounts may be claimed — reject attempts
         # to claim active OIDC-linked accounts to prevent account takeover.
-        if target.external_unique_id != LEGACY_PLACEHOLDER_SUB:
+        if not target.external_unique_id.startswith(LEGACY_PREFIX):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="This account cannot be claimed.",

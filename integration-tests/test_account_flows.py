@@ -3,7 +3,7 @@
 Covers three areas introduced/fixed during the account-claim audit session:
 
 1. ``GET /api/v2/auth/claimable-accounts`` — returns legacy accounts that still
-   have the sentinel ``external_unique_id == 'legacy-placeholder'``.
+   have an ``external_unique_id`` starting with the ``legacy-`` prefix.
 
 2. ``oidc_email`` vs notification ``email`` separation — the OIDC provider email
    must always be present in the profile response via the session; the DB email
@@ -38,10 +38,10 @@ def _seed_legacy_account(
     username: str,
     email: str,
 ) -> None:
-    """Insert a legacy account with ``external_unique_id='legacy-placeholder'``.
-    
-    Note: Due to the composite unique constraint on (account_provider, external_unique_id),
-    only ONE account can have external_unique_id='legacy-placeholder' per DB session.
+    """Insert a legacy account with ``external_unique_id='legacy-{username}'``.
+
+    Each account gets a unique external_unique_id derived from the username,
+    satisfying the composite unique constraint on (account_provider, external_unique_id).
     """
     conn = sqlite3.connect(db_path)
     try:
@@ -49,8 +49,8 @@ def _seed_legacy_account(
             "INSERT OR IGNORE INTO accounts "
             "(username, email, phone, phone_provider, account_provider, "
             "external_unique_id, claims) "
-            "VALUES (?, ?, NULL, 1, 1, 'legacy-placeholder', 1)",
-            (username, email),
+            "VALUES (?, ?, NULL, 1, 1, ?, 1)",
+            (username, email, f"legacy-{username}"),
         )
         conn.commit()
     finally:
@@ -353,15 +353,15 @@ class TestCompleteRegistrationClaimCard:
         backend_server,
         oidc_server,
     ) -> None:
-        """No claim form if there are no legacy-placeholder accounts at all.
+        """No claim form if there are no legacy accounts at all.
 
         This test uses a fresh browser context (clean cookies) and a unique
-        OIDC sub that has never been seeded with a legacy-placeholder account.
+        OIDC sub that has never been seeded with a legacy account.
         It asserts via the API that zero claimable accounts exist for the
         specific sub used, then verifies the browser shows no claim form.
 
         NOTE: This test is order-dependent — if other tests in the session seed
-        ``legacy-placeholder`` accounts without cleaning up, the claim form WILL
+        legacy accounts without cleaning up, the claim form WILL
         appear.  The test is therefore marked ``skip`` when the API reports any
         claimable accounts to avoid false failures in a shared session.
         """

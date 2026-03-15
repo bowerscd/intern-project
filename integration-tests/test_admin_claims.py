@@ -67,8 +67,8 @@ class TestAdminClaimApproval:
             conn.execute(
                 "INSERT INTO accounts (username, email, phone, phone_provider, "
                 "account_provider, external_unique_id, claims) "
-                "VALUES (?, ?, NULL, 1, 1, 'legacy-placeholder', 1)",
-                ("legacy_claim_target", "legacy@test.local"),
+                "VALUES (?, ?, NULL, 1, 1, ?, 1)",
+                ("legacy_claim_target", "legacy@test.local", "legacy-legacy_claim_target"),
             )
             conn.commit()
         finally:
@@ -185,8 +185,8 @@ class TestAdminClaimApproval:
             conn.execute(
                 "INSERT INTO accounts (username, email, phone, phone_provider, "
                 "account_provider, external_unique_id, claims) "
-                "VALUES (?, ?, NULL, 1, 1, 'legacy-placeholder', 1)",
-                ("deny_legacy_target", "deny-legacy@test.local"),
+                "VALUES (?, ?, NULL, 1, 1, ?, 1)",
+                ("deny_legacy_target", "deny-legacy@test.local", "legacy-deny_legacy_target"),
             )
             conn.commit()
         finally:
@@ -228,7 +228,7 @@ class TestAdminClaimApproval:
                 "SELECT external_unique_id FROM accounts WHERE username = ?",
                 ("deny_legacy_target",),
             ).fetchone()
-            assert row[0] == "legacy-placeholder", (
+            assert row[0] == "legacy-deny_legacy_target", (
                 "Legacy account should not be modified after denial"
             )
         finally:
@@ -296,14 +296,14 @@ class TestAdminClaimApproval:
         )
 
         # Create legacy account (use provider=2 to avoid unique constraint
-        # collision with other tests that also insert legacy-placeholder)
+        # collision with other tests that also insert legacy accounts)
         conn = sqlite3.connect(backend_db_path)
         try:
             conn.execute(
                 "INSERT INTO accounts (username, email, phone, phone_provider, "
                 "account_provider, external_unique_id, claims) "
-                "VALUES (?, ?, NULL, 1, 2, 'legacy-placeholder', 1)",
-                ("double_legacy_target", "double-legacy@test.local"),
+                "VALUES (?, ?, NULL, 1, 2, ?, 1)",
+                ("double_legacy_target", "double-legacy@test.local", "legacy-double_legacy_target"),
             )
             conn.commit()
         finally:
