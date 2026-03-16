@@ -372,6 +372,10 @@ async def list_accounts(
                     detail=f"Invalid status filter: {status_filter}",
                 )
             query = query.where(Account.status == target_status)
+            # Exclude legacy (unclaimed) accounts from pending lists — they
+            # should only appear once someone submits a claim for them.
+            if target_status == AccountStatus.PENDING_APPROVAL:
+                query = query.where(~Account.external_unique_id.like("legacy-%"))
         query = query.order_by(Account.id)
         accounts = list(db.scalars(query).all())
         return [_account_response(a) for a in accounts]
