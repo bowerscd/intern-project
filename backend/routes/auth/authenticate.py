@@ -139,6 +139,11 @@ async def authenticate(
         else:
             # mode == "login" (default)
             if act is None:
+                logger.warning(
+                    "OIDC login failed: no account for provider=%s sub=%s",
+                    provider.name,
+                    uuid,
+                )
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Authentication failed.",
