@@ -17,21 +17,19 @@ def _make_auth_cookie(
 ) -> None:
     """Create a secure cookie with correct RFC attributes on a redirect response.
 
-    In production uses the ``__Host-`` prefix to prevent subdomain
-    cookie override attacks (enforces ``Secure``, ``Path=/``, no ``Domain``).
+    The caller is responsible for including the ``__Host-`` prefix in
+    *key* when running in production mode.  This function only controls
+    the ``Secure`` flag based on :data:`DEV_MODE`.
 
     :param response: The redirect response to attach the cookie to.
-    :param key: Cookie name.
+    :param key: Cookie name (already prefixed by the caller if needed).
     :param val: Cookie value.
     :param duration_in_seconds: Cookie max-age in seconds (default 300).
     """
     from config import DEV_MODE
 
-    # __Host- prefix: Secure, Path=/, no Domain — prevents subdomain overrides
-    cookie_name = key if DEV_MODE else f"__Host-{key}"
-
     response.set_cookie(
-        cookie_name,
+        key,
         val,
         max_age=duration_in_seconds,
         path="/",
@@ -237,9 +235,12 @@ class AuthenticationHandler:
         c_state = cookies.get(self._state_cookie_key)
         if not c_state:
             logger.warning(
-                "OIDC auth failed: missing state cookie '%s'; cookies_present=%s",
+                "OIDC auth failed: state cookie '%s' is empty/missing; "
+                "cookie_values={%s}",
                 self._state_cookie_key,
-                sorted(cookies.keys()),
+                ", ".join(
+                    f"{k!r}: {'<set>' if v else '<empty>'}" for k, v in cookies.items()
+                ),
             )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

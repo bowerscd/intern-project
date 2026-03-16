@@ -79,8 +79,8 @@ async def authenticate(
     }
 
     # Log available cookie keys for diagnosing missing anti-CSRF cookies
-    logger.debug(
-        "OIDC callback: provider=%s cookies_present=%s",
+    logger.info(
+        "OIDC callback: provider=%s browser_cookies=%s",
         provider.name,
         sorted(request.cookies.keys()),
     )
