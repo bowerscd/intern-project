@@ -2,6 +2,7 @@
 Self-service claims management endpoint — authenticated.
 """
 
+import logging
 from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, status
@@ -15,6 +16,8 @@ from csrf import validate_csrf_token
 from schemas.account import ClaimsUpdate, ProfileResponse
 
 from .router import Accounts
+
+logger = logging.getLogger(__name__)
 
 # Claims that cannot be self-assigned or self-removed
 BLOCKED_CLAIMS = frozenset({"ADMIN", "BASIC"})
@@ -51,6 +54,11 @@ async def update_claims(
     all_requested = set(body.add) | set(body.remove)
     blocked = all_requested & BLOCKED_CLAIMS
     if blocked:
+        logger.warning(
+            "Claims update: blocked claims %s requested by account #%d",
+            sorted(blocked),
+            account.id,
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Cannot modify admin-level claims: {', '.join(sorted(blocked))}",
@@ -60,6 +68,11 @@ async def update_claims(
     valid_names = {c.name for c in AccountClaims if c.name != "ANY"}
     invalid = all_requested - valid_names
     if invalid:
+        logger.warning(
+            "Claims update: invalid claim names %s from account #%d",
+            sorted(invalid),
+            account.id,
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid claim names: {', '.join(sorted(invalid))}",
@@ -68,6 +81,9 @@ async def update_claims(
     with db:
         act = db.scalars(select(Account).where(Account.id == account.id)).first()
         if act is None:
+            logger.error(
+                "Claims update: account #%d not found (race condition)", account.id
+            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Account not found",

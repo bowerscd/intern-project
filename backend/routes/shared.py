@@ -1,5 +1,6 @@
 """Shared route utilities — database dependency, auth guards, and helpers."""
 
+import logging
 from collections.abc import AsyncIterator, Generator
 from functools import wraps
 from typing import Annotated, Any
@@ -16,6 +17,8 @@ from sqlalchemy.orm import Session
 
 from db import Database as _Database
 from models import AccountClaims, AccountStatus, DBAccount as Account
+
+logger = logging.getLogger(__name__)
 
 DatabaseRaw = _Database()
 
@@ -113,6 +116,12 @@ def resolve_summary(
     )
 
     if (start is None) != (end is None):
+        logger.warning(
+            "Summary: mismatched start/end params (start=%s end=%s user=%s)",
+            start,
+            end,
+            user,
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="start and end must both be provided or both omitted",
@@ -126,6 +135,7 @@ def resolve_summary(
         else:
             return get_summary_for_user(db, user)
     except ValueError as e:
+        logger.warning("Summary: validation error=%s (user=%s)", e, user)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
@@ -179,6 +189,10 @@ class RequireLogin:
             if act is None:
                 # Account no longer exists (e.g. in-memory DB was reset).
                 # Clear the stale session so the browser stops retrying.
+                logger.warning(
+                    "RequireLogin: account #%d no longer exists; clearing session",
+                    id,
+                )
                 request.session.clear()
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -187,11 +201,21 @@ class RequireLogin:
 
             # Reject non-active accounts before checking claims
             if act.status == AccountStatus.PENDING_APPROVAL:
+                logger.info(
+                    "RequireLogin: account #%d (%s) is pending approval",
+                    act.id,
+                    act.username,
+                )
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Your account is pending admin approval.",
                 )
             if act.status == AccountStatus.BANNED:
+                logger.warning(
+                    "RequireLogin: banned account #%d (%s) attempted access",
+                    act.id,
+                    act.username,
+                )
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Your account is banned.",
@@ -200,6 +224,13 @@ class RequireLogin:
             # mutation endpoints must additionally call require_write_access().
 
             if act.claims & self.__required_claim != self.__required_claim:
+                logger.warning(
+                    "RequireLogin: account #%d (%s) lacks required claim %s (has %s)",
+                    act.id,
+                    act.username,
+                    self.__required_claim,
+                    act.claims,
+                )
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="insufficient permissions",
@@ -219,6 +250,11 @@ def require_write_access(account: Account) -> None:
         :attr:`AccountStatus.DEFUNCT`.
     """
     if account.status == AccountStatus.DEFUNCT:
+        logger.info(
+            "Write access denied: defunct account #%d (%s)",
+            account.id,
+            account.username,
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Your account is disabled (read-only). Contact an admin to re-activate.",

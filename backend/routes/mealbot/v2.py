@@ -161,12 +161,24 @@ async def record(
     recorder_username = account.username
 
     if body.payer == body.recipient:
+        logger.warning(
+            "Mealbot record: payer==recipient=%r by account #%d",
+            body.payer,
+            recorder_id,
+        )
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Payer and recipient cannot be the same person",
         )
 
     if account.username not in (body.payer, body.recipient):
+        logger.warning(
+            "Mealbot record: account #%d (%s) not involved in payer=%r recipient=%r",
+            recorder_id,
+            recorder_username,
+            body.payer,
+            body.recipient,
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You must be either the payer or the recipient",
@@ -183,6 +195,13 @@ async def record(
             )
             db.commit()
         except ValueError as e:
+            logger.warning(
+                "Mealbot record: validation error=%s (payer=%r recipient=%r recorder=#%d)",
+                e,
+                body.payer,
+                body.recipient,
+                recorder_id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=str(e),
@@ -246,6 +265,11 @@ async def void_record(
     with db:
         receipt = get_receipt_by_id(db, record_id)
         if receipt is None:
+            logger.warning(
+                "Mealbot void: record #%d not found (account #%d)",
+                record_id,
+                account_id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Record not found",
@@ -258,6 +282,11 @@ async def void_record(
                 allowed_ids.add(receipt.RecorderId)
 
             if account_id not in allowed_ids:
+                logger.warning(
+                    "Mealbot void: account #%d not authorized to void record #%d",
+                    account_id,
+                    record_id,
+                )
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You can only void records you are involved in",

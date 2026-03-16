@@ -11,9 +11,12 @@ Usage::
     async def my_endpoint(...): ...
 """
 
+import logging
 import secrets
 
 from fastapi import HTTPException, Request, status
+
+logger = logging.getLogger(__name__)
 
 CSRF_SESSION_KEY = "csrf_token"
 CSRF_HEADER = "X-CSRF-Token"
@@ -49,12 +52,22 @@ async def validate_csrf_token(request: Request) -> None:
     header_token = request.headers.get(CSRF_HEADER)
 
     if not session_token or not header_token:
+        logger.warning(
+            "CSRF validation failed: session_token=%s header_token=%s path=%s",
+            "present" if session_token else "missing",
+            "present" if header_token else "missing",
+            request.url.path,
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="CSRF token missing",
         )
 
     if not secrets.compare_digest(session_token, header_token):
+        logger.warning(
+            "CSRF validation failed: token mismatch on %s",
+            request.url.path,
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="CSRF token mismatch",

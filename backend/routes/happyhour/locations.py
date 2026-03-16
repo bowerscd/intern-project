@@ -2,6 +2,7 @@
 Happy Hour location endpoints — authenticated, require HAPPY_HOUR claim.
 """
 
+import logging
 from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, status, Query
@@ -18,6 +19,8 @@ from schemas.happyhour import (
 )
 
 from .router import HappyHour
+
+logger = logging.getLogger(__name__)
 
 
 @HappyHour.get(
@@ -137,6 +140,7 @@ async def random_location(
             else get_true_random_location(db)
         )
         if loc is None:
+            logger.warning("Random location: no open locations available")
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="No open locations available",
@@ -170,6 +174,7 @@ async def get_location(
         loc = get_location_by_id(db, location_id)
 
         if loc is None:
+            logger.warning("Location #%d not found", location_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Location not found",
@@ -209,6 +214,7 @@ async def update_location(
     with db:
         loc = get_location_by_id(db, location_id)
         if loc is None:
+            logger.warning("Location update: location #%d not found", location_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Location not found",

@@ -5,6 +5,7 @@ currently assigned tyrant may create during their rotation window.
 If no assignment is pending, any HAPPY_HOUR user may create.
 """
 
+import logging
 from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, status, Query
@@ -24,6 +25,8 @@ from schemas.happyhour import (
 )
 
 from .router import HappyHour
+
+logger = logging.getLogger(__name__)
 
 
 def _event_response(event: Any, current_tyrant: Any = None) -> EventResponse:
@@ -162,6 +165,7 @@ async def get_event(
         event = get_event_by_id(db, event_id)
 
         if event is None:
+            logger.warning("Event #%d not found", event_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Event not found",
@@ -220,21 +224,33 @@ async def create_event_endpoint(
                 account.claims & AccountClaims.HAPPY_HOUR_TYRANT
                 == AccountClaims.HAPPY_HOUR_TYRANT
             ):
+                logger.warning(
+                    "Event create denied: account #%d lacks HAPPY_HOUR_TYRANT during rotation",
+                    account.id,
+                )
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Only HAPPY_HOUR_TYRANT users may create events during a rotation window",
                 )
             if pending.account_id != account.id:
+                logger.warning(
+                    "Event create denied: account #%d is not the assigned tyrant (#%d)",
+                    account.id,
+                    pending.account_id,
+                )
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="It's not your turn to pick the happy hour location",
                 )
         else:
-            # No pending assignment — any HAPPY_HOUR_TYRANT user may submit
             if not (
                 account.claims & AccountClaims.HAPPY_HOUR_TYRANT
                 == AccountClaims.HAPPY_HOUR_TYRANT
             ):
+                logger.warning(
+                    "Event create denied: account #%d lacks HAPPY_HOUR_TYRANT (no rotation)",
+                    account.id,
+                )
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You need the HAPPY_HOUR_TYRANT permission to submit happy hour events",
@@ -246,6 +262,11 @@ async def create_event_endpoint(
         when_ref = body.when if body.when else datetime.now(UTC)
         existing = get_events_this_week(db, when_ref)
         if existing:
+            logger.info(
+                "Event create: duplicate for week of %s by account #%d",
+                when_ref.isoformat(),
+                account.id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="A happy hour event already exists for this week",
@@ -254,12 +275,14 @@ async def create_event_endpoint(
         # Verify location exists
         location = get_location_by_id(db, body.location_id)
         if location is None:
+            logger.warning("Event create: location #%d not found", body.location_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Location not found",
             )
 
         if location.Closed:
+            logger.warning("Event create: location #%d is closed", body.location_id)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Location is closed",
@@ -275,6 +298,10 @@ async def create_event_endpoint(
             )
         except IntegrityError:
             db.rollback()
+            logger.info(
+                "Event create: integrity error (duplicate week) by account #%d",
+                account.id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="A happy hour event already exists for this week",
@@ -299,9 +326,7 @@ async def create_event_endpoint(
             if fresh_event is not None:
                 await notify_happy_hour_users(fresh_event, db)
     except Exception:
-        import logging
-
-        logging.getLogger(__name__).exception("Failed to send event notifications")
+        logger.exception("Failed to send event notifications")
 
     return response
 
@@ -412,6 +437,10 @@ async def update_event_endpoint(
     ) == AccountClaims.HAPPY_HOUR_TYRANT
     is_admin = (account.claims & AccountClaims.ADMIN) == AccountClaims.ADMIN
     if not (is_tyrant or is_admin):
+        logger.warning(
+            "Event update denied: account #%d lacks HAPPY_HOUR_TYRANT or ADMIN",
+            account.id,
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Requires HAPPY_HOUR_TYRANT or ADMIN permission",
@@ -426,6 +455,7 @@ async def update_event_endpoint(
     with db:
         event = get_event_by_id(db, event_id)
         if event is None:
+            logger.warning("Event update: event #%d not found", event_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Event not found",
@@ -435,11 +465,13 @@ async def update_event_endpoint(
         if body.location_id is not None:
             location = get_location_by_id(db, body.location_id)
             if location is None:
+                logger.warning("Event update: location #%d not found", body.location_id)
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Location not found",
                 )
             if location.Closed:
+                logger.warning("Event update: location #%d is closed", body.location_id)
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Location is closed",
@@ -457,12 +489,17 @@ async def update_event_endpoint(
             updated = update_event_fields(db, event_id, **update_kwargs)
         except IntegrityError:
             db.rollback()
+            logger.info(
+                "Event update: integrity error (duplicate week) for event #%d",
+                event_id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Another event already exists for the target week",
             )
 
         if updated is None:
+            logger.warning("Event update: event #%d disappeared mid-update", event_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Event not found",
@@ -483,11 +520,7 @@ async def update_event_endpoint(
             if fresh_event is not None:
                 await notify_happy_hour_updated(fresh_event, db)
     except Exception:
-        import logging
-
-        logging.getLogger(__name__).exception(
-            "Failed to send event update notifications"
-        )
+        logger.exception("Failed to send event update notifications")
 
     return response
 
@@ -526,6 +559,10 @@ async def cancel_event_endpoint(
     ) == AccountClaims.HAPPY_HOUR_TYRANT
     is_admin = (account.claims & AccountClaims.ADMIN) == AccountClaims.ADMIN
     if not (is_tyrant or is_admin):
+        logger.warning(
+            "Event cancel denied: account #%d lacks HAPPY_HOUR_TYRANT or ADMIN",
+            account.id,
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Requires HAPPY_HOUR_TYRANT or ADMIN permission",
@@ -536,6 +573,7 @@ async def cancel_event_endpoint(
     with db:
         event = get_event_by_id(db, event_id)
         if event is None:
+            logger.warning("Event cancel: event #%d not found", event_id)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Event not found",
@@ -558,11 +596,7 @@ async def cancel_event_endpoint(
         with db:
             await notify_happy_hour_cancelled(event_info, db)
     except Exception:
-        import logging
-
-        logging.getLogger(__name__).exception(
-            "Failed to send event cancellation notifications"
-        )
+        logger.exception("Failed to send event cancellation notifications")
 
     return {"status": "cancelled", "event_id": event_id}
 
@@ -602,6 +636,10 @@ async def skip_rotation_turn(
     ) == AccountClaims.HAPPY_HOUR_TYRANT
     is_admin = (account.claims & AccountClaims.ADMIN) == AccountClaims.ADMIN
     if not (is_tyrant or is_admin):
+        logger.warning(
+            "Rotation skip denied: account #%d lacks HAPPY_HOUR_TYRANT or ADMIN",
+            account.id,
+        )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Requires HAPPY_HOUR_TYRANT or ADMIN permission",
@@ -622,6 +660,9 @@ async def skip_rotation_turn(
     with db:
         pending = get_current_pending_assignment(db)
         if pending is None:
+            logger.warning(
+                "Rotation skip: no pending assignment (account #%d)", account_id
+            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="No pending rotation assignment to skip",
@@ -629,6 +670,11 @@ async def skip_rotation_turn(
 
         # ADMIN can skip anyone's turn; TYRANT can only skip their own
         if not is_admin and pending.account_id != account_id:
+            logger.warning(
+                "Rotation skip denied: account #%d tried to skip #%d's turn",
+                account_id,
+                pending.account_id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You can only skip your own rotation turn",
@@ -669,11 +715,7 @@ async def skip_rotation_turn(
                         fresh_next.Account, fresh_next.deadline_at
                     )
         except Exception:
-            import logging
-
-            logging.getLogger(__name__).exception(
-                "Failed to notify next tyrant after skip"
-            )
+            logger.exception("Failed to notify next tyrant after skip")
 
     return {
         "status": "skipped",

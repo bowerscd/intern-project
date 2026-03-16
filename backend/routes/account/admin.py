@@ -155,6 +155,11 @@ async def review_claim_request(
         ).first()
 
         if claim is None:
+            logger.warning(
+                "Admin claim review: claim #%d not found (admin #%d)",
+                claim_id,
+                account.id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Claim request not found.",
@@ -162,6 +167,12 @@ async def review_claim_request(
 
         current_status = _status_str(claim.status)
         if current_status != AccountClaimStatus.PENDING.value:
+            logger.warning(
+                "Admin claim review: claim #%d already %s (admin #%d)",
+                claim_id,
+                current_status,
+                account.id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"Claim is already {current_status}.",
@@ -175,6 +186,12 @@ async def review_claim_request(
                 select(Account).where(Account.id == claim.target_account_id)
             ).first()
             if target is None:
+                logger.warning(
+                    "Admin claim approve: target account #%d deleted (claim #%d, admin #%d)",
+                    claim.target_account_id,
+                    claim_id,
+                    account.id,
+                )
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Target account no longer exists.",
@@ -185,6 +202,13 @@ async def review_claim_request(
             # this, but a direct DB manipulation or future code path could
             # bypass it.
             if not target.external_unique_id.startswith("legacy-"):
+                logger.warning(
+                    "Admin claim approve: target account #%d already OIDC-linked "
+                    "(claim #%d, admin #%d)",
+                    claim.target_account_id,
+                    claim_id,
+                    account.id,
+                )
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Cannot approve: target account is already linked "
@@ -338,6 +362,11 @@ async def list_accounts(
             try:
                 target_status = AccountStatus(status_filter.lower())
             except ValueError:
+                logger.warning(
+                    "Admin accounts: invalid status_filter=%r from admin #%d",
+                    status_filter,
+                    account.id,
+                )
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Invalid status filter: {status_filter}",
@@ -375,6 +404,11 @@ async def update_account_status(
         target = db.scalars(select(Account).where(Account.id == account_id)).first()
 
         if target is None:
+            logger.warning(
+                "Admin status update: account #%d not found (admin #%d)",
+                account_id,
+                account.id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Account not found.",
@@ -383,6 +417,12 @@ async def update_account_status(
         try:
             new_status = AccountStatus(body.status)
         except ValueError:
+            logger.warning(
+                "Admin status update: invalid status=%r for account #%d (admin #%d)",
+                body.status,
+                account_id,
+                account.id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid status: {body.status}",
@@ -440,6 +480,11 @@ async def update_account_role(
         target = db.scalars(select(Account).where(Account.id == account_id)).first()
 
         if target is None:
+            logger.warning(
+                "Admin role update: account #%d not found (admin #%d)",
+                account_id,
+                account.id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Account not found.",

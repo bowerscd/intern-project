@@ -2,6 +2,7 @@
 Account profile endpoints — authenticated.
 """
 
+import logging
 from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, Request, status
@@ -15,6 +16,8 @@ from models.enums import PhoneProvider
 from schemas.account import ProfileResponse, ProfileUpdate
 
 from .router import Accounts
+
+logger = logging.getLogger(__name__)
 
 
 @Accounts.get(
@@ -89,6 +92,9 @@ async def update_profile(
 
         act = db.scalars(select(Account).where(Account.id == account.id)).first()
         if act is None:
+            logger.error(
+                "Profile update: account #%d not found (race condition)", account.id
+            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Account not found",
@@ -108,6 +114,11 @@ async def update_profile(
                 provider = PhoneProvider[body.phone_provider]
                 act.phone_provider = provider
             except KeyError:
+                logger.warning(
+                    "Profile update: invalid phone_provider=%r for account #%d",
+                    body.phone_provider,
+                    account.id,
+                )
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Invalid phone provider: {body.phone_provider}",
@@ -128,10 +139,19 @@ async def update_profile(
                     )
                 ).first()
                 if existing:
+                    logger.warning(
+                        "Profile update: username=%r already taken (account #%d)",
+                        body.username,
+                        account.id,
+                    )
                     raise HTTPException(
                         status_code=status.HTTP_409_CONFLICT,
                         detail="Username is already taken.",
                     )
+            logger.warning(
+                "Profile update: email uniqueness violation for account #%d",
+                account.id,
+            )
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Email address is already in use.",
@@ -218,6 +238,9 @@ async def set_theme(
         theme = ""
 
     if theme not in VALID_THEMES:
+        logger.warning(
+            "Theme update: invalid theme=%r for account #%d", theme, account.id
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid theme '{theme}'. Valid themes: {', '.join(sorted(VALID_THEMES))}",
@@ -229,6 +252,9 @@ async def set_theme(
 
         act = db.scalars(select(Account).where(Account.id == account.id)).first()
         if act is None:
+            logger.error(
+                "Theme update: account #%d not found (race condition)", account.id
+            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Account not found",

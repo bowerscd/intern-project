@@ -1,5 +1,6 @@
 """OIDC login initiation endpoint."""
 
+import logging
 from typing import Annotated
 from urllib.parse import urlparse
 
@@ -11,6 +12,8 @@ from models import ExternalAuthProvider
 from ratelimit import limiter
 
 from .router import Authentication, AuthMgrs
+
+logger = logging.getLogger(__name__)
 
 
 def _validate_redirect(redirect: str) -> str:
@@ -27,6 +30,7 @@ def _validate_redirect(redirect: str) -> str:
         absolute URL.
     """
     if "\\" in redirect:
+        logger.warning("Redirect validation failed: backslash in redirect=%r", redirect)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="redirect contains invalid characters",
@@ -35,6 +39,9 @@ def _validate_redirect(redirect: str) -> str:
     if parsed.scheme or parsed.netloc:
         origin = f"{parsed.scheme}://{parsed.netloc}"
         if origin not in AUTH_REDIRECT_ORIGINS:
+            logger.warning(
+                "Redirect validation failed: origin=%r not in allow-list", origin
+            )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="redirect origin is not in the allow-list",

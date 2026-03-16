@@ -48,6 +48,7 @@ async def complete_registration(
     """
     pending = request.session.get(PENDING_REGISTRATION_KEY)
     if not pending:
+        logger.warning("Registration attempt with no pending registration in session")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="No pending registration. Please start the registration flow.",
@@ -69,6 +70,12 @@ async def complete_registration(
             db.commit()
         except IntegrityError:
             db.rollback()
+            logger.warning(
+                "Registration failed: username=%r already taken (provider=%s sub=%s)",
+                body.username,
+                pending["provider"],
+                pending["sub"],
+            )
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Username already taken.",

@@ -1,5 +1,7 @@
 """POST /claim-account — request ownership of an existing legacy account."""
 
+import logging
+
 from fastapi import Depends, HTTPException, Request, status
 
 from csrf import validate_csrf_token
@@ -17,6 +19,8 @@ from sqlalchemy import select, and_
 
 from .authenticate import PENDING_REGISTRATION_KEY
 from .router import Authentication
+
+logger = logging.getLogger(__name__)
 
 LEGACY_PREFIX = "legacy-"
 
@@ -80,6 +84,7 @@ async def claim_account(
     """
     pending = request.session.get(PENDING_REGISTRATION_KEY)
     if not pending:
+        logger.warning("Claim attempt with no pending registration in session")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="No pending registration. Please start the registration flow.",
@@ -91,6 +96,11 @@ async def claim_account(
     with db:
         target = get_account_by_username(db, body.username)
         if target is None:
+            logger.warning(
+                "Claim attempt for non-existent username=%r by sub=%s",
+                body.username,
+                sub,
+            )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Claim request could not be processed.",
@@ -99,6 +109,12 @@ async def claim_account(
         # Only legacy (unlinked) accounts may be claimed — reject attempts
         # to claim active OIDC-linked accounts to prevent account takeover.
         if not target.external_unique_id.startswith(LEGACY_PREFIX):
+            logger.warning(
+                "Claim attempt on non-legacy account=%r (ext_id=%s) by sub=%s",
+                body.username,
+                target.external_unique_id[:8] + "...",
+                sub,
+            )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="This account cannot be claimed.",
@@ -117,6 +133,11 @@ async def claim_account(
         ).first()
 
         if existing is not None:
+            logger.info(
+                "Duplicate claim attempt: sub=%s already has pending claim for account=%r",
+                sub,
+                body.username,
+            )
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="You already have a pending claim for this account.",
