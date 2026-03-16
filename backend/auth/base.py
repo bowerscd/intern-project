@@ -1,5 +1,6 @@
 """Backend-for-Frontend OIDC authentication handler."""
 
+import logging
 from typing import Set, Any, Dict, Tuple, List
 
 from starlette.datastructures import URL
@@ -7,6 +8,8 @@ from starlette.responses import RedirectResponse
 from fastapi import HTTPException, status
 
 from .config import AuthConfig
+
+logger = logging.getLogger(__name__)
 
 
 def _make_auth_cookie(
@@ -111,6 +114,11 @@ class AuthenticationHandler:
             if a in _ALLOWED_SIGNING_ALGOS
         ]
         if not sign_algos:
+            logger.warning(
+                "OIDC auth failed: no supported signing algorithms; "
+                "provider reported=%s",
+                config.get("id_token_signing_alg_values_supported", []),
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="authentication failed",
@@ -141,6 +149,7 @@ class AuthenticationHandler:
         at_hash = urlsafe_b64encode(digest[: (len(digest) // 2)]).rstrip(b"=")
 
         if at_hash != token_at_hash:
+            logger.warning("OIDC auth failed: at_hash mismatch")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="authentication failed",
@@ -172,9 +181,7 @@ class AuthenticationHandler:
         async with ClientSession(timeout=ClientTimeout(total=10)) as s:
             r = await s.post(config["token_endpoint"], data=request_data)
             if r.status != HTTPStatus.OK:
-                import logging
-
-                logging.getLogger(__name__).error(
+                logger.error(
                     "OIDC token exchange failed: status=%d endpoint=%s",
                     r.status,
                     config["token_endpoint"],
@@ -216,21 +223,32 @@ class AuthenticationHandler:
         from urllib.parse import unquote, parse_qs
 
         c_nonce = cookies.get(self._nonce_cookie_key)
-        if c_nonce is None:
+        if not c_nonce:
+            logger.warning(
+                "OIDC auth failed: missing nonce cookie '%s'; cookies_present=%s",
+                self._nonce_cookie_key,
+                sorted(cookies.keys()),
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="authentication failed",
             )
 
         c_state = cookies.get(self._state_cookie_key)
-        if c_state is None:
+        if not c_state:
+            logger.warning(
+                "OIDC auth failed: missing state cookie '%s'; cookies_present=%s",
+                self._state_cookie_key,
+                sorted(cookies.keys()),
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="authentication failed",
             )
 
         r_state = query_params.get("state")
-        if r_state is None:
+        if not r_state:
+            logger.warning("OIDC auth failed: missing state query parameter")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="authentication failed",
@@ -239,6 +257,9 @@ class AuthenticationHandler:
         import hmac
 
         if not hmac.compare_digest(r_state, c_state):
+            logger.warning(
+                "OIDC auth failed: state parameter does not match state cookie"
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="authentication failed",
@@ -247,7 +268,8 @@ class AuthenticationHandler:
         r_state = parse_qs(unquote(r_state))
 
         exchange_code = query_params.get("code")
-        if exchange_code is None:
+        if not exchange_code:
+            logger.warning("OIDC auth failed: missing code query parameter")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="authentication failed",
@@ -257,11 +279,15 @@ class AuthenticationHandler:
 
         id_token_nonce = id_token.get("nonce")
         if id_token_nonce is None:
+            logger.warning("OIDC auth failed: id_token missing nonce claim")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="authentication failed",
             )
         if not hmac.compare_digest(id_token_nonce, c_nonce):
+            logger.warning(
+                "OIDC auth failed: id_token nonce does not match nonce cookie"
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="authentication failed",

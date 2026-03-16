@@ -71,14 +71,28 @@ async def authenticate(
     """
     auth = AuthMgrs[provider.name]
 
-    # Read anti-CSRF cookies by configured key name (includes __Host- in prod)
+    # Read anti-CSRF cookies by configured key name (includes __Host- in prod).
+    # Use None (not "") so missing cookies are detected as absent downstream.
     cookie_data = {
-        auth._nonce_cookie_key: request.cookies.get(auth._nonce_cookie_key, ""),
-        auth._state_cookie_key: request.cookies.get(auth._state_cookie_key, ""),
+        auth._nonce_cookie_key: request.cookies.get(auth._nonce_cookie_key) or None,
+        auth._state_cookie_key: request.cookies.get(auth._state_cookie_key) or None,
     }
+
+    # Log available cookie keys for diagnosing missing anti-CSRF cookies
+    logger.debug(
+        "OIDC callback: provider=%s cookies_present=%s",
+        provider.name,
+        sorted(request.cookies.keys()),
+    )
+
     redirect, identity = await auth.authenticate(cookie_data, query.model_dump())
 
     if not isinstance(identity.get("id"), dict):
+        logger.warning(
+            "OIDC auth failed: identity 'id' is not a dict; provider=%s type=%s",
+            provider.name,
+            type(identity.get("id")),
+        )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="authentication failed",
@@ -131,6 +145,13 @@ async def authenticate(
                 )
 
             if not isinstance(act, Account):
+                logger.warning(
+                    "OIDC auth failed: account lookup returned unexpected "
+                    "type=%s for provider=%s sub=%s",
+                    type(act),
+                    provider.name,
+                    uuid,
+                )
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="authentication failed",
