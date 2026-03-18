@@ -1,4 +1,4 @@
-import { HappyHourEvent, HappyHourLocation, IndividualizedSummary, MealRecord, MealSummary, Profile, RotationMember, ClaimFlags } from "../types.js";
+import { HappyHourEvent, HappyHourLocation, IndividualizedSummary, MealRecord, Profile, RotationMember, ClaimFlags } from "../types.js";
 import type { DataProvider } from "./dataProvider.js";
 
 export const mockProfile: Profile = {
@@ -34,22 +34,6 @@ const generateMealRecords = (): MealRecord[] => {
 };
 
 export const mockMealbotLedger: MealRecord[] = generateMealRecords();
-
-// Calculate balances from the meal records
-const calculateBalances = (records: MealRecord[]): { user: string; net: number }[] => {
-  const balanceMap = new Map<string, number>();
-  records.forEach(record => {
-    balanceMap.set(record.payer, (balanceMap.get(record.payer) || 0) + record.credits);
-    balanceMap.set(record.recipient, (balanceMap.get(record.recipient) || 0) - record.credits);
-  });
-  return Array.from(balanceMap.entries())
-    .map(([user, net]) => ({ user, net }))
-    .sort((a, b) => b.net - a.net);
-};
-
-export const mockMealbotSummary: MealSummary = {
-  balances: calculateBalances(mockMealbotLedger),
-};
 
 // Calculate individualized summary for demo.user
 const calculateIndividualized = (records: MealRecord[], username: string): IndividualizedSummary => {
@@ -217,7 +201,6 @@ export const mockAllUsers = ["demo.user", "alex", "sam", "morgan", "taylor", "jo
 /** Mock data provider — same interface as liveDataProvider. */
 export const mockDataProvider: DataProvider = {
   async getProfile() { return mockProfile; },
-  async getMealbotSummary() { return mockMealbotSummary; },
   async getMealbotLedger() { return mockMealbotLedger; },
   async getMyMealbotLedger() {
     return mockMealbotLedger.filter(r => r.payer === "demo.user" || r.recipient === "demo.user");

@@ -572,11 +572,6 @@ class TestFlow03Mealbot:
         time.sleep(1.5)
         flow.snap(page, "mealbot_with_data")
 
-        page.goto(f"{frontend_url}/mealbot/individualized")
-        page.wait_for_load_state("networkidle")
-        time.sleep(1)
-        flow.snap(page, "mealbot_individualized")
-
         page.goto(f"{frontend_url}/mealbot")
         page.wait_for_load_state("networkidle")
         time.sleep(1)

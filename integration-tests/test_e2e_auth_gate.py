@@ -16,7 +16,6 @@ PROTECTED_PAGES = [
     "/",
     "/account",
     "/mealbot",
-    "/mealbot/individualized",
     "/admin",
 ]
 

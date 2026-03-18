@@ -124,7 +124,6 @@ _complete_registration = complete_registration
 EXPECTED_NAV_LINKS = [
     ("/happyhour", None, False),               # public
     ("/mealbot", "MEALBOT", True),
-    ("/mealbot/individualized", "MEALBOT", True),
     ("/admin", "ADMIN", True),
     ("/account", "auth", True),
     ("/login", "guest", False),                # visible by default for guests

@@ -305,8 +305,8 @@ export async function renderAccount() {
 export async function renderMealbot() {
   const BATCH_SIZE = 20;
 
-  const [summary, ledgerPage, myLedgerPage, allUsers, profile] = await Promise.all([
-    dataProvider.getMealbotSummary(),
+  const [individualizedData, ledgerPage, myLedgerPage, allUsers, profile] = await Promise.all([
+    dataProvider.getIndividualizedSummary(),
     api.getMealbotLedgerPage(1, BATCH_SIZE),
     api.getMyMealbotLedgerPage(1, BATCH_SIZE),
     dataProvider.getAllUsers(),
@@ -316,14 +316,16 @@ export async function renderMealbot() {
   const otherUsers = allUsers.filter(u => u !== currentUser);
 
   // ── Helpers to (re-)render data sections ──────────────────────────
-  function renderSummary(s: typeof summary) {
-    byId("mealbot-summary").innerHTML = table(
-      ["User", "Balance"],
-      s.balances.map((entry) => {
-        const balance = entry.net > 0 ? `Owes you ${entry.net}` : entry.net < 0 ? `You owe ${-entry.net}` : "Even";
-        return [entry.user, balance];
-      }),
-    );
+  function renderDebtCards(data: typeof individualizedData) {
+    byId("incoming-debts").innerHTML = data.incoming.length > 0 ? table(
+      ["User", "Meals"],
+      data.incoming.map((item) => [item.from, `${item.credits}`]),
+    ) : "<p>All square!</p>";
+
+    byId("outgoing-debts").innerHTML = data.outgoing.length > 0 ? table(
+      ["User", "Meals"],
+      data.outgoing.map((item) => [item.to, `${item.credits}`]),
+    ) : "<p>All square!</p>";
   }
 
   function renderLedger(containerId: string, page: typeof ledgerPage) {
@@ -357,17 +359,17 @@ export async function renderMealbot() {
   }
 
   async function refreshAfterRecord() {
-    const [newSummary, newLedger, newMyLedger] = await Promise.all([
-      dataProvider.getMealbotSummary(),
+    const [newData, newLedger, newMyLedger] = await Promise.all([
+      dataProvider.getIndividualizedSummary(),
       api.getMealbotLedgerPage(1, BATCH_SIZE),
       api.getMyMealbotLedgerPage(1, BATCH_SIZE),
     ]);
-    renderSummary(newSummary);
+    renderDebtCards(newData);
     renderLedger("mealbot-ledger", newLedger);
     renderLedger("mealbot-my-ledger", newMyLedger);
   }
 
-  renderSummary(summary);
+  renderDebtCards(individualizedData);
 
   byId("mealbot-record-form").innerHTML = `
     <label>Other person</label>
@@ -431,43 +433,6 @@ export async function renderMealbot() {
     fetchPage: async (page) => {
       const resp = await api.getMyMealbotLedgerPage(page, BATCH_SIZE);
       return resp.items.map((row) => [row.payer, row.recipient, formatDate(row.date)]);
-    },
-  });
-}
-
-export async function renderMealbotIndividualized() {
-  const BATCH_SIZE = 20;
-
-  const [data, myLedgerPage] = await Promise.all([
-    dataProvider.getIndividualizedSummary(),
-    api.getMyMealbotLedgerPage(1, BATCH_SIZE),
-  ]);
-
-  byId("incoming-debts").innerHTML = data.incoming.length > 0 ? table(
-    ["User", "Meals"],
-    data.incoming.map((item) => [item.from, `${item.credits}`]),
-  ) : "<p>All square!</p>";
-  
-  byId("outgoing-debts").innerHTML = data.outgoing.length > 0 ? table(
-    ["User", "Meals"],
-    data.outgoing.map((item) => [item.to, `${item.credits}`]),
-  ) : "<p>All square!</p>";
-  
-  // Render initial page (server-paginated)
-  byId("my-recent-ledger").innerHTML = table(
-    ["Payer", "Recipient", "Date"],
-    myLedgerPage.items.map((item) => [item.payer, item.recipient, formatDate(item.date)]),
-  );
-  
-  setupServerPaginatedScroll({
-    scrollContainerId: "recent-ledger-scroll-container",
-    sentinelId: "recent-ledger-sentinel",
-    statusId: "recent-ledger-status",
-    pageSize: BATCH_SIZE,
-    totalItems: myLedgerPage.total,
-    fetchPage: async (page) => {
-      const resp = await api.getMyMealbotLedgerPage(page, BATCH_SIZE);
-      return resp.items.map((item) => [item.payer, item.recipient, formatDate(item.date)]);
     },
   });
 }

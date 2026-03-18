@@ -14,8 +14,7 @@ No React, Angular, or jQuery — the UI is built with plain TypeScript compiled 
 | `/auth/complete-registration` | New users pick a username after OIDC signup |
 | `/auth/claim-account` | Claim a pre-existing legacy account |
 | `/account` | Profile management and feature-access toggles (Mealbot, Happy Hour, Tyrant) |
-| `/mealbot` | Dashboard — balance summary, record meals, global + personal ledger |
-| `/mealbot/individualized` | Per-user debt breakdown and recent activity |
+| `/mealbot` | Dashboard — per-user debt breakdown, record meals, personal + global ledger |
 | `/happyhour` | Public view — upcoming event, rotation schedule, past events |
 
 ## Architecture

@@ -176,11 +176,6 @@ def mealbot():
     return render_page("mealbot.html", "Mealbot")
 
 
-@app.route("/mealbot/individualized")
-def mealbot_individualized():
-    return render_page("mealbot_individualized.html", "My Mealbot Summary")
-
-
 @app.route("/admin")
 def admin():
     return render_page("admin.html", "Admin")

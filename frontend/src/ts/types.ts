@@ -40,10 +40,6 @@ export type MealRecord = {
   date: string;
 };
 
-export type MealSummary = {
-  balances: Array<{ user: string; net: number }>;
-};
-
 export type IndividualizedSummary = {
   incoming: Array<{ from: string; credits: number }>;
   outgoing: Array<{ to: string; credits: number }>;

@@ -133,9 +133,10 @@ dev: ## Start backend + mock OIDC + frontend for local development
 	done
 	@curl -sf http://127.0.0.1:9000/.well-known/openid-configuration > /dev/null 2>&1 \
 	  || { printf '  \033[31m✘ Mock OIDC failed to start on :9000\033[0m\n'; exit 1; }
-	@# Start backend (in-memory DB, dev admin auto-seeded)
+	@# Start backend (file DB if data/app.db exists, otherwise in-memory)
 	cd backend && \
 	  DEV=true SERVER_HOSTNAME=localhost \
+	  DATABASE_URI=$$(test -f data/app.db && echo "sqlite:///data/app.db" || echo "") \
 	  TEST_OIDC_ISSUER=http://127.0.0.1:9000 \
 	  TEST_CLIENT_ID=client_id1 \
 	  TEST_CLIENT_SECRET=definitely_a_secret \

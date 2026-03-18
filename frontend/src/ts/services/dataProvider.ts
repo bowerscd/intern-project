@@ -5,11 +5,10 @@
  * must be true).  In production builds, mockData.ts is replaced with a
  * stub that throws at runtime.
  */
-import type { Profile, MealRecord, MealSummary, IndividualizedSummary, HappyHourEvent, RotationMember, HappyHourLocation } from "../types.js";
+import type { Profile, MealRecord, IndividualizedSummary, HappyHourEvent, RotationMember, HappyHourLocation } from "../types.js";
 
 export interface DataProvider {
   getProfile(): Promise<Profile>;
-  getMealbotSummary(): Promise<MealSummary>;
   getMealbotLedger(): Promise<MealRecord[]>;
   getMyMealbotLedger(): Promise<MealRecord[]>;
   getIndividualizedSummary(): Promise<IndividualizedSummary>;
@@ -38,7 +37,6 @@ const _provider = loadProvider();
 /** Resolved data provider — use this everywhere in pages. */
 export const dataProvider: DataProvider = {
   getProfile: () => _provider.then(p => p.getProfile()),
-  getMealbotSummary: () => _provider.then(p => p.getMealbotSummary()),
   getMealbotLedger: () => _provider.then(p => p.getMealbotLedger()),
   getMyMealbotLedger: () => _provider.then(p => p.getMyMealbotLedger()),
   getIndividualizedSummary: () => _provider.then(p => p.getIndividualizedSummary()),

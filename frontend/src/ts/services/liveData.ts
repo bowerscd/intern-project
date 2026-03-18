@@ -4,7 +4,7 @@
  */
 import * as api from "./apiClient.js";
 import { decodeClaims } from "../types.js";
-import type { Profile, MealRecord, MealSummary, IndividualizedSummary, HappyHourEvent, RotationMember, HappyHourLocation } from "../types.js";
+import type { Profile, MealRecord, IndividualizedSummary, HappyHourEvent, RotationMember, HappyHourLocation } from "../types.js";
 
 export const liveDataProvider = {
 
@@ -21,22 +21,6 @@ export const liveDataProvider = {
       theme: raw.theme,
       status: raw.status,
     };
-  },
-
-  async getMealbotSummary(): Promise<MealSummary> {
-    // Backend returns nested: {user: {otherUser: {"incoming-credits": N, "outgoing-credits": N}}}
-    // Extract the current user's row so balances are relative to *me*, not global.
-    const [raw, profile] = await Promise.all([api.getMealbotSummary(), api.getProfile()]);
-    const myData = raw[profile.username] ?? {};
-    const balances: { user: string; net: number }[] = [];
-    for (const [otherUser, counters] of Object.entries(myData)) {
-      // outgoing = I paid for them → they owe me
-      // incoming = they paid for me → I owe them
-      const net = (counters["outgoing-credits"] ?? 0) - (counters["incoming-credits"] ?? 0);
-      balances.push({ user: otherUser, net });
-    }
-    balances.sort((a, b) => b.net - a.net);
-    return { balances };
   },
 
   async getMealbotLedger(): Promise<MealRecord[]> {
@@ -62,33 +46,23 @@ export const liveDataProvider = {
   },
 
   async getIndividualizedSummary(): Promise<IndividualizedSummary> {
-    // Build net balances from the personal ledger.
-    // Positive net = they owe you, negative net = you owe them.
-    const records = await api.getMyMealbotLedger();
-    const profile = await api.getProfile();
-    const username = profile.username;
-
-    const netMap = new Map<string, number>();
-
-    for (const r of records) {
-      if (r.payer === username) {
-        // I paid for them → they owe me
-        netMap.set(r.recipient, (netMap.get(r.recipient) ?? 0) + r.credits);
-      }
-      if (r.recipient === username) {
-        // They paid for me → I owe them
-        netMap.set(r.payer, (netMap.get(r.payer) ?? 0) - r.credits);
-      }
-    }
+    // Use the server-side summary endpoint (pre-aggregated) instead of
+    // fetching the full personal ledger. This avoids an unbounded query
+    // that crashes SQLite under concurrent load.
+    const [raw, profile] = await Promise.all([api.getMealbotSummary(), api.getProfile()]);
+    const myData = raw[profile.username] ?? {};
 
     const incoming: { from: string; credits: number }[] = [];
     const outgoing: { to: string; credits: number }[] = [];
 
-    for (const [user, net] of netMap.entries()) {
+    for (const [otherUser, counters] of Object.entries(myData)) {
+      // outgoing-credits = I paid for them → they owe me
+      // incoming-credits = they paid for me → I owe them
+      const net = (counters["outgoing-credits"] ?? 0) - (counters["incoming-credits"] ?? 0);
       if (net > 0) {
-        incoming.push({ from: user, credits: net });
+        incoming.push({ from: otherUser, credits: net });
       } else if (net < 0) {
-        outgoing.push({ to: user, credits: -net });
+        outgoing.push({ to: otherUser, credits: -net });
       }
     }
 

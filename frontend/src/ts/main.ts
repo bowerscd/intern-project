@@ -7,7 +7,6 @@ import {
   renderHappyHour,
   renderLogin,
   renderMealbot,
-  renderMealbotIndividualized,
   renderIndex,
 } from "./pages.js";
 import { ClaimFlags } from "./types.js";
@@ -21,7 +20,6 @@ const pageMap: Record<string, () => Promise<void>> = {
   claimAccount: renderClaimAccount,
   account: renderAccount,
   mealbot: renderMealbot,
-  mealbotIndividualized: renderMealbotIndividualized,
   happyHour: renderHappyHour,
   admin: renderAdmin,
 };
@@ -103,8 +101,6 @@ async function bootstrap() {
     "/auth/claim-account": "claimAccount",
     "/account": "account",
     "/mealbot": "mealbot",
-    "/mealbot/individualized": "mealbotIndividualized",
-
     "/admin": "admin",
   };
 
