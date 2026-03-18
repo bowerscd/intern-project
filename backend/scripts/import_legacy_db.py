@@ -146,8 +146,12 @@ def main() -> None:
             imported = 0
             skipped = 0
             for r in receipts_raw:
-                payer_legacy_id = r["Payer"]
-                payee_legacy_id = r["Payee"]
+                # Legacy semantics: "Payer" = person who owes (meal recipient),
+                # "Payee" = person who paid the bill.  Our model is the
+                # opposite: PayerId = person who paid, RecipientId = meal
+                # recipient.  So we swap them.
+                payer_legacy_id = r["Payee"]
+                payee_legacy_id = r["Payer"]
 
                 if payer_legacy_id == payee_legacy_id:
                     payer_upn = id_to_upn.get(payer_legacy_id, f"ID={payer_legacy_id}")

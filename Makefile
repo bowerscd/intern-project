@@ -124,7 +124,8 @@ dev: ## Start backend + mock OIDC + frontend for local development
 	@# Build TypeScript first
 	cd frontend && npx tsc -p tsconfig.json
 	@# Start mock OIDC provider and wait until it's reachable
-	cd integration-tests && nohup $(CURDIR)/$(INTEGRATION_VENV)/python mock_oidc.py 9000 \
+	cd integration-tests && MOCK_OIDC_ISSUER=http://127.0.0.1:9000 \
+	  nohup $(CURDIR)/$(INTEGRATION_VENV)/python mock_oidc.py 9000 \
 	  > $(CURDIR)/$(DEV_LOGS)/oidc.log 2>&1 &
 	@for i in 1 2 3 4 5 6 7 8 9 10; do \
 	  curl -sf http://127.0.0.1:9000/.well-known/openid-configuration > /dev/null 2>&1 && break; \

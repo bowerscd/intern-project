@@ -25,17 +25,15 @@ export const liveDataProvider = {
 
   async getMealbotSummary(): Promise<MealSummary> {
     // Backend returns nested: {user: {otherUser: {"incoming-credits": N, "outgoing-credits": N}}}
-    // We need to compute per-user net balance (total incoming - total outgoing).
-    const raw = await api.getMealbotSummary();
+    // Extract the current user's row so balances are relative to *me*, not global.
+    const [raw, profile] = await Promise.all([api.getMealbotSummary(), api.getProfile()]);
+    const myData = raw[profile.username] ?? {};
     const balances: { user: string; net: number }[] = [];
-    for (const [user, others] of Object.entries(raw)) {
-      let totalIn = 0;
-      let totalOut = 0;
-      for (const counters of Object.values(others)) {
-        totalIn += counters["incoming-credits"] ?? 0;
-        totalOut += counters["outgoing-credits"] ?? 0;
-      }
-      balances.push({ user, net: totalIn - totalOut });
+    for (const [otherUser, counters] of Object.entries(myData)) {
+      // outgoing = I paid for them → they owe me
+      // incoming = they paid for me → I owe them
+      const net = (counters["outgoing-credits"] ?? 0) - (counters["incoming-credits"] ?? 0);
+      balances.push({ user: otherUser, net });
     }
     balances.sort((a, b) => b.net - a.net);
     return { balances };

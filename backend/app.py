@@ -35,18 +35,19 @@ secret = SESSION_SECRET
 
 # Dev-mode admin account constants
 DEV_ADMIN_SUB = "dev-admin"
-DEV_ADMIN_USERNAME = "admin"
+DEV_ADMIN_USERNAME = "dede"
 DEV_ADMIN_EMAIL = "admin@dev.local"
 
 
 def _seed_dev_admin(db: "Database") -> None:  # noqa: F821
-    """Create a pre-activated admin account for local development.
+    """Create or promote a pre-activated admin account for local development.
 
     Uses a well-known OIDC ``sub`` (``dev-admin``) so that logging in
     via the mock OIDC provider with that sub grants admin access
     immediately — no manual ``sqlite3`` promotion needed.
 
-    Skipped silently if the account already exists.
+    If the account already exists (e.g. from a legacy import), it is
+    promoted to ACTIVE with ADMIN claims and linked to the dev OIDC sub.
     """
     from sqlalchemy import select
     from models import (
@@ -61,6 +62,23 @@ def _seed_dev_admin(db: "Database") -> None:  # noqa: F821
             select(Account).where(Account.username == DEV_ADMIN_USERNAME)
         ).scalar_one_or_none()
         if existing is not None:
+            changed = False
+            if not (existing.claims & AccountClaims.ADMIN):
+                existing.claims = existing.claims | AccountClaims.ADMIN
+                changed = True
+            if existing.status != AccountStatus.ACTIVE:
+                existing.status = AccountStatus.ACTIVE
+                changed = True
+            if existing.external_unique_id != DEV_ADMIN_SUB:
+                existing.external_unique_id = DEV_ADMIN_SUB
+                changed = True
+            if changed:
+                session.commit()
+                logger.info(
+                    "Dev admin account promoted: username=%s, sub=%s",
+                    DEV_ADMIN_USERNAME,
+                    DEV_ADMIN_SUB,
+                )
             return
 
         admin = Account(
