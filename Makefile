@@ -168,8 +168,8 @@ dev-logs: ## Tail all dev server logs
 	@tail -f $(DEV_LOGS)/backend.log $(DEV_LOGS)/frontend.log $(DEV_LOGS)/oidc.log
 
 dev-stop: ## Stop all dev servers started by 'make dev'
-	@pkill -f "python.*mock_oidc.py 9000" 2>/dev/null || true
-	@pkill -f "python.*uvicorn app:app.*--port 8000" 2>/dev/null || true
-	@pkill -f "python.*flask --app app run.*--port 5000" 2>/dev/null || true
+	@pkill -f "python.*[m]ock_oidc.py 9000" 2>/dev/null || true
+	@pkill -f "python.*[u]vicorn app:app.*--port 8000" 2>/dev/null || true
+	@pkill -f "python.*[f]lask --app app run.*--port 5000" 2>/dev/null || true
 	@printf '  \033[32m✔ Dev servers stopped.\033[0m\n'
 	@printf '  Logs preserved in $(DEV_LOGS)/\n'
