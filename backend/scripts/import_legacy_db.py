@@ -1,8 +1,12 @@
-"""One-off script to import legacy database.json into the current database.
+"""One-off script to import legacy database.json and locations.json into the current database.
 
 Reads ``existing_db_samples/database.json`` and creates:
 - Legacy accounts (claimable, PENDING_APPROVAL) from the ``Users`` array
 - Mealbot receipts from the ``Reciepts`` array
+
+Reads ``existing_db_samples/locations.json`` and creates:
+- Happy hour locations from the location entries
+- Happy hour events from the ``Occasions`` arrays
 
 Usage::
 
@@ -18,6 +22,7 @@ Or with the venv explicitly::
 from __future__ import annotations
 
 import json
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -36,9 +41,12 @@ from models.enums import (  # noqa: E402
     ExternalAuthProvider,
     PhoneProvider,
 )
+from models.happyhour.event import Event  # noqa: E402
+from models.happyhour.location import Location  # noqa: E402
 from models.mealbot import Receipt  # noqa: E402
 
 DATA_FILE = _backend_root / "existing_db_samples" / "database.json"
+LOCATIONS_FILE = _backend_root / "existing_db_samples" / "locations.json"
 LEGACY_PREFIX = "legacy-"
 
 
@@ -74,6 +82,127 @@ def _parse_datetime(raw: str) -> datetime:
     dt = datetime.fromisoformat(s)
     # Normalise to UTC
     return dt.astimezone(timezone.utc)
+
+
+# ── Address pattern: "123 Street Name, City, ST 98052" ───────────────
+# Some addresses have a building prefix like "Pike Motorworks Building, "
+# or a suite suffix like "#100".  We extract number, street, city, state,
+# zip from the *last 3* comma-separated segments.
+_ADDR_RE = re.compile(
+    r"(\d+)\s+"  # street number
+    r"(.+?),\s*"  # street name (up to comma)
+    r"(.+?),\s*"  # city
+    r"([A-Z]{2})\s+"  # state abbreviation
+    r"(\d{5})"  # zip code
+)
+
+
+def _parse_address(raw: str) -> dict[str, str | int]:
+    """Best-effort parse of a US address string into components.
+
+    Returns a dict with keys: number, street_name, city, state, zip_code.
+    Falls back to storing the entire string as street_name if parsing fails.
+    """
+    m = _ADDR_RE.search(raw)
+    if m:
+        return {
+            "number": int(m.group(1)),
+            "street_name": m.group(2).strip(),
+            "city": m.group(3).strip(),
+            "state": m.group(4),
+            "zip_code": m.group(5),
+        }
+    # Fallback: unparseable address
+    return {
+        "number": 0,
+        "street_name": raw,
+        "city": "",
+        "state": "",
+        "zip_code": "",
+    }
+
+
+def _compute_week_of(when: datetime) -> str:
+    """Compute ISO year-week string for an event date."""
+    iso = when.isocalendar()
+    return f"{iso.year}-W{iso.week:02d}"
+
+
+def _import_locations(session, upn_to_account: dict[str, Account]) -> tuple[int, int]:
+    """Import happy hour locations and their occasion history.
+
+    Returns (locations_imported, events_imported).
+    """
+    if not LOCATIONS_FILE.exists():
+        print(f"WARNING: Locations file not found: {LOCATIONS_FILE}", file=sys.stderr)
+        return 0, 0
+
+    with open(LOCATIONS_FILE, "r", encoding="utf-8") as f:
+        locations_raw = json.load(f)
+
+    print(f"Found {len(locations_raw)} locations in {LOCATIONS_FILE.name}")
+
+    locations_imported = 0
+    events_imported = 0
+    events_skipped = 0
+    seen_weeks: set[str] = set()
+
+    for loc_data in locations_raw:
+        addr = _parse_address(loc_data["Location"]["Address"])
+        loc = Location(
+            Name=loc_data["Name"],
+            Closed=loc_data.get("Defunct", False),
+            Illegal=False,
+            URL=None,
+            AddressRaw=loc_data["Location"]["Address"],
+            Number=addr["number"],
+            StreetName=addr["street_name"],
+            City=addr["city"],
+            State=addr["state"],
+            ZipCode=addr["zip_code"],
+            Latitude=loc_data["Location"]["Coordinates"]["Lat"],
+            Longitude=loc_data["Location"]["Coordinates"]["Long"],
+        )
+        session.add(loc)
+        session.flush()  # assign loc.id
+        locations_imported += 1
+
+        for occasion in loc_data.get("Occasions", []):
+            date_str = occasion["Date"]
+            when = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            week_of = _compute_week_of(when)
+
+            if week_of in seen_weeks:
+                print(
+                    f"WARNING: Skipping duplicate week {week_of} "
+                    f"for {loc_data['Name']} on {date_str}"
+                )
+                events_skipped += 1
+                continue
+            seen_weeks.add(week_of)
+
+            # Resolve organizer to account ID if possible
+            organizer = occasion.get("Organizer", "").strip()
+            tyrant_id = None
+            if organizer and organizer in upn_to_account:
+                tyrant_id = upn_to_account[organizer].id
+
+            event = Event(
+                LocationID=loc.id,
+                When=when,
+                week_of=week_of,
+                TyrantID=tyrant_id,
+                AutoSelected=tyrant_id is None,
+            )
+            session.add(event)
+            events_imported += 1
+
+    session.flush()
+
+    if events_skipped:
+        print(f"  Events skipped (duplicate weeks): {events_skipped}")
+
+    return locations_imported, events_imported
 
 
 def main() -> None:
@@ -182,6 +311,9 @@ def main() -> None:
                 session.add(receipt)
                 imported += 1
 
+            # ── Step 4: Import locations and events ──
+            locs_imported, events_imported = _import_locations(session, upn_to_account)
+
             session.commit()
 
         print("\nImport complete:")
@@ -189,6 +321,8 @@ def main() -> None:
         print(f"  Receipts imported: {imported}")
         if skipped:
             print(f"  Receipts skipped: {skipped}")
+        print(f"  Locations imported: {locs_imported}")
+        print(f"  Events imported: {events_imported}")
 
     finally:
         db.stop()

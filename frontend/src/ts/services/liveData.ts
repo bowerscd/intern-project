@@ -62,30 +62,39 @@ export const liveDataProvider = {
   },
 
   async getIndividualizedSummary(): Promise<IndividualizedSummary> {
-    // Build from the personal ledger
+    // Build net balances from the personal ledger.
+    // Positive net = they owe you, negative net = you owe them.
     const records = await api.getMyMealbotLedger();
     const profile = await api.getProfile();
     const username = profile.username;
 
-    const inMap = new Map<string, number>();
-    const outMap = new Map<string, number>();
+    const netMap = new Map<string, number>();
 
     for (const r of records) {
-      if (r.recipient === username) {
-        inMap.set(r.payer, (inMap.get(r.payer) ?? 0) + r.credits);
-      }
       if (r.payer === username) {
-        outMap.set(r.recipient, (outMap.get(r.recipient) ?? 0) + r.credits);
+        // I paid for them → they owe me
+        netMap.set(r.recipient, (netMap.get(r.recipient) ?? 0) + r.credits);
+      }
+      if (r.recipient === username) {
+        // They paid for me → I owe them
+        netMap.set(r.payer, (netMap.get(r.payer) ?? 0) - r.credits);
+      }
+    }
+
+    const incoming: { from: string; credits: number }[] = [];
+    const outgoing: { to: string; credits: number }[] = [];
+
+    for (const [user, net] of netMap.entries()) {
+      if (net > 0) {
+        incoming.push({ from: user, credits: net });
+      } else if (net < 0) {
+        outgoing.push({ to: user, credits: -net });
       }
     }
 
     return {
-      incoming: Array.from(inMap.entries())
-        .map(([from, credits]) => ({ from, credits }))
-        .sort((a, b) => b.credits - a.credits),
-      outgoing: Array.from(outMap.entries())
-        .map(([to, credits]) => ({ to, credits }))
-        .sort((a, b) => b.credits - a.credits),
+      incoming: incoming.sort((a, b) => b.credits - a.credits),
+      outgoing: outgoing.sort((a, b) => b.credits - a.credits),
     };
   },
 

@@ -53,25 +53,31 @@ export const mockMealbotSummary: MealSummary = {
 
 // Calculate individualized summary for demo.user
 const calculateIndividualized = (records: MealRecord[], username: string): IndividualizedSummary => {
-  const incomingMap = new Map<string, number>();
-  const outgoingMap = new Map<string, number>();
-  
+  const netMap = new Map<string, number>();
+
   records.forEach(record => {
-    if (record.recipient === username) {
-      incomingMap.set(record.payer, (incomingMap.get(record.payer) || 0) + record.credits);
-    }
     if (record.payer === username) {
-      outgoingMap.set(record.recipient, (outgoingMap.get(record.recipient) || 0) + record.credits);
+      netMap.set(record.recipient, (netMap.get(record.recipient) || 0) + record.credits);
+    }
+    if (record.recipient === username) {
+      netMap.set(record.payer, (netMap.get(record.payer) || 0) - record.credits);
     }
   });
-  
+
+  const incoming: { from: string; credits: number }[] = [];
+  const outgoing: { to: string; credits: number }[] = [];
+
+  for (const [user, net] of netMap.entries()) {
+    if (net > 0) {
+      incoming.push({ from: user, credits: net });
+    } else if (net < 0) {
+      outgoing.push({ to: user, credits: -net });
+    }
+  }
+
   return {
-    incoming: Array.from(incomingMap.entries())
-      .map(([from, credits]) => ({ from, credits }))
-      .sort((a, b) => b.credits - a.credits),
-    outgoing: Array.from(outgoingMap.entries())
-      .map(([to, credits]) => ({ to, credits }))
-      .sort((a, b) => b.credits - a.credits),
+    incoming: incoming.sort((a, b) => b.credits - a.credits),
+    outgoing: outgoing.sort((a, b) => b.credits - a.credits),
   };
 };
 

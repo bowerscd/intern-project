@@ -444,14 +444,14 @@ export async function renderMealbotIndividualized() {
   ]);
 
   byId("incoming-debts").innerHTML = data.incoming.length > 0 ? table(
-    ["User", "Amount"],
-    data.incoming.map((item) => [item.from, `Owes you ${item.credits} meal${item.credits !== 1 ? 's' : ''}`]),
-  ) : "<p>No incoming debts</p>";
+    ["User", "Meals"],
+    data.incoming.map((item) => [item.from, `${item.credits}`]),
+  ) : "<p>All square!</p>";
   
   byId("outgoing-debts").innerHTML = data.outgoing.length > 0 ? table(
-    ["User", "Amount"],
-    data.outgoing.map((item) => [item.to, `You owe ${item.credits} meal${item.credits !== 1 ? 's' : ''}`]),
-  ) : "<p>No outgoing debts</p>";
+    ["User", "Meals"],
+    data.outgoing.map((item) => [item.to, `${item.credits}`]),
+  ) : "<p>All square!</p>";
   
   // Render initial page (server-paginated)
   byId("my-recent-ledger").innerHTML = table(
