@@ -471,3 +471,159 @@ class TestTurnEnforcement:
         data = r.json()
         assert data["current_tyrant_username"] == "test"
         assert data["current_tyrant_deadline"] is not None
+
+    def test_scheduled_rotation_blocks_wrong_tyrant(self, db_session: Session) -> None:
+        """When no PENDING assignment exists but SCHEDULED assignments do,
+        only the next-in-line tyrant may create an event.
+        """
+        from db.functions import create_account
+        from models import ExternalAuthProvider, AccountStatus
+
+        dede = create_account(
+            "dede",
+            "dede@test.com",
+            ExternalAuthProvider.test,
+            "dede",
+            claims=AccountClaims.HAPPY_HOUR | AccountClaims.HAPPY_HOUR_TYRANT,
+        )
+        dede.status = AccountStatus.ACTIVE
+        db_session.add(dede)
+
+        olkorsha = create_account(
+            "olkorsha",
+            "olkorsha@test.com",
+            ExternalAuthProvider.test,
+            "olkorsha",
+            claims=AccountClaims.HAPPY_HOUR | AccountClaims.HAPPY_HOUR_TYRANT,
+        )
+        olkorsha.status = AccountStatus.ACTIVE
+        db_session.add(olkorsha)
+        db_session.flush()
+
+        # Create a rotation cycle with dede first, olkorsha second
+        # (don't use create_cycle_rotation because it shuffles)
+        from models.happyhour.rotation import TyrantRotation
+        from models import TyrantAssignmentStatus
+
+        now = datetime.now(UTC)
+        r1 = TyrantRotation(
+            account_id=dede.id,
+            cycle=1,
+            position=0,
+            assigned_at=now,
+            status=TyrantAssignmentStatus.SCHEDULED,
+        )
+        r2 = TyrantRotation(
+            account_id=olkorsha.id,
+            cycle=1,
+            position=1,
+            assigned_at=now,
+            status=TyrantAssignmentStatus.SCHEDULED,
+        )
+        db_session.add_all([r1, r2])
+        db_session.commit()
+
+        # Create a location for the event
+        from app import app, secret
+        from tests.conftest import _mk_auth_cookie
+        from ratelimit import limiter
+
+        limiter.reset()
+
+        with TestClient(app) as c:
+            c.cookies.jar.set_cookie(_mk_auth_cookie(secret, olkorsha.id))
+
+            # Create a location first (need a valid location_id)
+            loc_r = c.post("/api/v2/happyhour/locations", json=LOCATION_DATA)
+            assert loc_r.status_code == 201
+            loc_id = loc_r.json()["id"]
+
+            # olkorsha tries to create event — should be blocked
+            event_time = (datetime.now(UTC) + timedelta(days=3)).isoformat()
+            r = c.post(
+                "/api/v2/happyhour/events",
+                json={"location_id": loc_id, "when": event_time},
+            )
+            assert r.status_code == 403
+            assert "not your turn" in r.json()["detail"]
+
+        # dede should be able to create
+        with TestClient(app) as c:
+            c.cookies.jar.set_cookie(_mk_auth_cookie(secret, dede.id))
+            r = c.post(
+                "/api/v2/happyhour/events",
+                json={"location_id": loc_id, "when": event_time},
+            )
+            assert r.status_code == 201
+
+            # Verify dede's assignment was auto-activated and marked chosen
+            db_session.refresh(r1)
+            assert r1.status == TyrantAssignmentStatus.CHOSEN
+
+    def test_admin_can_override_scheduled_rotation(self, db_session: Session) -> None:
+        """An ADMIN can create events even when not next in rotation."""
+        from db.functions import create_account
+        from models import ExternalAuthProvider, AccountStatus
+
+        tyrant = create_account(
+            "queued_tyrant",
+            "queued@test.com",
+            ExternalAuthProvider.test,
+            "queued_tyrant",
+            claims=AccountClaims.HAPPY_HOUR | AccountClaims.HAPPY_HOUR_TYRANT,
+        )
+        tyrant.status = AccountStatus.ACTIVE
+        db_session.add(tyrant)
+
+        admin = create_account(
+            "admin_override",
+            "admin_override@test.com",
+            ExternalAuthProvider.test,
+            "admin_override",
+            claims=AccountClaims.HAPPY_HOUR
+            | AccountClaims.HAPPY_HOUR_TYRANT
+            | AccountClaims.ADMIN,
+        )
+        admin.status = AccountStatus.ACTIVE
+        db_session.add(admin)
+        db_session.flush()
+
+        from models.happyhour.rotation import TyrantRotation
+        from models import TyrantAssignmentStatus
+
+        now = datetime.now(UTC)
+        r1 = TyrantRotation(
+            account_id=tyrant.id,
+            cycle=2,
+            position=0,
+            assigned_at=now,
+            status=TyrantAssignmentStatus.SCHEDULED,
+        )
+        r2 = TyrantRotation(
+            account_id=admin.id,
+            cycle=2,
+            position=1,
+            assigned_at=now,
+            status=TyrantAssignmentStatus.SCHEDULED,
+        )
+        db_session.add_all([r1, r2])
+        db_session.commit()
+
+        from app import app, secret
+        from tests.conftest import _mk_auth_cookie
+        from ratelimit import limiter
+
+        limiter.reset()
+
+        with TestClient(app) as c:
+            c.cookies.jar.set_cookie(_mk_auth_cookie(secret, admin.id))
+
+            loc_r = c.post("/api/v2/happyhour/locations", json=LOCATION_DATA)
+            loc_id = loc_r.json()["id"]
+
+            event_time = (datetime.now(UTC) + timedelta(days=3)).isoformat()
+            r = c.post(
+                "/api/v2/happyhour/events",
+                json={"location_id": loc_id, "when": event_time},
+            )
+            assert r.status_code == 201

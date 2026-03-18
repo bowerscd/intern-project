@@ -212,6 +212,9 @@ async def create_event_endpoint(
         get_current_pending_assignment,
         mark_assignment_chosen,
         get_events_this_week,
+        get_current_cycle_number,
+        get_next_scheduled_assignment,
+        activate_assignment,
     )
 
     with db:
@@ -255,6 +258,39 @@ async def create_event_endpoint(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You need the HAPPY_HOUR_TYRANT permission to submit happy hour events",
                 )
+
+            # Even with no PENDING assignment, respect rotation order if
+            # SCHEDULED assignments exist.  The gap between the auto-select
+            # Wednesday-noon job and the Friday-4PM scheduler leaves a window
+            # where any tyrant could bypass the queue.
+            cycle = get_current_cycle_number(db)
+            next_scheduled = get_next_scheduled_assignment(db, cycle)
+            if next_scheduled is not None:
+                if next_scheduled.account_id != account.id:
+                    # Allow ADMIN to override rotation order
+                    if not (
+                        account.claims & AccountClaims.ADMIN == AccountClaims.ADMIN
+                    ):
+                        logger.warning(
+                            "Event create denied: account #%d is not the next "
+                            "scheduled tyrant (#%d, position %d)",
+                            account.id,
+                            next_scheduled.account_id,
+                            next_scheduled.position,
+                        )
+                        raise HTTPException(
+                            status_code=status.HTTP_403_FORBIDDEN,
+                            detail="It's not your turn to pick the happy hour location",
+                        )
+                else:
+                    # The requester is next in line — activate their assignment
+                    # so the rotation state stays consistent.
+                    from scheduler import _next_wednesday_noon
+                    from datetime import datetime, UTC
+
+                    deadline = _next_wednesday_noon(datetime.now(UTC))
+                    activate_assignment(db, next_scheduled.id, deadline)
+                    pending = next_scheduled
 
         # Guard against duplicate events in the same weekly window as the proposed event
         from datetime import datetime, UTC
