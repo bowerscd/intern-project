@@ -529,9 +529,9 @@ export async function renderHappyHour() {
     // ── Past events (server-paginated) ──
     renderEventsTable(eventsPage);
     setupServerPaginatedScroll({
-      scrollContainerId: "events-scroll-container",
-      sentinelId: "events-sentinel",
-      statusId: "events-status",
+      scrollContainerId: "happyhour-events-scroll-container",
+      sentinelId: "happyhour-events-sentinel",
+      statusId: "happyhour-events-status",
       pageSize: BATCH_SIZE,
       totalItems: eventsPage.total,
       fetchPage: async (page) => {
