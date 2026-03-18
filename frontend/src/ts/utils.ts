@@ -111,7 +111,8 @@ export function setupInfiniteScroll(options: InfiniteScrollOptions): () => void 
   return () => observer.disconnect();
 }
 
-export function appendTableRows(tableId: string, rows: string[][]): void {
+export function appendTableRows(tableId: string, rows: string[][], opts: { rawColumns?: number[] } = {}): void {
+  const raw = new Set(opts.rawColumns ?? []);
   const table = document.getElementById(tableId)?.querySelector("tbody");
   if (!table) {
     console.error(`Table body not found for ${tableId}`);
@@ -119,7 +120,7 @@ export function appendTableRows(tableId: string, rows: string[][]): void {
   }
   
   const rowsHtml = rows
-    .map((row) => `<tr>${row.map((c) => `<td>${esc(c)}</td>`).join("")}</tr>`)
+    .map((row) => `<tr>${row.map((c, i) => `<td>${raw.has(i) ? c : esc(c)}</td>`).join("")}</tr>`)
     .join("");
   
   table.insertAdjacentHTML("beforeend", rowsHtml);
@@ -135,6 +136,8 @@ export interface ServerPaginatedScrollOptions {
   totalItems: number;
   /** Async callback to fetch the next page and return rendered table rows. */
   fetchPage: (page: number) => Promise<string[][]>;
+  /** Column indices that contain pre-escaped HTML and should not be re-escaped. */
+  rawColumns?: number[];
 }
 
 /**
@@ -169,7 +172,7 @@ export function setupServerPaginatedScroll(options: ServerPaginatedScrollOptions
 
         fetchPage(nextPage)
           .then((rows) => {
-            appendTableRows(scrollContainerId.replace("-scroll-container", ""), rows);
+            appendTableRows(scrollContainerId.replace("-scroll-container", ""), rows, { rawColumns: options.rawColumns });
             loadedCount += rows.length;
             nextPage++;
             loading = false;

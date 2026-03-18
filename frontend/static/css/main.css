@@ -407,6 +407,43 @@ tr:nth-child(even) {
   min-height: 24px;
 }
 
+.pill-toggle {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  cursor: pointer;
+}
+.pill-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.pill-toggle .slider {
+  position: absolute;
+  inset: 0;
+  background: var(--border-input, #666);
+  border-radius: 20px;
+  transition: background var(--transition-speed) var(--transition-fn);
+}
+.pill-toggle .slider::before {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  left: 3px;
+  bottom: 3px;
+  background: var(--fg-body, #f0f0f0);
+  border-radius: 50%;
+  transition: transform var(--transition-speed) var(--transition-fn);
+}
+.pill-toggle input:checked + .slider {
+  background: var(--fg-accent, #90caf9);
+}
+.pill-toggle input:checked + .slider::before {
+  transform: translateX(16px);
+}
+
 /* Desktop - sidebar always visible */
 @media (min-width: 769px) {
   .mobile-header {

@@ -445,19 +445,21 @@ export async function renderHappyHour() {
   } catch { /* not authenticated */ }
 
   const hasTyrant = profile !== null && (profile.claims & 32) !== 0; // HAPPY_HOUR_TYRANT = 32
+  const isAdmin = profile !== null && (profile.claims & 2) !== 0; // ADMIN = 2
 
   try {
     const fetches: [
       Promise<any>, Promise<any>, Promise<any>,
-      Promise<any>, Promise<any>,
+      Promise<any>, Promise<any>, Promise<any>,
     ] = [
       dataProvider.getUpcomingHappyHour(),
       api.getEventsPage(1, BATCH_SIZE),
       dataProvider.getRotation(),
+      api.getLocationsPage(1, BATCH_SIZE),
       hasTyrant ? dataProvider.getLocations() : Promise.resolve([]),
       hasTyrant ? dataProvider.isCurrentUserTurn() : Promise.resolve(false),
     ];
-    const [upcoming, eventsPage, rotation, locations, isTurn] = await Promise.all(fetches);
+    const [upcoming, eventsPage, rotation, locationsPage, allLocations, isTurn] = await Promise.all(fetches);
 
     // ── Helper: render upcoming event card ──
     function renderUpcoming(u: any) {
@@ -479,7 +481,7 @@ export async function renderHappyHour() {
         <tbody><tr>
           <td>${u.when ? formatDate(u.when) : "TBD"}</td>
           <td>${nameHtml}${addressHtml}</td>
-          <td>${esc(u.tyrant_username ?? "TBD")}</td>
+          <td>${esc(u.tyrant_username ?? "System")}</td>
           ${recoveryButtons}
         </tr></tbody></table>`;
 
@@ -522,7 +524,7 @@ export async function renderHappyHour() {
     function renderEventsTable(page: any) {
       byId("happyhour-events").innerHTML = table(
         ["When", "Location", "Chosen By"],
-        page.items.map((item: any) => [formatDate(item.when), item.location_name, item.tyrant_username ?? "TBD"]),
+        page.items.map((item: any) => [formatDate(item.when), item.location_name, item.tyrant_username ?? "System"]),
       );
     }
 
@@ -536,17 +538,72 @@ export async function renderHappyHour() {
       totalItems: eventsPage.total,
       fetchPage: async (page) => {
         const resp = await api.getEventsPage(page, BATCH_SIZE);
-        return resp.items.map((item: any) => [formatDate(item.when), item.location_name, item.tyrant_username ?? "TBD"]);
+        return resp.items.map((item: any) => [formatDate(item.when), item.location_name, item.tyrant_username ?? "System"]);
       },
     });
 
+    // ── Locations (visible to all HAPPY_HOUR users, toggles for ADMIN only) ──
+    const locationsSection = document.getElementById("happyhour-locations-section");
+    if (locationsSection) locationsSection.style.display = "";
+
+    function locationRow(loc: any): string[] {
+      const nameHtml = loc.url
+        ? `<a href="${esc(loc.url)}" target="_blank" rel="noopener">${esc(loc.name)}</a>`
+        : esc(loc.name);
+      const nameDisplay = loc.closed ? `<s>${nameHtml}</s>` : nameHtml;
+      const address = loc.address_raw || `${loc.city}, ${loc.state}`;
+      if (isAdmin) {
+        const closedToggle = `<label class="pill-toggle"><input type="checkbox" class="loc-closed-toggle" data-id="${loc.id}" ${loc.closed ? "checked" : ""}><span class="slider"></span></label>`;
+        return [nameDisplay, address, closedToggle];
+      }
+      return [nameDisplay, address];
+    }
+
+    function renderLocationsCard(page: any) {
+      const headers = isAdmin ? ["Name", "Address", "Closed"] : ["Name", "Address"];
+      const rawCols = isAdmin ? [0, 2] : [0];
+      byId("happyhour-locations").innerHTML = table(
+        headers,
+        page.items.map((loc: any) => locationRow(loc)),
+        { rawColumns: rawCols },
+      );
+    }
+
+    renderLocationsCard(locationsPage);
+    setupServerPaginatedScroll({
+      scrollContainerId: "happyhour-locations-scroll-container",
+      sentinelId: "happyhour-locations-sentinel",
+      statusId: "happyhour-locations-status",
+      pageSize: BATCH_SIZE,
+      totalItems: locationsPage.total,
+      rawColumns: isAdmin ? [0, 2] : [0],
+      fetchPage: async (page) => {
+        const resp = await api.getLocationsPage(page, BATCH_SIZE);
+        return resp.items.map((loc: any) => locationRow(loc));
+      },
+    });
+
+    // Wire up admin toggles via event delegation
+    if (isAdmin) {
+      const scrollContainer = document.getElementById("happyhour-locations-scroll-container");
+      scrollContainer?.addEventListener("change", async (e) => {
+        const target = e.target as HTMLInputElement;
+        if (!target.classList.contains("loc-closed-toggle")) return;
+        const id = Number(target.dataset.id);
+        if (!id) return;
+        try {
+          await api.updateLocation(id, { closed: target.checked });
+        } catch {
+          target.checked = !target.checked; // revert on failure
+        }
+      });
+    }
+
     // ── Management sections (HAPPY_HOUR_TYRANT only) ──
     if (hasTyrant) {
-      // Show the submit and locations sections
+      // Show the submit section
       const submitSection = document.getElementById("happyhour-submit-section");
       if (submitSection) submitSection.style.display = "";
-      const locationsSection = document.getElementById("happyhour-locations-section");
-      if (locationsSection) locationsSection.style.display = "";
 
       // Turn status
       if (isTurn) {
@@ -599,7 +656,7 @@ export async function renderHappyHour() {
         <label>Location</label>
         <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
           <select id="location-select" style="flex: 1;">
-            ${locations.filter((l: any) => !l.closed).map((l: any) => `<option value="${l.id}">${esc(l.name)}</option>`).join("")}
+            ${allLocations.filter((l: any) => !l.closed).map((l: any) => `<option value="${l.id}">${esc(l.name)}</option>`).join("")}
             <option value="new">➕ Add New Location...</option>
           </select>
           <button type="button" id="weighted-random-btn" title="Favors less-visited locations">🎲 Random</button>
@@ -634,7 +691,7 @@ export async function renderHappyHour() {
           newLocationFields.style.display = "none";
         } catch {
           // Fallback to client-side if the endpoint fails
-          const openLocations = locations.filter((l: any) => !l.closed);
+          const openLocations = allLocations.filter((l: any) => !l.closed);
           if (openLocations.length > 0) {
             const randomLocation = openLocations[Math.floor(Math.random() * openLocations.length)];
             locationSelect.value = String(randomLocation.id);
@@ -650,7 +707,7 @@ export async function renderHappyHour() {
           newLocationFields.style.display = "none";
         } catch {
           // Fallback to client-side if the endpoint fails
-          const openLocations = locations.filter((l: any) => !l.closed);
+          const openLocations = allLocations.filter((l: any) => !l.closed);
           if (openLocations.length > 0) {
             const randomLocation = openLocations[Math.floor(Math.random() * openLocations.length)];
             locationSelect.value = String(randomLocation.id);
@@ -682,18 +739,18 @@ export async function renderHappyHour() {
           const event = await api.createEvent({ location_id: locationId, description, when: nextFriday });
           byId("happyhour-result").innerHTML = status(`Happy hour scheduled at ${event.location_name} for ${formatDate(event.when)}`);
           // Refresh all data sections
-          const [newUpcoming, newRotation, newEvents, newLocations] = await Promise.all([
+          const [newUpcoming, newRotation, newEvents, newLocationsPage] = await Promise.all([
             dataProvider.getUpcomingHappyHour(),
             dataProvider.getRotation(),
             api.getEventsPage(1, BATCH_SIZE),
-            dataProvider.getLocations(),
+            api.getLocationsPage(1, BATCH_SIZE),
           ]);
           renderUpcoming(newUpcoming);
           byId("happyhour-rotation").innerHTML = newRotation.length > 0
             ? table(["User", "Week"], newRotation.map((item: any) => [item.username, item.deadline ? formatDateShort(item.deadline) : "—"]))
             : "<p style='color:#aaa;'>No rotation yet.</p>";
           renderEventsTable(newEvents);
-          renderLocationsTable(newLocations);
+          renderLocationsCard(newLocationsPage);
         } catch (err: any) {
           const msg = err.message || String(err);
           if (msg.toLowerCase().includes("already exists") || msg.toLowerCase().includes("already")) {
@@ -704,22 +761,6 @@ export async function renderHappyHour() {
         }
       });
 
-      // ── Helper: render locations table ──
-      function renderLocationsTable(locs: any[]) {
-        byId("happyhour-locations").innerHTML = table(
-          ["Name", "Address"],
-          locs.map((item: any) => {
-            const nameHtml = item.url
-              ? `<a href="${esc(item.url)}" target="_blank" rel="noopener">${esc(item.name)}</a>`
-              : esc(item.name);
-            return [nameHtml, item.address_raw || `${item.city}, ${item.state}`];
-          }),
-          { rawColumns: [0] },
-        );
-      }
-
-      // ── Locations ──
-      renderLocationsTable(locations);
     }
   } catch {
     // Unauthenticated or missing claims — show login prompt
