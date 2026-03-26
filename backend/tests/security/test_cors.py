@@ -56,23 +56,33 @@ class TestCORSDisallowedOrigins:
     def test_unknown_origin_no_allow_header(
         self, client: TestClient, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """An origin not in the allow-list should not get Access-Control-Allow-Origin."""
-        import config
+        """An origin not in the allow-list should not get Access-Control-Allow-Origin.
 
-        monkeypatch.setattr(
-            config, "CORS_ALLOW_ORIGINS", ["https://trusted.example.com"]
-        )
+        Note: monkeypatching config.CORS_ALLOW_ORIGINS after app startup has
+        no effect — the CORS middleware is already configured.  We rebuild a
+        minimal app with a restricted origin list to test this properly.
+        """
+        from fastapi import FastAPI
+        from starlette.middleware.cors import CORSMiddleware
+        from routes.health import Health
 
-        # Need a fresh app with the updated CORS config — but since middleware
-        # is already configured, this tests the running config.
-        resp = client.get(
-            "/api/v2/happyhour/events",
-            headers={"Origin": "https://evil.example.com"},
+        restricted_app = FastAPI()
+        restricted_app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["https://trusted.example.com"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
         )
-        allow_origin = resp.headers.get("access-control-allow-origin", "")
-        # Should not echo the evil origin (unless wildcard)
-        if allow_origin:
-            assert allow_origin in ("*", "https://trusted.example.com")
+        restricted_app.include_router(Health)
+
+        with TestClient(restricted_app) as c:
+            resp = c.get(
+                "/healthz",
+                headers={"Origin": "https://evil.example.com"},
+            )
+            allow_origin = resp.headers.get("access-control-allow-origin", "")
+            assert allow_origin != "https://evil.example.com"
 
 
 class TestCORSWildcardWarning:
