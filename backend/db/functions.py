@@ -1306,3 +1306,25 @@ def get_assignment_by_id(s: Session, assignment_id: int) -> TyrantRotation | Non
         .options(joinedload(TyrantRotation.Account))
         .where(TyrantRotation.id == assignment_id)
     ).first()
+
+
+def get_scheduled_assignment_for_account(
+    s: Session, cycle: int, account_id: int
+) -> TyrantRotation | None:
+    """Get the SCHEDULED assignment for a specific account in a cycle.
+
+    :param s: Active database session.
+    :param cycle: The cycle number to search within.
+    :param account_id: The account ID to look up.
+    :returns: The matching SCHEDULED assignment, or ``None``.
+    :rtype: TyrantRotation | None
+    """
+    return s.scalars(
+        select(TyrantRotation)
+        .options(joinedload(TyrantRotation.Account))
+        .where(
+            TyrantRotation.cycle == cycle,
+            TyrantRotation.account_id == account_id,
+            TyrantRotation.status == TyrantAssignmentStatus.SCHEDULED,
+        )
+    ).first()

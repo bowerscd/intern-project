@@ -84,6 +84,7 @@ async def assign_tyrant() -> None:
     from db.functions import (
         get_accounts_with_claim,
         get_current_cycle_number,
+        get_current_pending_assignment,
         get_next_scheduled_assignment,
         get_on_deck_assignment,
         create_cycle_rotation,
@@ -96,6 +97,17 @@ async def assign_tyrant() -> None:
     try:
         with Database() as db:
             with db.session() as s:
+                # Guard: if someone is already PENDING, don't activate another
+                existing_pending = get_current_pending_assignment(s)
+                if existing_pending is not None:
+                    logger.info(
+                        "Tyrant %s is already pending (deadline %s), "
+                        "skipping assignment",
+                        existing_pending.Account.username,
+                        existing_pending.deadline_at,
+                    )
+                    return
+
                 admins = get_accounts_with_claim(s, AccountClaims.HAPPY_HOUR_TYRANT)
                 if not admins:
                     logger.warning(
@@ -207,6 +219,23 @@ async def auto_select_happy_hour() -> None:
 
                 # No event this week — handle the pending assignment
                 if pending:
+                    # Guard: don't mark missed if the deadline hasn't passed yet
+                    # (happens during catch-up when multiple jobs fire at once)
+                    deadline = pending.deadline_at
+                    if deadline is not None:
+                        # Normalize timezone for comparison (SQLite stores naive)
+                        if deadline.tzinfo is None:
+                            deadline = deadline.replace(tzinfo=UTC)
+                        if deadline > now:
+                            logger.info(
+                                "Tyrant %s still has time (deadline %s > now %s), "
+                                "skipping auto-select",
+                                pending.Account.username,
+                                deadline,
+                                now,
+                            )
+                            return
+
                     mark_assignment_missed(s, pending.id)
                     misses = get_consecutive_misses(s, pending.account_id)
                     logger.warning(

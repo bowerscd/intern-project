@@ -437,6 +437,49 @@ export async function renderMealbot() {
   });
 }
 
+/** Render the rotation schedule table with projected weeks and status indicators. */
+function renderRotationHtml(members: any[], currentUsername?: string): string {
+  if (members.length === 0) return "<p style='color:#aaa;'>No rotation yet.</p>";
+
+  const pending = members.find((m: any) => m.status === "pending");
+
+  const rows = members.map((item: any) => {
+    let weekCol: string;
+
+    if (item.status === "scheduled") {
+      // Compute projected week based on the pending member's deadline
+      if (pending?.deadline) {
+        const base = new Date(pending.deadline);
+        const diff = item.position - pending.position;
+        const projected = new Date(base.getTime() + diff * 7 * 24 * 60 * 60 * 1000);
+        weekCol = "~" + formatDateShort(projected.toISOString());
+      } else {
+        weekCol = "—";
+      }
+    } else if (item.deadline) {
+      weekCol = formatDateShort(item.deadline);
+    } else {
+      weekCol = "—";
+    }
+
+    // Status indicator
+    const icons: Record<string, string> = {
+      pending: " \u{1F514}",
+      chosen: " \u2713",
+      missed: " \u2717",
+      skipped: " \u21B7",
+    };
+    weekCol += icons[item.status] || "";
+
+    const bold = currentUsername && item.username === currentUsername;
+    const name = bold ? `<strong>${esc(item.username)}</strong>` : esc(item.username);
+
+    return [name, weekCol];
+  });
+
+  return table(["User", "Week"], rows, { rawColumns: [0] });
+}
+
 export async function renderHappyHour() {
   const BATCH_SIZE = 20;
   let profile: { username: string; claims: number } | null = null;
@@ -481,7 +524,7 @@ export async function renderHappyHour() {
         <tbody><tr>
           <td>${u.when ? formatDate(u.when) : "TBD"}</td>
           <td>${nameHtml}${addressHtml}</td>
-          <td>${esc(u.tyrant_username ?? "System")}</td>
+          <td>${esc(u.tyrant_username ?? (u.auto_selected ? "System" : (u.current_tyrant_username ? u.current_tyrant_username + " (picking\u2026)" : "TBD")))}</td>
           ${recoveryButtons}
         </tr></tbody></table>`;
 
@@ -501,9 +544,7 @@ export async function renderHappyHour() {
                 api.getEventsPage(1, BATCH_SIZE),
               ]);
               renderUpcoming(newUpcoming);
-              byId("happyhour-rotation").innerHTML = newRotation.length > 0
-                ? table(["User", "Week"], newRotation.map((item: any) => [item.username, item.deadline ? formatDateShort(item.deadline) : "—"]))
-                : "<p style='color:#aaa;'>No rotation yet.</p>";
+              byId("happyhour-rotation").innerHTML = renderRotationHtml(newRotation, profile?.username);
               renderEventsTable(newEvents);
             } catch (err: any) {
               byId("happyhour-result").innerHTML = status(`Error: ${err.message}`);
@@ -516,9 +557,7 @@ export async function renderHappyHour() {
     renderUpcoming(upcoming);
 
     // ── Rotation ──
-    byId("happyhour-rotation").innerHTML = rotation.length > 0
-      ? table(["User", "Week"], rotation.map((item: any) => [item.username, item.deadline ? formatDateShort(item.deadline) : "—"]))
-      : "<p style='color:#aaa;'>No rotation yet — submit a happy hour choice to get started.</p>";
+    byId("happyhour-rotation").innerHTML = renderRotationHtml(rotation, profile?.username);
 
     // ── Helper: render events table ──
     function renderEventsTable(page: any) {
@@ -610,7 +649,11 @@ export async function renderHappyHour() {
         byId("happyhour-turn-status").innerHTML = status("It is your turn to pick the next happy hour location.") +
           `<button type="button" id="skip-turn-btn" style="margin-top: 8px;">Skip My Turn</button>`;
       } else {
-        byId("happyhour-turn-status").innerHTML = status("It is not your turn, but you can still submit early if you'd like.");
+        const pendingUser = rotation.find((m: any) => m.status === "pending");
+        const whoMsg = pendingUser
+          ? `It's ${pendingUser.username}'s turn this week. You can submit early for your own week.`
+          : "No one is assigned yet — you can submit for your week.";
+        byId("happyhour-turn-status").innerHTML = status(whoMsg);
       }
 
       // Wire up skip turn button
@@ -626,9 +669,7 @@ export async function renderHappyHour() {
             dataProvider.getRotation(),
           ]);
           renderUpcoming(newUpcoming);
-          byId("happyhour-rotation").innerHTML = newRotation.length > 0
-            ? table(["User", "Week"], newRotation.map((item: any) => [item.username, item.deadline ? formatDateShort(item.deadline) : "—"]))
-            : "<p style='color:#aaa;'>No rotation yet.</p>";
+          byId("happyhour-rotation").innerHTML = renderRotationHtml(newRotation, profile?.username);
           byId("happyhour-turn-status").innerHTML = status("You have skipped your turn.");
         } catch (err: any) {
           byId("happyhour-result").innerHTML = status(`Error: ${err.message}`);
@@ -746,9 +787,7 @@ export async function renderHappyHour() {
             api.getLocationsPage(1, BATCH_SIZE),
           ]);
           renderUpcoming(newUpcoming);
-          byId("happyhour-rotation").innerHTML = newRotation.length > 0
-            ? table(["User", "Week"], newRotation.map((item: any) => [item.username, item.deadline ? formatDateShort(item.deadline) : "—"]))
-            : "<p style='color:#aaa;'>No rotation yet.</p>";
+          byId("happyhour-rotation").innerHTML = renderRotationHtml(newRotation, profile?.username);
           renderEventsTable(newEvents);
           renderLocationsCard(newLocationsPage);
         } catch (err: any) {

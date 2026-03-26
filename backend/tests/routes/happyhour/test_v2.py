@@ -382,17 +382,21 @@ class TestTurnEnforcement:
         assert r.status_code == 201
         mock_chosen.assert_called_once()
 
-    def test_wrong_admin_gets_403(self, authenticated_client: TestClient) -> None:
-        """A HAPPY_HOUR_TYRANT who isn't the assigned tyrant gets 403.
+    def test_other_tyrant_can_submit_for_future_week(
+        self, authenticated_client: TestClient
+    ) -> None:
+        """A HAPPY_HOUR_TYRANT can submit even when someone else is PENDING
+        (e.g. for a future week).
 
         :param authenticated_client: Pre-authenticated HTTP test client with all claims.
         :type authenticated_client: TestClient
         """
         loc_id = self._create_location(authenticated_client)
-        event_time = (datetime.now(UTC) + timedelta(days=3)).isoformat()
+        # Submit for a future week (10+ days out)
+        event_time = (datetime.now(UTC) + timedelta(days=10)).isoformat()
 
         mock_assignment = MagicMock()
-        mock_assignment.account_id = 999999  # Some other account
+        mock_assignment.account_id = 999999  # Some other account is pending
 
         with patch(self._PENDING_PATCH, return_value=mock_assignment):
             r = authenticated_client.post(
@@ -402,8 +406,7 @@ class TestTurnEnforcement:
                     "when": event_time,
                 },
             )
-        assert r.status_code == 403
-        assert "not your turn" in r.json()["detail"]
+        assert r.status_code == 201
 
     def test_non_admin_gets_403_during_rotation(
         self, authenticated_client: TestClient, db_session: Session
@@ -427,18 +430,14 @@ class TestTurnEnforcement:
         test_act.claims = AccountClaims.HAPPY_HOUR | AccountClaims.BASIC
         db_session.commit()
 
-        mock_assignment = MagicMock()
-        mock_assignment.account_id = 999999
-
         try:
-            with patch(self._PENDING_PATCH, return_value=mock_assignment):
-                r = authenticated_client.post(
-                    "/api/v2/happyhour/events",
-                    json={
-                        "location_id": loc_id,
-                        "when": event_time,
-                    },
-                )
+            r = authenticated_client.post(
+                "/api/v2/happyhour/events",
+                json={
+                    "location_id": loc_id,
+                    "when": event_time,
+                },
+            )
             assert r.status_code == 403
             assert "HAPPY_HOUR_TYRANT" in r.json()["detail"]
         finally:
@@ -538,27 +537,17 @@ class TestTurnEnforcement:
             assert loc_r.status_code == 201
             loc_id = loc_r.json()["id"]
 
-            # olkorsha tries to create event — should be blocked
-            event_time = (datetime.now(UTC) + timedelta(days=3)).isoformat()
-            r = c.post(
-                "/api/v2/happyhour/events",
-                json={"location_id": loc_id, "when": event_time},
-            )
-            assert r.status_code == 403
-            assert "not your turn" in r.json()["detail"]
-
-        # dede should be able to create
-        with TestClient(app) as c:
-            c.cookies.jar.set_cookie(_mk_auth_cookie(secret, dede.id))
+            # olkorsha submits for a future week — allowed (any tyrant can submit)
+            event_time = (datetime.now(UTC) + timedelta(days=10)).isoformat()
             r = c.post(
                 "/api/v2/happyhour/events",
                 json={"location_id": loc_id, "when": event_time},
             )
             assert r.status_code == 201
 
-            # Verify dede's assignment was auto-activated and marked chosen
-            db_session.refresh(r1)
-            assert r1.status == TyrantAssignmentStatus.CHOSEN
+        # dede's rotation status is unaffected
+        db_session.refresh(r1)
+        assert r1.status == TyrantAssignmentStatus.SCHEDULED
 
     def test_admin_can_override_scheduled_rotation(self, db_session: Session) -> None:
         """An ADMIN can create events even when not next in rotation."""

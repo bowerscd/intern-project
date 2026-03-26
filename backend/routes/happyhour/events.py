@@ -212,85 +212,29 @@ async def create_event_endpoint(
         get_current_pending_assignment,
         mark_assignment_chosen,
         get_events_this_week,
-        get_current_cycle_number,
-        get_next_scheduled_assignment,
-        activate_assignment,
     )
 
     with db:
-        # Check rotation enforcement
+        # Require HAPPY_HOUR_TYRANT to create events
+        if not (
+            account.claims & AccountClaims.HAPPY_HOUR_TYRANT
+            == AccountClaims.HAPPY_HOUR_TYRANT
+        ):
+            logger.warning(
+                "Event create denied: account #%d lacks HAPPY_HOUR_TYRANT",
+                account.id,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only HAPPY_HOUR_TYRANT users may create events",
+            )
+
+        # Any tyrant can submit for any future week. The duplicate-week
+        # guard prevents double-bookings.  The rotation scheduler handles
+        # who is "supposed to" pick — if someone pre-books a future week,
+        # the scheduler will see the event exists and mark that week's
+        # assignee as CHOSEN automatically.
         pending = get_current_pending_assignment(db)
-
-        if pending is not None:
-            # There is an active rotation assignment — only the assigned tyrant may submit
-            if not (
-                account.claims & AccountClaims.HAPPY_HOUR_TYRANT
-                == AccountClaims.HAPPY_HOUR_TYRANT
-            ):
-                logger.warning(
-                    "Event create denied: account #%d lacks HAPPY_HOUR_TYRANT during rotation",
-                    account.id,
-                )
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Only HAPPY_HOUR_TYRANT users may create events during a rotation window",
-                )
-            if pending.account_id != account.id:
-                logger.warning(
-                    "Event create denied: account #%d is not the assigned tyrant (#%d)",
-                    account.id,
-                    pending.account_id,
-                )
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="It's not your turn to pick the happy hour location",
-                )
-        else:
-            if not (
-                account.claims & AccountClaims.HAPPY_HOUR_TYRANT
-                == AccountClaims.HAPPY_HOUR_TYRANT
-            ):
-                logger.warning(
-                    "Event create denied: account #%d lacks HAPPY_HOUR_TYRANT (no rotation)",
-                    account.id,
-                )
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="You need the HAPPY_HOUR_TYRANT permission to submit happy hour events",
-                )
-
-            # Even with no PENDING assignment, respect rotation order if
-            # SCHEDULED assignments exist.  The gap between the auto-select
-            # Wednesday-noon job and the Friday-4PM scheduler leaves a window
-            # where any tyrant could bypass the queue.
-            cycle = get_current_cycle_number(db)
-            next_scheduled = get_next_scheduled_assignment(db, cycle)
-            if next_scheduled is not None:
-                if next_scheduled.account_id != account.id:
-                    # Allow ADMIN to override rotation order
-                    if not (
-                        account.claims & AccountClaims.ADMIN == AccountClaims.ADMIN
-                    ):
-                        logger.warning(
-                            "Event create denied: account #%d is not the next "
-                            "scheduled tyrant (#%d, position %d)",
-                            account.id,
-                            next_scheduled.account_id,
-                            next_scheduled.position,
-                        )
-                        raise HTTPException(
-                            status_code=status.HTTP_403_FORBIDDEN,
-                            detail="It's not your turn to pick the happy hour location",
-                        )
-                else:
-                    # The requester is next in line — activate their assignment
-                    # so the rotation state stays consistent.
-                    from scheduler import _next_wednesday_noon
-                    from datetime import datetime, UTC
-
-                    deadline = _next_wednesday_noon(datetime.now(UTC))
-                    activate_assignment(db, next_scheduled.id, deadline)
-                    pending = next_scheduled
 
         # Guard against duplicate events in the same weekly window as the proposed event
         from datetime import datetime, UTC
