@@ -229,17 +229,35 @@ async def create_event_endpoint(
                 detail="Only HAPPY_HOUR_TYRANT users may create events",
             )
 
-        # Any tyrant can submit for any future week. The duplicate-week
-        # guard prevents double-bookings.  The rotation scheduler handles
-        # who is "supposed to" pick — if someone pre-books a future week,
-        # the scheduler will see the event exists and mark that week's
-        # assignee as CHOSEN automatically.
+        # Any tyrant can submit for a FUTURE week.  For the CURRENT week
+        # (the week the pending person is responsible for), only the pending
+        # person or an ADMIN may create.
         pending = get_current_pending_assignment(db)
 
-        # Guard against duplicate events in the same weekly window as the proposed event
         from datetime import datetime, UTC
 
         when_ref = body.when if body.when else datetime.now(UTC)
+
+        if pending is not None:
+            from db.functions import _compute_week_of
+
+            now = datetime.now(UTC)
+            pending_week = _compute_week_of(now)
+            event_week = _compute_week_of(when_ref)
+
+            if event_week == pending_week and pending.account_id != account.id:
+                is_admin = account.claims & AccountClaims.ADMIN == AccountClaims.ADMIN
+                if not is_admin:
+                    logger.warning(
+                        "Event create denied: account #%d is not the assigned "
+                        "tyrant (#%d) for the current week",
+                        account.id,
+                        pending.account_id,
+                    )
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="It's not your turn to pick the happy hour location",
+                    )
         existing = get_events_this_week(db, when_ref)
         if existing:
             logger.info(

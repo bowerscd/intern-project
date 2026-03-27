@@ -408,6 +408,52 @@ class TestTurnEnforcement:
             )
         assert r.status_code == 201
 
+    def test_other_tyrant_blocked_for_current_week(
+        self, authenticated_client: TestClient, db_session: Session
+    ) -> None:
+        """A HAPPY_HOUR_TYRANT who isn't the assigned tyrant gets 403
+        when submitting for the CURRENT week (non-admin).
+
+        :param authenticated_client: Pre-authenticated HTTP test client with all claims.
+        :type authenticated_client: TestClient
+        :param db_session: SQLAlchemy database session.
+        :type db_session: Session
+        """
+        loc_id = self._create_location(authenticated_client)
+        # Submit for the current week (hours from now, guaranteed same ISO week)
+        event_time = (datetime.now(UTC) + timedelta(hours=12)).isoformat()
+
+        # Temporarily remove ADMIN so the rotation check isn't bypassed
+        from db.functions import get_all_accounts
+
+        accounts = get_all_accounts(db_session)
+        test_act = [a for a in accounts if a.username == "test"][0]
+        original_claims = test_act.claims
+        test_act.claims = (
+            AccountClaims.HAPPY_HOUR
+            | AccountClaims.HAPPY_HOUR_TYRANT
+            | AccountClaims.BASIC
+        )
+        db_session.commit()
+
+        mock_assignment = MagicMock()
+        mock_assignment.account_id = 999999  # Someone else is pending
+
+        try:
+            with patch(self._PENDING_PATCH, return_value=mock_assignment):
+                r = authenticated_client.post(
+                    "/api/v2/happyhour/events",
+                    json={
+                        "location_id": loc_id,
+                        "when": event_time,
+                    },
+                )
+            assert r.status_code == 403
+            assert "not your turn" in r.json()["detail"]
+        finally:
+            test_act.claims = original_claims
+            db_session.commit()
+
     def test_non_admin_gets_403_during_rotation(
         self, authenticated_client: TestClient, db_session: Session
     ) -> None:
