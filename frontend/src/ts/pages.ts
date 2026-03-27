@@ -441,16 +441,18 @@ export async function renderMealbot() {
 function renderRotationHtml(members: any[], currentUsername?: string): string {
   if (members.length === 0) return "<p style='color:#aaa;'>No rotation yet.</p>";
 
-  const pending = members.find((m: any) => m.status === "pending");
+  const current = members.find((m: any) => m.status === "current");
+  // Fall back to pending for the projected-week calculation base
+  const activeRef = current || members.find((m: any) => m.status === "on_deck") || members.find((m: any) => m.status === "pending");
 
   const rows = members.map((item: any) => {
     let weekCol: string;
 
-    if (item.status === "scheduled") {
-      // Compute projected week based on the pending member's deadline
-      if (pending?.deadline) {
-        const base = new Date(pending.deadline);
-        const diff = item.position - pending.position;
+    if (item.status === "scheduled" || item.status === "pending") {
+      // Compute projected week based on the active reference's deadline
+      if (activeRef?.deadline) {
+        const base = new Date(activeRef.deadline);
+        const diff = item.position - activeRef.position;
         const projected = new Date(base.getTime() + diff * 7 * 24 * 60 * 60 * 1000);
         weekCol = "~" + formatDateShort(projected.toISOString());
       } else {
@@ -464,6 +466,8 @@ function renderRotationHtml(members: any[], currentUsername?: string): string {
 
     // Status indicator
     const icons: Record<string, string> = {
+      current: " \uD83C\uDFAF",
+      on_deck: " \u23F3",
       pending: " \u{1F514}",
       chosen: " \u2713",
       missed: " \u2717",
@@ -649,9 +653,9 @@ export async function renderHappyHour() {
         byId("happyhour-turn-status").innerHTML = status("It is your turn to pick the next happy hour location.") +
           `<button type="button" id="skip-turn-btn" style="margin-top: 8px;">Skip My Turn</button>`;
       } else {
-        const pendingUser = rotation.find((m: any) => m.status === "pending");
-        const whoMsg = pendingUser
-          ? `It's ${pendingUser.username}'s turn this week. You can submit early for your own week.`
+        const currentUser = rotation.find((m: any) => m.status === "current");
+        const whoMsg = currentUser
+          ? `It's ${currentUser.username}'s turn this week. You can submit early for your own week.`
           : "No one is assigned yet — you can submit for your week.";
         byId("happyhour-turn-status").innerHTML = status(whoMsg);
       }

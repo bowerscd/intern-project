@@ -171,7 +171,9 @@ class RotationMemberResponse(BaseModel):
     position: int = Field(..., description="Position in the rotation (0-based)")
     username: str = Field(..., description="Username of the rotation member")
     status: str = Field(
-        ..., description="Assignment status (scheduled/pending/chosen/missed)"
+        ...,
+        description="Assignment status "
+        "(scheduled/pending/on_deck/current/chosen/missed/skipped)",
     )
     deadline: Optional[datetime] = Field(
         None, description="Deadline for picking, if activated"

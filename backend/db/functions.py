@@ -995,18 +995,63 @@ def create_cycle_rotation(
     return rotations
 
 
-def get_current_pending_assignment(s: Session) -> TyrantRotation | None:
-    """Get the most recent tyrant rotation assignment with PENDING status.
+def get_current_active_assignment(s: Session) -> TyrantRotation | None:
+    """Get the tyrant rotation assignment with CURRENT status.
+
+    This is the person whose week it is — they must choose a location
+    by the Wednesday noon deadline.
 
     :param s: Active database session.
-    :returns: The current pending assignment, or ``None`` if there is none.
+    :returns: The current active assignment, or ``None`` if there is none.
     :rtype: TyrantRotation | None
     """
     return s.scalars(
         select(TyrantRotation)
-        .where(TyrantRotation.status == TyrantAssignmentStatus.PENDING)
+        .options(joinedload(TyrantRotation.Account))
+        .where(TyrantRotation.status == TyrantAssignmentStatus.CURRENT)
         .order_by(TyrantRotation.assigned_at.desc())
     ).first()
+
+
+def get_current_on_deck_assignment(s: Session) -> TyrantRotation | None:
+    """Get the tyrant rotation assignment with ON_DECK status.
+
+    This is the next person up — they've been notified they're next.
+
+    :param s: Active database session.
+    :returns: The on-deck assignment, or ``None`` if there is none.
+    :rtype: TyrantRotation | None
+    """
+    return s.scalars(
+        select(TyrantRotation)
+        .options(joinedload(TyrantRotation.Account))
+        .where(TyrantRotation.status == TyrantAssignmentStatus.ON_DECK)
+        .order_by(TyrantRotation.assigned_at.desc())
+    ).first()
+
+
+def get_current_pending_assignments(s: Session, cycle: int) -> list[TyrantRotation]:
+    """Get all PENDING assignments in a cycle, ordered by position.
+
+    PENDING means queued in the pipeline — their turn is coming but
+    they're not ON_DECK or CURRENT yet.
+
+    :param s: Active database session.
+    :param cycle: The cycle number to search within.
+    :returns: List of pending assignments in position order.
+    :rtype: list[TyrantRotation]
+    """
+    return list(
+        s.scalars(
+            select(TyrantRotation)
+            .options(joinedload(TyrantRotation.Account))
+            .where(
+                TyrantRotation.cycle == cycle,
+                TyrantRotation.status == TyrantAssignmentStatus.PENDING,
+            )
+            .order_by(TyrantRotation.position.asc())
+        ).all()
+    )
 
 
 def get_next_scheduled_assignment(s: Session, cycle: int) -> TyrantRotation | None:
@@ -1058,17 +1103,53 @@ def activate_assignment(
     assignment_id: int,
     deadline_at: datetime,
 ) -> None:
-    """Activate a SCHEDULED assignment by setting it to PENDING with a deadline.
+    """Activate a SCHEDULED assignment by setting it to PENDING.
+
+    PENDING is the first active state in the v2 pipeline
+    (SCHEDULED → PENDING → ON_DECK → CURRENT).
 
     :param s: Active database session.
     :param assignment_id: The assignment's integer ID.
-    :param deadline_at: Datetime by which the tyrant must choose a location.
+    :param deadline_at: Stored for reference but not enforced until CURRENT.
     """
     rotation = s.scalars(
         select(TyrantRotation).where(TyrantRotation.id == assignment_id)
     ).first()
     if rotation is not None:
         rotation.status = TyrantAssignmentStatus.PENDING
+        rotation.deadline_at = deadline_at
+        s.flush()
+
+
+def promote_to_on_deck(s: Session, assignment_id: int) -> None:
+    """Promote a PENDING assignment to ON_DECK.
+
+    The person is notified they're up next.
+
+    :param s: Active database session.
+    :param assignment_id: The assignment's integer ID.
+    """
+    _update_assignment_status(s, assignment_id, TyrantAssignmentStatus.ON_DECK)
+
+
+def promote_to_current(
+    s: Session,
+    assignment_id: int,
+    deadline_at: datetime,
+) -> None:
+    """Promote an ON_DECK assignment to CURRENT with a deadline.
+
+    The person's week starts — they must choose by Wednesday noon.
+
+    :param s: Active database session.
+    :param assignment_id: The assignment's integer ID.
+    :param deadline_at: Wednesday noon PST deadline for choosing.
+    """
+    rotation = s.scalars(
+        select(TyrantRotation).where(TyrantRotation.id == assignment_id)
+    ).first()
+    if rotation is not None:
+        rotation.status = TyrantAssignmentStatus.CURRENT
         rotation.deadline_at = deadline_at
         s.flush()
 
@@ -1327,4 +1408,124 @@ def get_scheduled_assignment_for_account(
             TyrantRotation.account_id == account_id,
             TyrantRotation.status == TyrantAssignmentStatus.SCHEDULED,
         )
+    ).first()
+
+
+# --- Double-buffer rotation helpers ---
+
+TERMINAL_STATUSES = {
+    TyrantAssignmentStatus.CHOSEN,
+    TyrantAssignmentStatus.MISSED,
+    TyrantAssignmentStatus.SKIPPED,
+}
+
+
+def get_last_resolved_account_in_cycle(s: Session, cycle: int) -> int | None:
+    """Return the account_id of the last person resolved in a cycle.
+
+    Used for back-to-back prevention when regenerating the standby buffer.
+
+    :param s: Active database session.
+    :param cycle: The cycle number to inspect.
+    :returns: The account_id of the highest-position resolved assignment,
+        or ``None`` if the cycle has no resolved assignments.
+    """
+    rotation = s.scalars(
+        select(TyrantRotation)
+        .where(
+            TyrantRotation.cycle == cycle,
+            TyrantRotation.status.in_(list(TERMINAL_STATUSES)),
+        )
+        .order_by(TyrantRotation.position.desc())
+    ).first()
+    return rotation.account_id if rotation is not None else None
+
+
+def is_cycle_exhausted(s: Session, cycle: int) -> bool:
+    """Check whether all assignments in a cycle have reached a terminal state.
+
+    A cycle is exhausted when no SCHEDULED, PENDING, ON_DECK, or CURRENT
+    assignments remain.
+
+    :param s: Active database session.
+    :param cycle: The cycle number to check.
+    :returns: ``True`` if the cycle is fully resolved.
+    """
+    remaining = s.execute(
+        select(func.count())
+        .select_from(TyrantRotation)
+        .where(
+            TyrantRotation.cycle == cycle,
+            TyrantRotation.status.notin_(list(TERMINAL_STATUSES)),
+        )
+    ).scalar()
+    return remaining == 0
+
+
+def create_standby_buffer(
+    s: Session,
+    admins: list[Account],
+    cycle: int,
+    now: datetime,
+    last_account_id: int | None = None,
+) -> list[TyrantRotation]:
+    """Create a standby buffer with back-to-back prevention.
+
+    Same as :func:`create_cycle_rotation` but if *last_account_id* is
+    given and ends up first after shuffling, swap positions 0 and 1.
+
+    :param s: Active database session.
+    :param admins: Accounts to include (shuffled in-place).
+    :param cycle: Cycle number for the new buffer.
+    :param now: Reference datetime.
+    :param last_account_id: Account that was last in the outgoing buffer
+        (``None`` to skip back-to-back prevention).
+    :returns: The shuffled rotation assignments.
+    """
+    from random import shuffle
+
+    shuffle(admins)
+
+    # Back-to-back prevention: if last person in outgoing buffer is
+    # first in new standby, swap with position 1 (if >1 member).
+    if (
+        last_account_id is not None
+        and len(admins) > 1
+        and admins[0].id == last_account_id
+    ):
+        admins[0], admins[1] = admins[1], admins[0]
+
+    rotations: list[TyrantRotation] = []
+    for position, admin in enumerate(admins):
+        rotation = TyrantRotation(
+            account_id=admin.id,
+            cycle=cycle,
+            position=position,
+            assigned_at=now,
+            deadline_at=None,
+            status=TyrantAssignmentStatus.SCHEDULED,
+        )
+        s.add(rotation)
+        rotations.append(rotation)
+    s.flush()
+    return rotations
+
+
+def get_next_pipeline_assignment(s: Session, cycle: int) -> TyrantRotation | None:
+    """Get the next PENDING assignment in a cycle (lowest position).
+
+    In the v2 pipeline, PENDING is the queue between SCHEDULED and ON_DECK.
+
+    :param s: Active database session.
+    :param cycle: The cycle number to search within.
+    :returns: The next pending assignment, or ``None``.
+    """
+    return s.scalars(
+        select(TyrantRotation)
+        .options(joinedload(TyrantRotation.Account))
+        .where(
+            TyrantRotation.cycle == cycle,
+            TyrantRotation.status == TyrantAssignmentStatus.PENDING,
+        )
+        .order_by(TyrantRotation.position.asc())
     ).first()

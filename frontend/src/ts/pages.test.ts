@@ -26,15 +26,16 @@ import { esc, table, formatDateShort } from "./utils";
 function renderRotationHtml(members: any[], currentUsername?: string): string {
   if (members.length === 0) return "<p style='color:#aaa;'>No rotation yet.</p>";
 
-  const pending = members.find((m: any) => m.status === "pending");
+  const current = members.find((m: any) => m.status === "current");
+  const activeRef = current || members.find((m: any) => m.status === "on_deck") || members.find((m: any) => m.status === "pending");
 
   const rows = members.map((item: any) => {
     let weekCol: string;
 
-    if (item.status === "scheduled") {
-      if (pending?.deadline) {
-        const base = new Date(pending.deadline);
-        const diff = item.position - pending.position;
+    if (item.status === "scheduled" || item.status === "pending") {
+      if (activeRef?.deadline) {
+        const base = new Date(activeRef.deadline);
+        const diff = item.position - activeRef.position;
         const projected = new Date(base.getTime() + diff * 7 * 24 * 60 * 60 * 1000);
         weekCol = "~" + formatDateShort(projected.toISOString());
       } else {
@@ -47,6 +48,8 @@ function renderRotationHtml(members: any[], currentUsername?: string): string {
     }
 
     const icons: Record<string, string> = {
+      current: " \uD83C\uDFAF",
+      on_deck: " \u23F3",
       pending: " \u{1F514}",
       chosen: " \u2713",
       missed: " \u2717",
@@ -87,9 +90,9 @@ describe("renderRotationHtml", () => {
     expect(html).toContain("No rotation yet");
   });
 
-  it("shows projected weeks for scheduled members based on pending deadline", () => {
+  it("shows projected weeks for scheduled members based on current deadline", () => {
     const members = [
-      { position: 0, username: "alice", status: "pending", deadline: "2026-04-01T20:00:00Z" },
+      { position: 0, username: "alice", status: "current", deadline: "2026-04-01T20:00:00Z" },
       { position: 1, username: "bob", status: "scheduled", deadline: null },
       { position: 2, username: "charlie", status: "scheduled", deadline: null },
     ];
@@ -110,20 +113,24 @@ describe("renderRotationHtml", () => {
       { position: 1, username: "bob", status: "scheduled", deadline: null },
     ];
     const html = renderRotationHtml(members);
-    // No pending member → bob should show "—"
+    // No current member → bob should show "—"
     expect(html).toContain("—");
   });
 
   it("shows status indicators for each status type", () => {
     const members = [
-      { position: 0, username: "a", status: "pending", deadline: "2026-04-01T20:00:00Z" },
+      { position: 0, username: "a", status: "current", deadline: "2026-04-01T20:00:00Z" },
       { position: 1, username: "b", status: "chosen", deadline: "2026-03-25T20:00:00Z" },
       { position: 2, username: "c", status: "missed", deadline: "2026-03-18T20:00:00Z" },
       { position: 3, username: "d", status: "skipped", deadline: null },
       { position: 4, username: "e", status: "scheduled", deadline: null },
+      { position: 5, username: "f", status: "on_deck", deadline: null },
+      { position: 6, username: "g", status: "pending", deadline: null },
     ];
     const html = renderRotationHtml(members);
 
+    expect(html).toContain("\uD83C\uDFAF"); // current target
+    expect(html).toContain("\u23F3");    // on_deck hourglass
     expect(html).toContain("\u{1F514}"); // pending bell
     expect(html).toContain("\u2713");    // chosen checkmark
     expect(html).toContain("\u2717");    // missed X
@@ -132,7 +139,7 @@ describe("renderRotationHtml", () => {
 
   it("bolds the current user's name", () => {
     const members = [
-      { position: 0, username: "alice", status: "pending", deadline: "2026-04-01T20:00:00Z" },
+      { position: 0, username: "alice", status: "current", deadline: "2026-04-01T20:00:00Z" },
       { position: 1, username: "bob", status: "scheduled", deadline: null },
     ];
     const html = renderRotationHtml(members, "bob");
@@ -142,23 +149,23 @@ describe("renderRotationHtml", () => {
 
   it("does not bold anyone when currentUsername is undefined", () => {
     const members = [
-      { position: 0, username: "alice", status: "pending", deadline: "2026-04-01T20:00:00Z" },
+      { position: 0, username: "alice", status: "current", deadline: "2026-04-01T20:00:00Z" },
     ];
     const html = renderRotationHtml(members);
     expect(html).not.toContain("<strong>");
   });
 
   it("projects correct dates for multi-member rotation", () => {
-    // Pending at position 1 with deadline Apr 1. Position 3 should be ~2 weeks later.
+    // Current at position 1 with deadline Apr 1. Position 3 should be ~2 weeks later.
     const members = [
       { position: 0, username: "done", status: "chosen", deadline: "2026-03-25T20:00:00Z" },
-      { position: 1, username: "current", status: "pending", deadline: "2026-04-01T20:00:00Z" },
+      { position: 1, username: "current", status: "current", deadline: "2026-04-01T20:00:00Z" },
       { position: 2, username: "next", status: "scheduled", deadline: null },
       { position: 3, username: "later", status: "scheduled", deadline: null },
     ];
     const html = renderRotationHtml(members);
 
-    // "next" (position 2, diff=1 from pending at position 1) → ~Apr 8
+    // "next" (position 2, diff=1 from current at position 1) → ~Apr 8
     // "later" (position 3, diff=2) → ~Apr 15
     // Just verify they have projected dates (prefixed with ~)
     const tildeCount = (html.match(/~/g) || []).length;
@@ -167,7 +174,7 @@ describe("renderRotationHtml", () => {
 
   it("escapes HTML in usernames", () => {
     const members = [
-      { position: 0, username: '<img src=x onerror="alert(1)">', status: "pending", deadline: "2026-04-01T20:00:00Z" },
+      { position: 0, username: '<img src=x onerror="alert(1)">', status: "current", deadline: "2026-04-01T20:00:00Z" },
     ];
     const html = renderRotationHtml(members);
     expect(html).not.toContain("<img");

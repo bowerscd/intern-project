@@ -114,29 +114,29 @@ async def upcoming_event(
         scheduled and no tyrant is assigned.
     :rtype: EventResponse | None
     """
-    from db.functions import get_upcoming_event, get_current_pending_assignment
+    from db.functions import get_upcoming_event, get_current_active_assignment
 
     with db:
         event = get_upcoming_event(db)
-        pending = get_current_pending_assignment(db)
+        current = get_current_active_assignment(db)
 
         if event is None:
-            if pending is None:
+            if current is None:
                 return None
-            # No upcoming event but there is a pending tyrant assignment
+            # No upcoming event but there is a current tyrant assignment
             return EventResponse(
                 id=0,
                 description=None,
-                when=pending.deadline_at,
+                when=current.deadline_at,
                 location_id=0,
                 location_name="",
                 tyrant_username=None,
                 auto_selected=False,
-                current_tyrant_username=pending.Account.username,
-                current_tyrant_deadline=pending.deadline_at,
+                current_tyrant_username=current.Account.username,
+                current_tyrant_deadline=current.deadline_at,
             )
 
-        return _event_response(event, current_tyrant=pending)
+        return _event_response(event, current_tyrant=current)
 
 
 @HappyHour.get(
@@ -209,7 +209,7 @@ async def create_event_endpoint(
     from db.functions import (
         create_event,
         get_location_by_id,
-        get_current_pending_assignment,
+        get_current_active_assignment,
         mark_assignment_chosen,
         get_events_this_week,
     )
@@ -229,35 +229,99 @@ async def create_event_endpoint(
                 detail="Only HAPPY_HOUR_TYRANT users may create events",
             )
 
-        # Any tyrant can submit for a FUTURE week.  For the CURRENT week
-        # (the week the pending person is responsible for), only the pending
-        # person or an ADMIN may create.
-        pending = get_current_pending_assignment(db)
+        # The CURRENT person is the one whose week it is.
+        # For the current week, only the CURRENT person or ADMIN may create.
+        # For future weeks, any HAPPY_HOUR_TYRANT can submit.
+        current = get_current_active_assignment(db)
 
         from datetime import datetime, UTC
+        from models.enums import TyrantAssignmentStatus
 
         when_ref = body.when if body.when else datetime.now(UTC)
 
-        if pending is not None:
+        if current is not None:
             from db.functions import _compute_week_of
 
             now = datetime.now(UTC)
-            pending_week = _compute_week_of(now)
+            current_week = _compute_week_of(now)
             event_week = _compute_week_of(when_ref)
 
-            if event_week == pending_week and pending.account_id != account.id:
+            if event_week == current_week and current.account_id != account.id:
                 is_admin = account.claims & AccountClaims.ADMIN == AccountClaims.ADMIN
                 if not is_admin:
                     logger.warning(
-                        "Event create denied: account #%d is not the assigned "
-                        "tyrant (#%d) for the current week",
+                        "Event create denied: account #%d is not the CURRENT "
+                        "tyrant (#%d) for this week",
                         account.id,
-                        pending.account_id,
+                        current.account_id,
                     )
                     raise HTTPException(
                         status_code=status.HTTP_403_FORBIDDEN,
                         detail="It's not your turn to pick the happy hour location",
                     )
+
+            # MISSED recovery: if the CURRENT person is MISSED and submitting
+            # for the current week before Friday 9AM, allow resubmit.
+            if (
+                event_week == current_week
+                and current.account_id == account.id
+                and current.status == TyrantAssignmentStatus.MISSED
+            ):
+                # Check recovery window (before Friday 9AM PST)
+                from zoneinfo import ZoneInfo
+
+                pst_now = now.astimezone(ZoneInfo("America/Los_Angeles"))
+                if pst_now.weekday() == 4 and pst_now.hour >= 9:
+                    logger.warning(
+                        "Event create denied: MISSED recovery window closed "
+                        "for account #%d (past Friday 9AM)",
+                        account.id,
+                    )
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="Recovery window has closed (past Friday 9AM)",
+                    )
+
+                # Recovery: update existing auto-selected event in-place
+                existing = get_events_this_week(db, when_ref)
+                if existing:
+                    from db.functions import update_event_fields
+
+                    updated = update_event_fields(
+                        db,
+                        existing[0].id,
+                        location_id=body.location_id,
+                        when=body.when,
+                        description=body.description,
+                    )
+                    if updated is not None:
+                        updated.TyrantID = account.id
+                        updated.AutoSelected = False
+                        db.flush()
+
+                    mark_assignment_chosen(db, current.id)
+                    db.commit()
+
+                    logger.info(
+                        "MISSED recovery: account #%d replaced auto-selected event",
+                        account.id,
+                    )
+                    # Verify location before returning
+                    location = get_location_by_id(db, body.location_id)
+                    if location is None:
+                        raise HTTPException(
+                            status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Location not found",
+                        )
+                    if location.Closed:
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Location is closed",
+                        )
+                    response = _event_response(updated) if updated else None
+                    if response is not None:
+                        return response
+
         existing = get_events_this_week(db, when_ref)
         if existing:
             logger.info(
@@ -306,8 +370,8 @@ async def create_event_endpoint(
             )
 
         # Mark the rotation assignment as chosen if applicable
-        if pending is not None and pending.account_id == account.id:
-            mark_assignment_chosen(db, pending.id)
+        if current is not None and current.account_id == account.id:
+            mark_assignment_chosen(db, current.id)
 
         db.commit()
         response = _event_response(event)
@@ -352,9 +416,10 @@ async def get_rotation(
         get_current_cycle_number,
         get_rotation_schedule,
         get_accounts_with_claim,
-        create_cycle_rotation,
+        create_standby_buffer,
+        promote_to_current,
+        promote_to_on_deck,
         activate_assignment,
-        get_next_scheduled_assignment,
     )
 
     with db:
@@ -366,20 +431,20 @@ async def get_rotation(
         if not schedule:
             tyrants = get_accounts_with_claim(db, AccountClaims.HAPPY_HOUR_TYRANT)
             if tyrants:
-                from datetime import datetime, timedelta, UTC
+                from datetime import datetime, UTC
+                from scheduler import _next_wednesday_noon
 
                 now = datetime.now(UTC)
                 new_cycle = cycle + 1
-                create_cycle_rotation(db, tyrants, new_cycle, now)
-                # Activate the first person — deadline is next Wednesday noon PST
-                next_up = get_next_scheduled_assignment(db, new_cycle)
-                if next_up:
-                    # Next Wednesday at noon PST (UTC-8) = 20:00 UTC
-                    days_until_wed = (2 - now.weekday() + 7) % 7 or 7
-                    deadline = now.replace(
-                        hour=20, minute=0, second=0, microsecond=0
-                    ) + timedelta(days=days_until_wed)
-                    activate_assignment(db, next_up.id, deadline)
+                rotations = create_standby_buffer(db, list(tyrants), new_cycle, now)
+                # Seed pipeline: first → CURRENT, second → ON_DECK, third → PENDING
+                if len(rotations) >= 1:
+                    deadline = _next_wednesday_noon(now)
+                    promote_to_current(db, rotations[0].id, deadline)
+                if len(rotations) >= 2:
+                    promote_to_on_deck(db, rotations[1].id)
+                if len(rotations) >= 3:
+                    activate_assignment(db, rotations[2].id, _next_wednesday_noon(now))
                 db.commit()
                 cycle = new_cycle
                 schedule = get_rotation_schedule(db, cycle)
@@ -644,8 +709,12 @@ async def skip_rotation_turn(
         )
 
     from db.functions import (
-        get_current_pending_assignment,
+        get_current_active_assignment,
         skip_assignment,
+        get_current_on_deck_assignment,
+        promote_to_current,
+        get_next_pipeline_assignment,
+        promote_to_on_deck,
         get_next_scheduled_assignment,
         activate_assignment,
         get_current_cycle_number,
@@ -656,46 +725,56 @@ async def skip_rotation_turn(
     account_username = account.username
 
     with db:
-        pending = get_current_pending_assignment(db)
-        if pending is None:
+        current = get_current_active_assignment(db)
+        if current is None:
             logger.warning(
-                "Rotation skip: no pending assignment (account #%d)", account_id
+                "Rotation skip: no CURRENT assignment (account #%d)", account_id
             )
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="No pending rotation assignment to skip",
+                detail="No active rotation assignment to skip",
             )
 
         # ADMIN can skip anyone's turn; TYRANT can only skip their own
-        if not is_admin and pending.account_id != account_id:
+        if not is_admin and current.account_id != account_id:
             logger.warning(
                 "Rotation skip denied: account #%d tried to skip #%d's turn",
                 account_id,
-                pending.account_id,
+                current.account_id,
             )
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You can only skip your own rotation turn",
             )
 
-        skip_assignment(db, pending.id)
+        skip_assignment(db, current.id)
 
-        # Activate the next person in the rotation
-        cycle = get_current_cycle_number(db)
-        next_up = get_next_scheduled_assignment(db, cycle)
+        # Advance pipeline: ON_DECK → CURRENT, PENDING → ON_DECK, SCHEDULED → PENDING
+        from scheduler import _next_wednesday_noon
+        from datetime import datetime, UTC
+
+        now = datetime.now(UTC)
         next_username = None
         next_up_id = None
 
-        if next_up is not None:
-            from datetime import datetime, UTC
-            from scheduler import _next_wednesday_noon
-
-            now = datetime.now(UTC)
+        on_deck = get_current_on_deck_assignment(db)
+        if on_deck is not None:
             deadline = _next_wednesday_noon(now)
-            activate_assignment(db, next_up.id, deadline)
-            db.refresh(next_up)
-            next_username = next_up.Account.username
-            next_up_id = next_up.id
+            promote_to_current(db, on_deck.id, deadline)
+            db.refresh(on_deck)
+            next_username = on_deck.Account.username
+            next_up_id = on_deck.id
+
+            # Advance PENDING → ON_DECK
+            cycle = get_current_cycle_number(db)
+            next_pending = get_next_pipeline_assignment(db, cycle)
+            if next_pending is not None:
+                promote_to_on_deck(db, next_pending.id)
+
+                # Advance SCHEDULED → PENDING
+                scheduled = get_next_scheduled_assignment(db, cycle)
+                if scheduled is not None:
+                    activate_assignment(db, scheduled.id, _next_wednesday_noon(now))
 
         db.commit()
 

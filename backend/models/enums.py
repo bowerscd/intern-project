@@ -157,13 +157,14 @@ class PhoneProvider(Enum):
 class TyrantAssignmentStatus(Enum):
     """Status values for a tyrant rotation assignment.
 
-    Tracks whether a tyrant selection is still pending, has been
-    fulfilled, was missed, skipped voluntarily, or is scheduled for a
-    future week.
+    Lifecycle: SCHEDULED → PENDING → ON_DECK → CURRENT → CHOSEN/MISSED.
+    SKIPPED is an admin-only bypass that doesn't count as a miss.
     """
 
     SCHEDULED = "scheduled"
     PENDING = "pending"
+    ON_DECK = "on_deck"
+    CURRENT = "current"
     CHOSEN = "chosen"
     MISSED = "missed"
     SKIPPED = "skipped"

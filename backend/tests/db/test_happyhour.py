@@ -15,7 +15,7 @@ from db.functions import (
     get_random_previous_location,
     create_tyrant_assignment,
     create_cycle_rotation,
-    get_current_pending_assignment,
+    get_current_active_assignment,
     get_next_scheduled_assignment,
     get_on_deck_assignment,
     get_rotation_schedule,
@@ -345,13 +345,13 @@ class TestTyrantRotation:
         assert assignment.status == TyrantAssignmentStatus.SCHEDULED
         assert assignment.deadline_at is None
 
-    def test_get_current_pending_assignment(self, db_session: Session) -> None:
-        """Verify the current pending assignment is returned.
+    def test_get_current_active_assignment(self, db_session: Session) -> None:
+        """Verify the CURRENT assignment is returned.
 
         :param db_session: SQLAlchemy database session.
         :type db_session: Session
         """
-        admin = self._make_admin(db_session, "rot_pending")
+        admin = self._make_admin(db_session, "rot_current")
         create_tyrant_assignment(
             db_session,
             admin.id,
@@ -359,13 +359,13 @@ class TestTyrantRotation:
             position=0,
             assigned_at=datetime.now(UTC),
             deadline_at=datetime.now(UTC) + timedelta(days=5),
-            status=TyrantAssignmentStatus.PENDING,
+            status=TyrantAssignmentStatus.CURRENT,
         )
-        pending = get_current_pending_assignment(db_session)
-        assert pending is not None
-        assert pending.account_id == admin.id
+        current = get_current_active_assignment(db_session)
+        assert current is not None
+        assert current.account_id == admin.id
 
-    def test_get_current_pending_returns_none_when_all_resolved(
+    def test_get_current_active_returns_none_when_all_resolved(
         self, db_session: Session
     ) -> None:
         """Verify ``None`` when all assignments are resolved.
@@ -381,11 +381,11 @@ class TestTyrantRotation:
             position=0,
             assigned_at=datetime.now(UTC),
             deadline_at=datetime.now(UTC) + timedelta(days=5),
-            status=TyrantAssignmentStatus.PENDING,
+            status=TyrantAssignmentStatus.CURRENT,
         )
         mark_assignment_chosen(db_session, a.id)
-        pending = get_current_pending_assignment(db_session)
-        assert pending is None
+        current = get_current_active_assignment(db_session)
+        assert current is None
 
     def test_get_current_cycle_number_default(self, db_session: Session) -> None:
         """When no assignments exist, cycle defaults to 1.

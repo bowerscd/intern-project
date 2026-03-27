@@ -221,7 +221,7 @@ class TestEventCancelByAdmin:
 class TestRotationSkip:
     """Test POST /api/v2/happyhour/rotation/skip for disaster recovery."""
 
-    _PENDING_PATCH = "db.functions.get_current_pending_assignment"
+    _PENDING_PATCH = "db.functions.get_current_active_assignment"
 
     def test_skip_requires_auth(self, client: TestClient) -> None:
         r = client.post("/api/v2/happyhour/rotation/skip")
@@ -237,7 +237,7 @@ class TestRotationSkip:
         with patch(self._PENDING_PATCH, return_value=None):
             r = authenticated_client.post("/api/v2/happyhour/rotation/skip")
         assert r.status_code == 404
-        assert "No pending" in r.json()["detail"]
+        assert "No active" in r.json()["detail"]
 
     def test_skip_own_turn(
         self, authenticated_client: TestClient, db_session: Session
@@ -251,14 +251,14 @@ class TestRotationSkip:
         accounts = get_all_accounts(db_session)
         test_act = [a for a in accounts if a.username == "test"][0]
 
-        # Create a real pending assignment in the database
+        # Create a real CURRENT assignment in the database
         assignment = create_tyrant_assignment(
             db_session,
             account_id=test_act.id,
             cycle=1,
             position=0,
             assigned_at=datetime.now(UTC),
-            status=TyrantAssignmentStatus.PENDING,
+            status=TyrantAssignmentStatus.CURRENT,
         )
         db_session.commit()
 
@@ -280,13 +280,13 @@ class TestRotationSkipByAdmin:
         admin_happyhour_client: TestClient,
         db_session: Session,
     ) -> None:
-        """An admin can skip a different user's pending rotation turn."""
+        """An admin can skip a different user's CURRENT rotation turn."""
         from db.functions import create_tyrant_assignment, get_all_accounts
         from models.enums import TyrantAssignmentStatus
 
         accounts = get_all_accounts(db_session)
         # The admin_happyhour_client user is "admin_hh_user".
-        # Create a pending assignment for a DIFFERENT user.
+        # Create a CURRENT assignment for a DIFFERENT user.
         other_act = [a for a in accounts if a.username != "admin_hh_user"][0]
 
         assignment = create_tyrant_assignment(
@@ -295,7 +295,7 @@ class TestRotationSkipByAdmin:
             cycle=1,
             position=0,
             assigned_at=datetime.now(UTC),
-            status=TyrantAssignmentStatus.PENDING,
+            status=TyrantAssignmentStatus.CURRENT,
         )
         db_session.commit()
 

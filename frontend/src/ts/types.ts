@@ -60,6 +60,7 @@ export type HappyHourEvent = {
 export type RotationMember = {
   position: number;
   username: string;
+  /** scheduled | pending | on_deck | current | chosen | missed | skipped */
   status: string;
   deadline: string | null;
 };

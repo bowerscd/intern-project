@@ -12,7 +12,7 @@ from db.functions import (
     create_event,
     get_all_events,
     create_tyrant_assignment,
-    get_current_pending_assignment,
+    get_current_active_assignment,
     get_rotation_schedule,
 )
 from models.account import Account
@@ -112,8 +112,8 @@ class TestGetScheduler:
         scheduler.scheduler = None
 
 
-class TestAssignTyrant:
-    """Verify :func:`~scheduler.assign_tyrant` cycle-based rotation logic."""
+class TestAdvanceRotation:
+    """Verify :func:`~scheduler.advance_rotation` cycle-based rotation logic."""
 
     @pytest.mark.asyncio
     async def test_creates_full_cycle_on_first_run(
@@ -146,26 +146,26 @@ class TestAssignTyrant:
             patch("random.shuffle", side_effect=no_shuffle),
         ):
             with caplog.at_level(logging.INFO):
-                from scheduler import assign_tyrant
+                from scheduler import advance_rotation
 
-                await assign_tyrant()
+                await advance_rotation()
 
-            assert "Created new rotation cycle" in caplog.text
+            assert "Created new buffer cycle" in caplog.text
 
         # Full rotation created: 2 assignments
         assignments = get_rotation_schedule(db_session, cycle=2)
         assert len(assignments) == 2
 
-        # First assignment activated to PENDING
-        pending = get_current_pending_assignment(db_session)
+        # First assignment activated to CURRENT
+        pending = get_current_active_assignment(db_session)
         assert pending is not None
         assert pending.account_id == admin1.id
-        assert pending.status == TyrantAssignmentStatus.PENDING
+        assert pending.status == TyrantAssignmentStatus.CURRENT
         assert pending.deadline_at is not None
 
-        # Second still SCHEDULED
+        # Second is ON_DECK (pipeline seeded: first→CURRENT, second→ON_DECK)
         assert assignments[1].account_id == admin2.id
-        assert assignments[1].status == TyrantAssignmentStatus.SCHEDULED
+        assert assignments[1].status == TyrantAssignmentStatus.ON_DECK
 
     @pytest.mark.asyncio
     async def test_activates_next_scheduled_in_cycle(
@@ -207,11 +207,11 @@ class TestAssignTyrant:
             patch("mail.outgoing.notify_tyrant_assigned"),
             patch("mail.outgoing.notify_tyrant_on_deck"),
         ):
-            from scheduler import assign_tyrant
+            from scheduler import advance_rotation
 
-            await assign_tyrant()
+            await advance_rotation()
 
-        pending = get_current_pending_assignment(db_session)
+        pending = get_current_active_assignment(db_session)
         assert pending is not None
         assert pending.account_id == admin2.id
 
@@ -262,13 +262,13 @@ class TestAssignTyrant:
             patch("random.shuffle", side_effect=no_shuffle),
         ):
             with caplog.at_level(logging.INFO):
-                from scheduler import assign_tyrant
+                from scheduler import advance_rotation
 
-                await assign_tyrant()
+                await advance_rotation()
 
             assert "cycle 2" in caplog.text
 
-        pending = get_current_pending_assignment(db_session)
+        pending = get_current_active_assignment(db_session)
         assert pending is not None
         assert pending.cycle == 2
         assert pending.account_id == admin1.id
@@ -311,11 +311,11 @@ class TestAssignTyrant:
             patch("mail.outgoing.notify_tyrant_on_deck"),
             patch("random.shuffle", side_effect=no_shuffle),
         ):
-            from scheduler import assign_tyrant
+            from scheduler import advance_rotation
 
-            await assign_tyrant()
+            await advance_rotation()
 
-        pending = get_current_pending_assignment(db_session)
+        pending = get_current_active_assignment(db_session)
         assert pending is not None
         assert pending.account_id == admin.id
         assert pending.cycle == 2
@@ -335,11 +335,11 @@ class TestAssignTyrant:
         """
         with patch("db.Database", return_value=database):
             with caplog.at_level(logging.WARNING):
-                from scheduler import assign_tyrant
+                from scheduler import advance_rotation
 
-                await assign_tyrant()
+                await advance_rotation()
 
-            assert "No HAPPY_HOUR_TYRANT users found" in caplog.text
+            assert "No HAPPY_HOUR_TYRANT users found for rotation" in caplog.text
 
     @pytest.mark.asyncio
     async def test_notifies_assigned_tyrant(
@@ -365,9 +365,9 @@ class TestAssignTyrant:
             patch("mail.outgoing.notify_tyrant_on_deck"),
             patch("random.shuffle", side_effect=no_shuffle),
         ):
-            from scheduler import assign_tyrant
+            from scheduler import advance_rotation
 
-            await assign_tyrant()
+            await advance_rotation()
 
             mock_notify.assert_called_once()
 
@@ -396,9 +396,9 @@ class TestAssignTyrant:
             patch("mail.outgoing.notify_tyrant_on_deck") as mock_on_deck,
             patch("random.shuffle", side_effect=no_shuffle),
         ):
-            from scheduler import assign_tyrant
+            from scheduler import advance_rotation
 
-            await assign_tyrant()
+            await advance_rotation()
 
             mock_on_deck.assert_called_once()
 
@@ -446,9 +446,9 @@ class TestAssignTyrant:
             patch("mail.outgoing.notify_tyrant_assigned"),
             patch("mail.outgoing.notify_tyrant_on_deck") as mock_on_deck,
         ):
-            from scheduler import assign_tyrant
+            from scheduler import advance_rotation
 
-            await assign_tyrant()
+            await advance_rotation()
 
             mock_on_deck.assert_not_called()
 
@@ -480,14 +480,14 @@ class TestAssignTyrant:
             patch("random.shuffle", side_effect=no_shuffle),
         ):
             with caplog.at_level(logging.ERROR):
-                from scheduler import assign_tyrant
+                from scheduler import advance_rotation
 
-                await assign_tyrant()
+                await advance_rotation()
 
-            assert "Failed to notify tyrant" in caplog.text
+            assert "Failed to notify current tyrant" in caplog.text
 
         # Assignment should still exist
-        pending = get_current_pending_assignment(db_session)
+        pending = get_current_active_assignment(db_session)
         assert pending is not None
 
 
@@ -548,7 +548,7 @@ class TestAutoSelectHappyHour:
             position=0,
             assigned_at=datetime.now(UTC) - timedelta(days=3),
             deadline_at=datetime.now(UTC) + timedelta(hours=1),
-            status=TyrantAssignmentStatus.PENDING,
+            status=TyrantAssignmentStatus.CURRENT,
         )
         db_session.commit()
 
@@ -655,7 +655,7 @@ class TestAutoSelectHappyHour:
             position=0,
             assigned_at=datetime.now(UTC) - timedelta(days=5),
             deadline_at=datetime.now(UTC) - timedelta(hours=1),
-            status=TyrantAssignmentStatus.PENDING,
+            status=TyrantAssignmentStatus.CURRENT,
         )
         db_session.commit()
 
@@ -708,7 +708,7 @@ class TestAutoSelectHappyHour:
                 position=i,
                 assigned_at=datetime.now(UTC) - timedelta(days=21 - i * 7),
                 deadline_at=datetime.now(UTC) - timedelta(days=16 - i * 7),
-                status=TyrantAssignmentStatus.PENDING,
+                status=TyrantAssignmentStatus.CURRENT,
             )
             a.status = TyrantAssignmentStatus.MISSED
             db_session.commit()
@@ -721,7 +721,7 @@ class TestAutoSelectHappyHour:
             position=2,
             assigned_at=datetime.now(UTC) - timedelta(days=5),
             deadline_at=datetime.now(UTC) - timedelta(hours=1),
-            status=TyrantAssignmentStatus.PENDING,
+            status=TyrantAssignmentStatus.CURRENT,
         )
         db_session.commit()
 
@@ -730,9 +730,12 @@ class TestAutoSelectHappyHour:
             patch("db.Database", return_value=database),
         ):
             with caplog.at_level(logging.WARNING):
-                from scheduler import auto_select_happy_hour
+                from scheduler import auto_select_happy_hour, evaluate_strikes
 
+                # auto_select marks 3rd assignment as MISSED
                 await auto_select_happy_hour()
+                # evaluate_strikes does the claim removal
+                await evaluate_strikes()
 
             assert "Removed HAPPY_HOUR_TYRANT" in caplog.text
 
@@ -775,7 +778,7 @@ class TestAutoSelectHappyHour:
             position=0,
             assigned_at=datetime.now(UTC) - timedelta(days=14),
             deadline_at=datetime.now(UTC) - timedelta(days=9),
-            status=TyrantAssignmentStatus.PENDING,
+            status=TyrantAssignmentStatus.CURRENT,
         )
         a.status = TyrantAssignmentStatus.MISSED
         db_session.commit()
@@ -788,7 +791,7 @@ class TestAutoSelectHappyHour:
             position=1,
             assigned_at=datetime.now(UTC) - timedelta(days=5),
             deadline_at=datetime.now(UTC) - timedelta(hours=1),
-            status=TyrantAssignmentStatus.PENDING,
+            status=TyrantAssignmentStatus.CURRENT,
         )
         db_session.commit()
 
@@ -846,7 +849,7 @@ class TestAutoSelectHappyHour:
                 position=i,
                 assigned_at=datetime.now(UTC) - timedelta(days=28 - i * 7),
                 deadline_at=datetime.now(UTC) - timedelta(days=23 - i * 7),
-                status=TyrantAssignmentStatus.PENDING,
+                status=TyrantAssignmentStatus.CURRENT,
             )
             a.status = st
             db_session.commit()
@@ -859,7 +862,7 @@ class TestAutoSelectHappyHour:
             position=3,
             assigned_at=datetime.now(UTC) - timedelta(days=5),
             deadline_at=datetime.now(UTC) - timedelta(hours=1),
-            status=TyrantAssignmentStatus.PENDING,
+            status=TyrantAssignmentStatus.CURRENT,
         )
         db_session.commit()
 

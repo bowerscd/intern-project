@@ -316,7 +316,7 @@ class TestTurnEnforcement:
         r = client.post("/api/v2/happyhour/locations", json=LOCATION_DATA)
         return r.json()["id"]
 
-    _PENDING_PATCH = "db.functions.get_current_pending_assignment"
+    _PENDING_PATCH = "db.functions.get_current_active_assignment"
     _CHOSEN_PATCH = "db.functions.mark_assignment_chosen"
 
     def test_any_user_can_create_when_no_pending(

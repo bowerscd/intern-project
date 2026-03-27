@@ -72,7 +72,7 @@ class TestRotationEndpoint:
             position=0,
             assigned_at=now,
             deadline_at=deadline,
-            status=TyrantAssignmentStatus.PENDING,
+            status=TyrantAssignmentStatus.CURRENT,
         )
         create_tyrant_assignment(
             db_session,
@@ -99,10 +99,10 @@ class TestRotationEndpoint:
             assert "status" in m
             assert "deadline" in m
 
-        # Pending member has deadline, scheduled does not
-        pending_m = [m for m in members if m["status"] == "pending"][0]
-        assert pending_m["deadline"] is not None
-        assert pending_m["username"] == "rot_alice"
+        # Current member has deadline, scheduled does not
+        current_m = [m for m in members if m["status"] == "current"][0]
+        assert current_m["deadline"] is not None
+        assert current_m["username"] == "rot_alice"
 
         scheduled_m = [m for m in members if m["status"] == "scheduled"][0]
         assert scheduled_m["deadline"] is None
@@ -121,7 +121,7 @@ class TestRotationEndpoint:
             position=0,
             assigned_at=now,
             deadline_at=now + timedelta(days=5),
-            status=TyrantAssignmentStatus.PENDING,
+            status=TyrantAssignmentStatus.CURRENT,
         )
         create_tyrant_assignment(
             db_session,
@@ -163,7 +163,7 @@ class TestRotationEndpoint:
             position=0,
             assigned_at=now,
             deadline_at=now + timedelta(days=5),
-            status=TyrantAssignmentStatus.PENDING,
+            status=TyrantAssignmentStatus.CURRENT,
         )
         db_session.commit()
 
@@ -200,7 +200,7 @@ class TestRotationEndpoint:
             position=0,
             assigned_at=now,
             deadline_at=now + timedelta(days=5),
-            status=TyrantAssignmentStatus.PENDING,
+            status=TyrantAssignmentStatus.CURRENT,
         )
         db_session.commit()
 
@@ -209,7 +209,7 @@ class TestRotationEndpoint:
             c.cookies.jar.set_cookie(_mk_auth_cookie(secret, alice.id))
 
             r = c.get("/api/v2/happyhour/rotation")
-            assert r.json()["members"][0]["status"] == "pending"
+            assert r.json()["members"][0]["status"] == "current"
 
         # Mark as chosen
         from db.functions import mark_assignment_chosen
