@@ -696,67 +696,91 @@ export async function renderHappyHour() {
         return fri.toISOString();
       })();
 
+      const openLocations = allLocations.filter((l: any) => !l.closed);
       byId("happyhour-create-form").innerHTML = `
         <p style="font-size: 0.9em; color: #aaa; margin-bottom: 12px;">Happy hour is always scheduled for Friday at 4:00 PM Pacific.</p>
         <label>Location</label>
-        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
-          <select id="location-select" style="flex: 1;">
-            ${allLocations.filter((l: any) => !l.closed).map((l: any) => `<option value="${l.id}">${esc(l.name)}</option>`).join("")}
-            <option value="new">➕ Add New Location...</option>
-          </select>
-          <button type="button" id="weighted-random-btn" title="Favors less-visited locations">🎲 Random</button>
-          <button type="button" id="true-random-btn" title="Equal chance for all locations">🎯 True Random</button>
+        <div id="location-mode-toggle" style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <button type="button" id="mode-new-btn" class="toggle-active" style="flex: 1;">➕ New Location</button>
+          <button type="button" id="mode-existing-btn" style="flex: 1;">📍 Existing Location</button>
         </div>
-        <div id="new-location-fields" style="display: none; margin-top: 12px; padding: 12px; border: 1px solid #444; border-radius: 6px;">
+        <div id="new-location-fields" style="margin-bottom: 12px; padding: 12px; border: 1px solid #444; border-radius: 6px;">
           <label>Location Name</label><input id="new-location-name" placeholder="New Venue" />
           <label>URL (optional)</label><input id="new-location-url" placeholder="https://example.com" />
           <label>Address</label><textarea id="new-location-address" rows="2" placeholder="123 Main St, Austin, TX 78701"></textarea>
+        </div>
+        <div id="existing-location-fields" style="display: none; margin-bottom: 12px;">
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input id="location-search" list="location-datalist" placeholder="Type to search locations..." style="flex: 1;" autocomplete="off" />
+            <datalist id="location-datalist">
+              ${openLocations.map((l: any) => `<option value="${esc(l.name)}" data-id="${l.id}"></option>`).join("")}
+            </datalist>
+            <button type="button" id="weighted-random-btn" title="Favors less-visited locations">🎲 Random</button>
+            <button type="button" id="true-random-btn" title="Equal chance for all locations">🎯 True Random</button>
+          </div>
+          <input type="hidden" id="selected-location-id" value="" />
         </div>
         <label>Description (optional)</label>
         <input id="event-description" placeholder="Weekly happy hour" />
         <button type="button" id="submit-happyhour-btn" style="margin-top: 12px;">Submit Happy Hour</button>
       `;
 
-      const locationSelect = byId("location-select") as HTMLSelectElement;
       const newLocationFields = byId("new-location-fields");
+      const existingLocationFields = byId("existing-location-fields");
+      const locationSearch = byId("location-search") as HTMLInputElement;
+      const selectedLocationId = byId("selected-location-id") as HTMLInputElement;
+      const modeNewBtn = byId("mode-new-btn") as HTMLButtonElement;
+      const modeExistingBtn = byId("mode-existing-btn") as HTMLButtonElement;
+      let locationMode: "new" | "existing" = "new";
 
-      // Show new-location fields if "new" is already selected (e.g. no existing locations)
-      if (locationSelect.value === "new") {
-        newLocationFields.style.display = "block";
+      function setLocationMode(mode: "new" | "existing") {
+        locationMode = mode;
+        if (mode === "new") {
+          newLocationFields.style.display = "block";
+          existingLocationFields.style.display = "none";
+          modeNewBtn.classList.add("toggle-active");
+          modeExistingBtn.classList.remove("toggle-active");
+          selectedLocationId.value = "";
+          locationSearch.value = "";
+        } else {
+          newLocationFields.style.display = "none";
+          existingLocationFields.style.display = "block";
+          modeNewBtn.classList.remove("toggle-active");
+          modeExistingBtn.classList.add("toggle-active");
+        }
       }
 
-      locationSelect.addEventListener("change", () => {
-        newLocationFields.style.display = locationSelect.value === "new" ? "block" : "none";
+      modeNewBtn.addEventListener("click", () => setLocationMode("new"));
+      modeExistingBtn.addEventListener("click", () => setLocationMode("existing"));
+
+      // Resolve datalist selection to a location ID
+      locationSearch.addEventListener("input", () => {
+        const match = openLocations.find((l: any) => l.name === locationSearch.value);
+        selectedLocationId.value = match ? String(match.id) : "";
       });
+
+      function applyRandomLocation(loc: any) {
+        setLocationMode("existing");
+        locationSearch.value = loc.name;
+        selectedLocationId.value = String(loc.id);
+      }
 
       byId("weighted-random-btn")?.addEventListener("click", async () => {
         try {
-          const loc = await api.getRandomLocation(true);
-          locationSelect.value = String(loc.id);
-          newLocationFields.style.display = "none";
+          applyRandomLocation(await api.getRandomLocation(true));
         } catch {
-          // Fallback to client-side if the endpoint fails
-          const openLocations = allLocations.filter((l: any) => !l.closed);
           if (openLocations.length > 0) {
-            const randomLocation = openLocations[Math.floor(Math.random() * openLocations.length)];
-            locationSelect.value = String(randomLocation.id);
-            newLocationFields.style.display = "none";
+            applyRandomLocation(openLocations[Math.floor(Math.random() * openLocations.length)]);
           }
         }
       });
 
       byId("true-random-btn")?.addEventListener("click", async () => {
         try {
-          const loc = await api.getRandomLocation(false);
-          locationSelect.value = String(loc.id);
-          newLocationFields.style.display = "none";
+          applyRandomLocation(await api.getRandomLocation(false));
         } catch {
-          // Fallback to client-side if the endpoint fails
-          const openLocations = allLocations.filter((l: any) => !l.closed);
           if (openLocations.length > 0) {
-            const randomLocation = openLocations[Math.floor(Math.random() * openLocations.length)];
-            locationSelect.value = String(randomLocation.id);
-            newLocationFields.style.display = "none";
+            applyRandomLocation(openLocations[Math.floor(Math.random() * openLocations.length)]);
           }
         }
       });
@@ -765,7 +789,7 @@ export async function renderHappyHour() {
         const description = (byId("event-description") as HTMLInputElement).value.trim() || undefined;
         try {
           let locationId: number;
-          if (locationSelect.value === "new") {
+          if (locationMode === "new") {
             const name = (byId("new-location-name") as HTMLInputElement).value.trim();
             const url = (byId("new-location-url") as HTMLInputElement).value.trim() || undefined;
             const address = (byId("new-location-address") as HTMLTextAreaElement).value.trim();
@@ -779,7 +803,12 @@ export async function renderHappyHour() {
             });
             locationId = newLoc.id;
           } else {
-            locationId = Number(locationSelect.value);
+            const resolvedId = selectedLocationId.value;
+            if (!resolvedId) {
+              byId("happyhour-result").innerHTML = status("Please select a valid location from the list.");
+              return;
+            }
+            locationId = Number(resolvedId);
           }
           const event = await api.createEvent({ location_id: locationId, description, when: nextFriday });
           byId("happyhour-result").innerHTML = status(`Happy hour scheduled at ${event.location_name} for ${formatDate(event.when)}`);

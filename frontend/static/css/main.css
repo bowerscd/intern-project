@@ -351,6 +351,17 @@ button:disabled {
   cursor: not-allowed;
 }
 
+#location-mode-toggle button {
+  background: transparent;
+  border: var(--border-width) var(--border-style) var(--border-button);
+  opacity: 0.6;
+}
+
+#location-mode-toggle button.toggle-active {
+  background: var(--bg-button);
+  opacity: 1;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
