@@ -448,7 +448,7 @@ function renderRotationHtml(members: any[], currentUsername?: string): string {
   const rows = members.map((item: any) => {
     let weekCol: string;
 
-    if (item.status === "scheduled" || item.status === "pending") {
+    if (item.status === "scheduled" || item.status === "pending" || (item.status === "on_deck" && !item.deadline)) {
       // Compute projected week based on the active reference's deadline
       if (activeRef?.deadline) {
         const base = new Date(activeRef.deadline);
