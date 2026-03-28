@@ -422,6 +422,16 @@ async def get_rotation(
         activate_assignment,
     )
 
+    from datetime import datetime, UTC
+    from models.enums import TyrantAssignmentStatus
+    from scheduler import (
+        _next_wednesday_noon,
+        _next_friday_5pm,
+        auto_select_happy_hour,
+        advance_rotation,
+        evaluate_strikes,
+    )
+
     with db:
         cycle = get_current_cycle_number(db)
         schedule = get_rotation_schedule(db, cycle)
@@ -431,9 +441,6 @@ async def get_rotation(
         if not schedule:
             tyrants = get_accounts_with_claim(db, AccountClaims.HAPPY_HOUR_TYRANT)
             if tyrants:
-                from datetime import datetime, UTC
-                from scheduler import _next_wednesday_noon
-
                 now = datetime.now(UTC)
                 new_cycle = cycle + 1
                 rotations = create_standby_buffer(db, list(tyrants), new_cycle, now)
@@ -447,6 +454,39 @@ async def get_rotation(
                     activate_assignment(db, rotations[2].id, _next_wednesday_noon(now))
                 db.commit()
                 cycle = new_cycle
+                schedule = get_rotation_schedule(db, cycle)
+
+        # Catch-up: if the CURRENT assignment's deadline has passed and
+        # the scheduler missed its cron windows, run the idempotent
+        # scheduler jobs now so the rotation advances on next page load.
+        now = datetime.now(UTC)
+        current_assignment = next(
+            (r for r in schedule if r.status == TyrantAssignmentStatus.CURRENT),
+            None,
+        )
+        if (
+            current_assignment is not None
+            and current_assignment.deadline_at is not None
+        ):
+            dl = current_assignment.deadline_at
+            if dl.tzinfo is None:
+                dl = dl.replace(tzinfo=UTC)
+            if now > dl:
+                # Release any SQLite lock before scheduler functions
+                # (they open their own sessions).
+                db.commit()
+
+                await auto_select_happy_hour()
+
+                # Only advance pipeline if past Friday 5PM of the
+                # deadline's week (mirrors the cron schedule).
+                friday_5pm = _next_friday_5pm(dl)
+                if now > friday_5pm:
+                    await evaluate_strikes()
+                    await advance_rotation()
+
+                # Re-fetch the (now-advanced) schedule
+                cycle = get_current_cycle_number(db)
                 schedule = get_rotation_schedule(db, cycle)
 
         members = [
