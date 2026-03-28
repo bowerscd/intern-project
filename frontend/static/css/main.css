@@ -85,6 +85,34 @@
   --bg-checkbox-label: rgba(144, 202, 249, 0.05);
   --bg-checkbox-label-mobile: rgba(42, 42, 42, 0.3);
   --bg-menu-toggle-hover: rgba(144, 202, 249, 0.1);
+
+  /* ── Status badges ─────────────────────────── */
+  --badge-active-bg: rgba(76, 175, 80, 0.15);
+  --badge-active-fg: #81c784;
+  --badge-active-border: #4caf50;
+  --badge-pending-bg: rgba(255, 193, 7, 0.15);
+  --badge-pending-fg: #ffd54f;
+  --badge-pending-border: #ffc107;
+  --badge-banned-bg: rgba(244, 67, 54, 0.15);
+  --badge-banned-fg: #e57373;
+  --badge-banned-border: #f44336;
+  --badge-defunct-bg: rgba(158, 158, 158, 0.15);
+  --badge-defunct-fg: #bdbdbd;
+  --badge-defunct-border: #9e9e9e;
+
+  /* ── Semantic buttons ──────────────────────── */
+  --btn-approve-bg: rgba(76, 175, 80, 0.15);
+  --btn-approve-fg: #81c784;
+  --btn-approve-border: #4caf50;
+  --btn-danger-bg: rgba(244, 67, 54, 0.15);
+  --btn-danger-fg: #e57373;
+  --btn-danger-border: #f44336;
+
+  /* ── Admin tabs ────────────────────────────── */
+  --tab-active-bg: var(--fg-accent);
+  --tab-active-fg: var(--bg-body);
+  --tab-badge-bg: rgba(255, 193, 7, 0.25);
+  --tab-badge-fg: #ffd54f;
 }
 
 * {
@@ -455,6 +483,109 @@ tr:nth-child(even) {
   transform: translateX(16px);
 }
 
+/* ── Status badges ───────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.82em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.badge-active  { background: var(--badge-active-bg);  color: var(--badge-active-fg);  border-color: var(--badge-active-border); }
+.badge-pending { background: var(--badge-pending-bg); color: var(--badge-pending-fg); border-color: var(--badge-pending-border); }
+.badge-banned  { background: var(--badge-banned-bg);  color: var(--badge-banned-fg);  border-color: var(--badge-banned-border); }
+.badge-defunct { background: var(--badge-defunct-bg);  color: var(--badge-defunct-fg);  border-color: var(--badge-defunct-border); }
+
+/* ── Semantic buttons ────────────────────────── */
+.btn-approve {
+  background: var(--btn-approve-bg);
+  color: var(--btn-approve-fg);
+  border-color: var(--btn-approve-border);
+}
+.btn-approve:hover { filter: brightness(1.2); }
+
+.btn-danger {
+  background: var(--btn-danger-bg);
+  color: var(--btn-danger-fg);
+  border-color: var(--btn-danger-border);
+}
+.btn-danger:hover { filter: brightness(1.2); }
+
+/* ── Admin tabs ──────────────────────────────── */
+.admin-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-card);
+  padding-bottom: 0;
+}
+
+.admin-tab {
+  padding: 8px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--fg-muted);
+  font-weight: 500;
+  cursor: pointer;
+  transition: color var(--transition-speed) var(--transition-fn), border-color var(--transition-speed) var(--transition-fn);
+  border-radius: 0;
+  box-shadow: none;
+  min-height: auto;
+}
+.admin-tab:hover {
+  color: var(--fg-body);
+  background: transparent;
+}
+.admin-tab.active {
+  color: var(--fg-accent);
+  border-bottom-color: var(--fg-accent);
+  background: transparent;
+}
+
+.tab-badge {
+  display: inline-block;
+  background: var(--tab-badge-bg);
+  color: var(--tab-badge-fg);
+  font-size: 0.78em;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 10px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* ── Admin account table ─────────────────────── */
+.admin-table td { vertical-align: middle; }
+.admin-table .btn-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.admin-table .btn-group button {
+  padding: 4px 10px;
+  font-size: 0.85em;
+  min-height: auto;
+}
+
+.claim-label { color: var(--fg-muted); font-size: 0.85em; }
+
+/* ── Admin empty state ───────────────────────── */
+.admin-empty {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--fg-muted);
+}
+.admin-empty-icon {
+  font-size: 2em;
+  display: block;
+  margin-bottom: 8px;
+}
+
 /* Desktop - sidebar always visible */
 @media (min-width: 769px) {
   .mobile-header {
@@ -612,6 +743,20 @@ tr:nth-child(even) {
   /* Status messages */
   .status {
     font-size: 0.9em;
+  }
+
+  /* Admin tabs on mobile */
+  .admin-tabs {
+    gap: 0;
+  }
+  .admin-tab {
+    padding: 8px 10px;
+    font-size: 0.9em;
+    min-height: auto;
+  }
+  .admin-table .btn-group button {
+    min-height: 36px;
+    font-size: 14px;
   }
 }
 

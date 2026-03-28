@@ -872,6 +872,29 @@ export async function renderHappyHour() {
 }
 
 export async function renderAdmin() {
+  // ── Helpers ───────────────────────────────────────────────────────
+  const badgeClass: Record<string, string> = {
+    active: "badge-active",
+    pending_approval: "badge-pending",
+    banned: "badge-banned",
+    defunct: "badge-defunct",
+    pending: "badge-pending",
+    approved: "badge-active",
+    denied: "badge-banned",
+  };
+
+  function statusBadge(s: string): string {
+    const label = s.replace(/_/g, " ");
+    const cls = badgeClass[s] ?? "";
+    return `<span class="badge ${cls}">${esc(label)}</span>`;
+  }
+
+  function claimsLabel(bitmask: number): string {
+    const names = decodeClaims(bitmask);
+    if (names.length === 0) return `<span class="claim-label">none</span>`;
+    return names.map((n) => `<span class="claim-label">${esc(n)}</span>`).join(", ");
+  }
+
   // ── Tab switching ─────────────────────────────────────────────────
   const tabs = document.querySelectorAll<HTMLElement>(".admin-tab");
   const panels = document.querySelectorAll<HTMLElement>(".admin-panel");
@@ -887,6 +910,9 @@ export async function renderAdmin() {
     });
   });
 
+  const pendingTab = tabs[0];
+  const claimsTab = tabs[2];
+
   // ── Pending Accounts ──────────────────────────────────────────────
   const pendingList = document.getElementById("admin-pending-list")!;
   const pendingResult = document.getElementById("admin-pending-result")!;
@@ -894,19 +920,24 @@ export async function renderAdmin() {
   async function loadPending() {
     try {
       const accounts = await api.getAdminAccounts("pending_approval");
+      // Update tab badge
+      if (pendingTab) {
+        pendingTab.innerHTML = accounts.length > 0
+          ? `Pending Accounts<span class="tab-badge">${accounts.length}</span>`
+          : "Pending Accounts";
+      }
+
       if (accounts.length === 0) {
-        pendingList.innerHTML = "<p>No pending accounts.</p>";
+        pendingList.innerHTML = `<div class="admin-empty"><span class="admin-empty-icon">\u2705</span>No pending accounts</div>`;
         return;
       }
       pendingList.innerHTML = accounts.map((a) => `
         <div class="card" style="margin-bottom: 12px; padding: 16px;">
-          <p><strong>Username:</strong> ${esc(a.username)}</p>
-          <p><strong>Email:</strong> ${esc(a.email ?? "none")}</p>
-          <p><strong>Provider:</strong> ${esc(a.provider)}</p>
-          <p><strong>Status:</strong> ${esc(a.status)}</p>
-          <div style="margin-top: 8px;">
-            <button type="button" class="approve-account-btn" data-id="${a.id}" style="margin-right: 8px;">Approve</button>
-            <button type="button" class="deny-account-btn" data-id="${a.id}">Deny (Ban)</button>
+          <p><strong>${esc(a.username)}</strong> &mdash; ${esc(a.email ?? "no email")}</p>
+          <p style="font-size: 0.9em; color: var(--fg-muted);">Provider: ${esc(a.provider)} &middot; ${statusBadge(a.status)}</p>
+          <div style="margin-top: 10px; display: flex; gap: 8px;">
+            <button type="button" class="approve-account-btn btn-approve" data-id="${a.id}">Approve</button>
+            <button type="button" class="deny-account-btn btn-danger" data-id="${a.id}">Deny (Ban)</button>
           </div>
         </div>
       `).join("");
@@ -924,6 +955,7 @@ export async function renderAdmin() {
       pendingList.querySelectorAll(".deny-account-btn").forEach((btn) => {
         btn.addEventListener("click", async () => {
           const id = Number((btn as HTMLElement).dataset.id);
+          if (!confirm("Ban this account? They will not be able to log in.")) return;
           try {
             await api.updateAccountStatus(id, { status: "banned" });
             pendingResult.innerHTML = status("Account denied (banned).");
@@ -945,31 +977,39 @@ export async function renderAdmin() {
     try {
       const accounts = await api.getAdminAccounts(filter || undefined);
       if (accounts.length === 0) {
-        accountsList.innerHTML = "<p>No accounts found.</p>";
+        accountsList.innerHTML = `<div class="admin-empty"><span class="admin-empty-icon">\uD83D\uDCCB</span>No accounts found</div>`;
         return;
       }
-      accountsList.innerHTML = accounts.map((a) => `
-        <div class="card" style="margin-bottom: 12px; padding: 16px;">
-          <p><strong>ID:</strong> ${a.id} &nbsp; <strong>Username:</strong> ${esc(a.username)}</p>
-          <p><strong>Email:</strong> ${esc(a.email ?? "none")} &nbsp; <strong>Provider:</strong> ${esc(a.provider)}</p>
-          <p><strong>Status:</strong> <span class="account-status-${a.id}">${esc(a.status)}</span>
-             &nbsp; <strong>Claims:</strong> ${a.claims}</p>
-          <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
-            ${a.status !== "active" ? `<button type="button" class="set-status-btn" data-id="${a.id}" data-status="active">Activate</button>` : ""}
-            ${a.status !== "banned" ? `<button type="button" class="set-status-btn" data-id="${a.id}" data-status="banned">Ban</button>` : ""}
-            ${a.status !== "defunct" ? `<button type="button" class="set-status-btn" data-id="${a.id}" data-status="defunct">Defunct</button>` : ""}
-            <button type="button" class="toggle-admin-btn" data-id="${a.id}" data-has-admin="${(a.claims & 2) !== 0}">
-              ${(a.claims & 2) !== 0 ? "Revoke Admin" : "Grant Admin"}
-            </button>
-          </div>
-        </div>
-      `).join("");
+
+      const headerHtml = ["Username", "Email", "Provider", "Status", "Claims", "Actions"]
+        .map((h) => `<th>${esc(h)}</th>`).join("");
+
+      const rowsHtml = accounts.map((a) => {
+        const hasAdmin = (a.claims & 2) !== 0;
+        const buttons: string[] = [];
+        if (a.status !== "active") buttons.push(`<button type="button" class="set-status-btn btn-approve" data-id="${a.id}" data-status="active">Activate</button>`);
+        if (a.status !== "banned") buttons.push(`<button type="button" class="set-status-btn btn-danger" data-id="${a.id}" data-status="banned">Ban</button>`);
+        if (a.status !== "defunct") buttons.push(`<button type="button" class="set-status-btn" data-id="${a.id}" data-status="defunct">Defunct</button>`);
+        buttons.push(`<button type="button" class="toggle-admin-btn ${hasAdmin ? "btn-danger" : "btn-approve"}" data-id="${a.id}" data-has-admin="${hasAdmin}">${hasAdmin ? "Revoke Admin" : "Grant Admin"}</button>`);
+
+        return `<tr>
+          <td><strong>${esc(a.username)}</strong><br><span class="claim-label">#${a.id}</span></td>
+          <td>${esc(a.email ?? "—")}</td>
+          <td>${esc(a.provider)}</td>
+          <td>${statusBadge(a.status)}</td>
+          <td>${claimsLabel(a.claims)}</td>
+          <td><div class="btn-group">${buttons.join("")}</div></td>
+        </tr>`;
+      }).join("");
+
+      accountsList.innerHTML = `<table class="admin-table"><thead><tr>${headerHtml}</tr></thead><tbody>${rowsHtml}</tbody></table>`;
 
       accountsList.querySelectorAll(".set-status-btn").forEach((btn) => {
         btn.addEventListener("click", async () => {
           const el = btn as HTMLElement;
           const id = Number(el.dataset.id);
           const newStatus = el.dataset.status!;
+          if (newStatus === "banned" && !confirm("Ban this account?")) return;
           try {
             await api.updateAccountStatus(id, { status: newStatus });
             accountsResult.innerHTML = status(`Account ${id} set to ${newStatus}.`);
@@ -983,6 +1023,8 @@ export async function renderAdmin() {
           const el = btn as HTMLElement;
           const id = Number(el.dataset.id);
           const hasAdmin = el.dataset.hasAdmin === "true";
+          const action = hasAdmin ? "Revoke ADMIN from" : "Grant ADMIN to";
+          if (!confirm(`${action} account #${id}?`)) return;
           try {
             await api.updateAccountRole(id, { grant_admin: !hasAdmin });
             accountsResult.innerHTML = status(`Admin role ${hasAdmin ? "revoked" : "granted"} for account ${id}.`);
@@ -1004,29 +1046,36 @@ export async function renderAdmin() {
   async function loadClaims() {
     try {
       const claims = await api.getClaimRequests();
+      // Update tab badge
+      const pendingClaims = claims.filter((c) => c.status === "pending");
+      if (claimsTab) {
+        claimsTab.innerHTML = pendingClaims.length > 0
+          ? `Claim Requests<span class="tab-badge">${pendingClaims.length}</span>`
+          : "Claim Requests";
+      }
+
       if (claims.length === 0) {
-        claimsContainer.innerHTML = "<p>No pending claim requests.</p>";
+        claimsContainer.innerHTML = `<div class="admin-empty"><span class="admin-empty-icon">\uD83D\uDCC2</span>No pending claim requests</div>`;
         return;
       }
       claimsContainer.innerHTML = claims.map((c) => `
         <div class="card" style="margin-bottom: 12px; padding: 16px;">
-          <p><strong>Requester:</strong> ${esc(c.requester_name)} (${esc(c.requester_email ?? "no email")})</p>
-          <p><strong>Provider:</strong> ${esc(c.requester_provider)}</p>
-          <p><strong>Target account:</strong> ${esc(c.target_username)} (#${c.target_account_id})</p>
-          <p><strong>Status:</strong> ${esc(c.status)}</p>
-          <p><strong>Submitted:</strong> ${c.created_at ? formatDate(c.created_at) : "unknown"}</p>
+          <p><strong>${esc(c.requester_name)}</strong> (${esc(c.requester_email ?? "no email")})</p>
+          <p style="font-size: 0.9em; color: var(--fg-muted);">Provider: ${esc(c.requester_provider)} &middot; Target: <strong>${esc(c.target_username)}</strong> (#${c.target_account_id})</p>
+          <p style="font-size: 0.9em;">${statusBadge(c.status)} &middot; Submitted: ${c.created_at ? formatDate(c.created_at) : "unknown"}</p>
           ${c.status === "pending" ? `
-            <div style="margin-top: 8px;">
-              <button type="button" class="approve-claim-btn" data-claim-id="${c.id}" style="margin-right: 8px;">Approve</button>
-              <button type="button" class="deny-claim-btn" data-claim-id="${c.id}">Deny</button>
+            <div style="margin-top: 10px; display: flex; gap: 8px;">
+              <button type="button" class="approve-claim-btn btn-approve" data-claim-id="${c.id}">Approve</button>
+              <button type="button" class="deny-claim-btn btn-danger" data-claim-id="${c.id}">Deny</button>
             </div>
-          ` : `<p><strong>Resolved:</strong> ${c.resolved_at ? formatDate(c.resolved_at) : ""}</p>`}
+          ` : `<p style="font-size: 0.9em; color: var(--fg-muted);">Resolved: ${c.resolved_at ? formatDate(c.resolved_at) : ""}</p>`}
         </div>
       `).join("");
 
       claimsContainer.querySelectorAll(".approve-claim-btn").forEach((btn) => {
         btn.addEventListener("click", async () => {
           const id = Number((btn as HTMLElement).dataset.claimId);
+          if (!confirm("Approve this claim? The legacy account will be linked to this user.")) return;
           try {
             await api.reviewClaimRequest(id, { decision: "approve" });
             claimsResult.innerHTML = status("Claim approved.");
@@ -1038,6 +1087,7 @@ export async function renderAdmin() {
       claimsContainer.querySelectorAll(".deny-claim-btn").forEach((btn) => {
         btn.addEventListener("click", async () => {
           const id = Number((btn as HTMLElement).dataset.claimId);
+          if (!confirm("Deny this claim request?")) return;
           try {
             await api.reviewClaimRequest(id, { decision: "deny" });
             claimsResult.innerHTML = status("Claim denied.");
