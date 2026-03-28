@@ -223,3 +223,143 @@ class TestRotationEndpoint:
 
             r = c.get("/api/v2/happyhour/rotation")
             assert r.json()["members"][0]["status"] == "chosen"
+
+
+class TestRegenerateRotation:
+    """Verify POST /api/v2/happyhour/rotation/regenerate."""
+
+    def test_requires_admin(self, db_session: Session) -> None:
+        """Non-admin users are rejected with 403."""
+        alice = _make_user(db_session, "regen_alice")
+        now = datetime.now(UTC)
+        create_tyrant_assignment(
+            db_session,
+            alice.id,
+            cycle=1,
+            position=0,
+            assigned_at=now,
+            deadline_at=now + timedelta(days=5),
+            status=TyrantAssignmentStatus.CURRENT,
+        )
+        db_session.commit()
+
+        limiter.reset()
+        with TestClient(app) as c:
+            c.cookies.jar.set_cookie(_mk_auth_cookie(secret, alice.id))
+            r = c.post("/api/v2/happyhour/rotation/regenerate")
+        assert r.status_code == 403
+
+    def test_regenerate_creates_new_cycle(self, db_session: Session) -> None:
+        """Regeneration creates a new cycle with all tyrants re-shuffled."""
+        alice = _make_user(db_session, "regen2_alice")
+        bob = _make_user(
+            db_session,
+            "regen2_bob",
+            claims=AccountClaims.HAPPY_HOUR
+            | AccountClaims.HAPPY_HOUR_TYRANT
+            | AccountClaims.ADMIN,
+        )
+
+        now = datetime.now(UTC)
+        create_tyrant_assignment(
+            db_session,
+            alice.id,
+            cycle=1,
+            position=0,
+            assigned_at=now,
+            deadline_at=now + timedelta(days=5),
+            status=TyrantAssignmentStatus.CURRENT,
+        )
+        create_tyrant_assignment(
+            db_session,
+            bob.id,
+            cycle=1,
+            position=1,
+            assigned_at=now,
+        )
+        db_session.commit()
+
+        limiter.reset()
+        with TestClient(app) as c:
+            c.cookies.jar.set_cookie(_mk_auth_cookie(secret, bob.id))
+            r = c.post("/api/v2/happyhour/rotation/regenerate")
+
+        assert r.status_code == 200
+        data = r.json()
+        assert data["cycle"] == 2
+        assert len(data["members"]) == 2
+
+        # New cycle should have one CURRENT member
+        statuses = [m["status"] for m in data["members"]]
+        assert "current" in statuses
+
+        # Current member should have a deadline
+        current_m = [m for m in data["members"] if m["status"] == "current"][0]
+        assert current_m["deadline"] is not None
+
+    def test_regenerate_marks_old_assignments_skipped(
+        self, db_session: Session
+    ) -> None:
+        """Non-terminal assignments in the old cycle are marked SKIPPED."""
+        from db.functions import get_rotation_schedule
+
+        alice = _make_user(
+            db_session,
+            "regen3_alice",
+            claims=AccountClaims.HAPPY_HOUR
+            | AccountClaims.HAPPY_HOUR_TYRANT
+            | AccountClaims.ADMIN,
+        )
+        bob = _make_user(db_session, "regen3_bob")
+
+        now = datetime.now(UTC)
+        create_tyrant_assignment(
+            db_session,
+            alice.id,
+            cycle=1,
+            position=0,
+            assigned_at=now,
+            deadline_at=now + timedelta(days=5),
+            status=TyrantAssignmentStatus.CURRENT,
+        )
+        create_tyrant_assignment(
+            db_session,
+            bob.id,
+            cycle=1,
+            position=1,
+            assigned_at=now,
+        )
+        db_session.commit()
+
+        limiter.reset()
+        with TestClient(app) as c:
+            c.cookies.jar.set_cookie(_mk_auth_cookie(secret, alice.id))
+            r = c.post("/api/v2/happyhour/rotation/regenerate")
+        assert r.status_code == 200
+
+        # Check old cycle — both should be SKIPPED
+        old_schedule = get_rotation_schedule(db_session, 1)
+        for r in old_schedule:
+            assert r.status == TyrantAssignmentStatus.SKIPPED
+
+    def test_regenerate_no_tyrants_returns_400(self, db_session: Session) -> None:
+        """If no HAPPY_HOUR_TYRANT users exist, returns 400."""
+        from db.functions import create_account
+
+        admin = create_account(
+            "regen4_admin",
+            "regen4@test.com",
+            ExternalAuthProvider.test,
+            "regen4_admin",
+            claims=AccountClaims.ADMIN | AccountClaims.HAPPY_HOUR,
+        )
+        admin.status = AccountStatus.ACTIVE
+        db_session.add(admin)
+        db_session.commit()
+
+        limiter.reset()
+        with TestClient(app) as c:
+            c.cookies.jar.set_cookie(_mk_auth_cookie(secret, admin.id))
+            r = c.post("/api/v2/happyhour/rotation/regenerate")
+        assert r.status_code == 400
+        assert "No HAPPY_HOUR_TYRANT" in r.json()["detail"]

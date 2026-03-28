@@ -563,6 +563,29 @@ export async function renderHappyHour() {
     // ── Rotation ──
     byId("happyhour-rotation").innerHTML = renderRotationHtml(rotation, profile?.username);
 
+    // Admin-only regenerate button
+    if (isAdmin) {
+      const rotDiv = byId("happyhour-rotation");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.id = "regenerate-rotation-btn";
+      btn.textContent = "Regenerate Rotation";
+      btn.style.marginTop = "8px";
+      rotDiv.appendChild(btn);
+      btn.addEventListener("click", async () => {
+        if (!confirm("Are you sure? This will discard the current rotation and create a fresh shuffled schedule.")) return;
+        try {
+          const result = await api.regenerateRotation();
+          byId("happyhour-result").innerHTML = status(`Rotation regenerated (cycle ${result.cycle}).`);
+          // Refresh rotation display
+          const newRotation = await dataProvider.getRotation();
+          byId("happyhour-rotation").innerHTML = renderRotationHtml(newRotation, profile?.username);
+        } catch (err: any) {
+          byId("happyhour-result").innerHTML = status(`Error: ${err.message}`);
+        }
+      });
+    }
+
     // ── Helper: render events table ──
     function renderEventsTable(page: any) {
       byId("happyhour-events").innerHTML = table(

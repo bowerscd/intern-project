@@ -839,3 +839,154 @@ async def skip_rotation_turn(
         "skipped_user": account_username,
         "next_user": next_username,
     }
+
+
+@HappyHour.post(
+    "/rotation/regenerate",
+    summary="Regenerate the rotation schedule",
+    dependencies=[Depends(validate_csrf_token)],
+    description="Discard all unresolved rotation assignments in the current cycle "
+    "and create a fresh shuffled rotation from the current HAPPY_HOUR_TYRANT "
+    "roster. Requires ADMIN claim.",
+    response_model=RotationScheduleResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def regenerate_rotation(
+    account: Annotated[Any, Depends(RequireLogin(AccountClaims.ADMIN))],
+    db: Database,
+) -> RotationScheduleResponse:
+    """Regenerate the rotation schedule for admin disaster recovery.
+
+    Marks all non-terminal assignments (SCHEDULED, PENDING, ON_DECK,
+    CURRENT) as SKIPPED — except CURRENT assignments that have an event
+    this week, which are marked CHOSEN to preserve history.  Then creates
+    a fresh cycle with a new shuffled order.
+
+    :param account: The authenticated admin account.
+    :param db: Active database session.
+    :returns: The new rotation schedule.
+    :raises HTTPException: If no HAPPY_HOUR_TYRANT users exist.
+    """
+    require_write_access(account)
+
+    from db.functions import (
+        get_current_cycle_number,
+        get_rotation_schedule,
+        get_accounts_with_claim,
+        get_events_this_week,
+        get_last_resolved_account_in_cycle,
+        create_standby_buffer,
+        promote_to_current,
+        promote_to_on_deck,
+        activate_assignment,
+        mark_assignment_chosen,
+        skip_assignment,
+    )
+    from datetime import datetime, UTC
+    from models.enums import TyrantAssignmentStatus
+    from scheduler import _next_wednesday_noon
+
+    TERMINAL = {
+        TyrantAssignmentStatus.CHOSEN,
+        TyrantAssignmentStatus.MISSED,
+        TyrantAssignmentStatus.SKIPPED,
+    }
+
+    new_current_id = None
+    new_on_deck_id = None
+
+    with db:
+        now = datetime.now(UTC)
+        cycle = get_current_cycle_number(db)
+        schedule = get_rotation_schedule(db, cycle)
+        events = get_events_this_week(db, now)
+
+        # Finalize non-terminal assignments
+        for r in schedule:
+            if r.status in TERMINAL:
+                continue
+            if r.status == TyrantAssignmentStatus.CURRENT and events:
+                mark_assignment_chosen(db, r.id)
+            else:
+                skip_assignment(db, r.id)
+
+        last_account = get_last_resolved_account_in_cycle(db, cycle)
+
+        # Build new cycle
+        tyrants = get_accounts_with_claim(db, AccountClaims.HAPPY_HOUR_TYRANT)
+        if not tyrants:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No HAPPY_HOUR_TYRANT users available for rotation",
+            )
+
+        new_cycle = cycle + 1
+        rotations = create_standby_buffer(
+            db, list(tyrants), new_cycle, now, last_account_id=last_account
+        )
+
+        if len(rotations) >= 1:
+            deadline = _next_wednesday_noon(now)
+            promote_to_current(db, rotations[0].id, deadline)
+            new_current_id = rotations[0].id
+        if len(rotations) >= 2:
+            promote_to_on_deck(db, rotations[1].id)
+            new_on_deck_id = rotations[1].id
+        if len(rotations) >= 3:
+            activate_assignment(db, rotations[2].id, _next_wednesday_noon(now))
+
+        db.commit()
+
+        # Re-fetch for response
+        new_schedule = get_rotation_schedule(db, new_cycle)
+
+    # Notifications (outside transaction)
+    if new_current_id is not None:
+        try:
+            from mail.outgoing import notify_tyrant_assigned
+            from db.functions import get_assignment_by_id
+
+            with db:
+                fresh = get_assignment_by_id(db, new_current_id)
+                if fresh is not None:
+                    await notify_tyrant_assigned(fresh.Account, fresh.deadline_at)
+        except Exception:
+            logger.exception("Failed to notify new current tyrant after regenerate")
+
+    if new_on_deck_id is not None:
+        try:
+            from mail.outgoing import notify_tyrant_on_deck
+            from db.functions import get_assignment_by_id
+
+            current_name = "unknown"
+            with db:
+                current_fresh = (
+                    get_assignment_by_id(db, new_current_id) if new_current_id else None
+                )
+                if current_fresh is not None:
+                    current_name = current_fresh.Account.username
+                on_deck_fresh = get_assignment_by_id(db, new_on_deck_id)
+                if on_deck_fresh is not None:
+                    await notify_tyrant_on_deck(on_deck_fresh.Account, current_name)
+        except Exception:
+            logger.exception("Failed to notify on-deck tyrant after regenerate")
+
+    logger.info(
+        "Admin %s regenerated rotation: old cycle %d → new cycle %d (%d members)",
+        account.username,
+        cycle,
+        new_cycle,
+        len(rotations),
+    )
+
+    members = [
+        RotationMemberResponse(
+            position=r.position,
+            username=r.Account.username,
+            status=r.status.value,
+            deadline=r.deadline_at,
+        )
+        for r in new_schedule
+    ]
+
+    return RotationScheduleResponse(cycle=new_cycle, members=members)

@@ -368,6 +368,10 @@ export function getRotation(): Promise<RotationScheduleResponse> {
   return get("/api/v2/happyhour/rotation");
 }
 
+export function regenerateRotation(): Promise<RotationScheduleResponse> {
+  return post("/api/v2/happyhour/rotation/regenerate");
+}
+
 export function getLocations(): Promise<LocationResponse[]> {
   return fetchAllPages<LocationResponse>("/api/v2/happyhour/locations");
 }
